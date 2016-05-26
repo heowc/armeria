@@ -1,0 +1,471 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Configuring CORS &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Serving Server-Sent Events" href="server-sse.html" />
+    <link rel="prev" title="Writing an access log" href="server-access-log.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="server.html">Writing a server</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="server-basics.html">Server basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-decorator.html">Decorating a service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-grpc.html">Running a gRPC service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-thrift.html">Running a Thrift service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-docservice.html">Browsing and invoking services with <code class="docutils literal notranslate"><span class="pre">DocService</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-annotated-service.html">Annotated services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-http-file.html">Serving static files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-servlet.html">Embedding a servlet container</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-access-log.html">Writing an access log</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Configuring CORS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#allowing-any-origin">Allowing any origin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#allowing-specific-origins">Allowing specific origins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#applying-different-policies-for-different-origins">Applying different policies for different origins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#applying-a-policy-to-the-specific-paths">Applying a policy to the specific paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuring-cors-via-annotation">Configuring CORS via annotation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="server-sse.html">Serving Server-Sent Events</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="server.html">Writing a server</a> &raquo;</li>
+        
+      <li>Configuring CORS</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/server-cors.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="configuring-cors">
+<span id="server-cors"></span><h1>Configuring CORS<a class="headerlink" href="#configuring-cors" title="Permalink to this headline">¶</a></h1>
+<p>Armeria provides a way to configure Cross-origin resource sharing (CORS) policy for specific origins or
+any origin via <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/cors/CorsServiceBuilder.html">CorsServiceBuilder</a></code>. For more information about CORS,
+visit <a class="reference external" href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing">Wikipedia’s CORS page</a>.</p>
+<div class="section" id="allowing-any-origin">
+<h2>Allowing any origin<a class="headerlink" href="#allowing-any-origin" title="Permalink to this headline">¶</a></h2>
+<p>To configure CORS Service allowing any origin (*), use <code class="docutils literal notranslate"><span class="pre">CorsServiceBuilder.forAnyOrigin()</span></code>, e.g.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpMethod;
+import com.linecorp.armeria.server.HttpService;
+import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.server.cors.CorsServiceBuilder;
+
+HttpService myService = (ctx, req) -&gt; ...;
+ServerBuilder sb = new ServerBuilder().service(&quot;/message&quot;, myService.decorate(
+        CorsServiceBuilder.forAnyOrigin()
+                          .allowCredentials()
+                          .allowRequestMethods(HttpMethod.POST, HttpMethod.GET)
+                          .allowRequestHeaders(&quot;allow_request_header&quot;)
+                          .exposeHeaders(&quot;expose_header_1&quot;, &quot;expose_header_2&quot;)
+                          .preflightResponseHeader(&quot;x-preflight-cors&quot;, &quot;Hello CORS&quot;)
+                          .newDecorator()));</pre></div>
+</div>
+</div>
+<div class="section" id="allowing-specific-origins">
+<h2>Allowing specific origins<a class="headerlink" href="#allowing-specific-origins" title="Permalink to this headline">¶</a></h2>
+<p>To configure CORS Service allowing specific origins, use <code class="docutils literal notranslate"><span class="pre">CorsServiceBuilder.forOrigins()</span></code> or
+<code class="docutils literal notranslate"><span class="pre">CorsServiceBuilder.forOrigin()</span></code>, e.g.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">HttpService myService = (ctx, req) -&gt; ...;
+ServerBuilder sb = new ServerBuilder().service(&quot;/message&quot;, myService.decorate(
+        CorsServiceBuilder.forOrigins(&quot;http://example.com&quot;)
+                          .allowCredentials()
+                          .allowNullOrigin() // &#x27;Origin: null&#x27; will be accepted.
+                          .allowRequestMethods(HttpMethod.POST, HttpMethod.GET)
+                          .allowRequestHeaders(&quot;allow_request_header&quot;)
+                          .exposeHeaders(&quot;expose_header_1&quot;, &quot;expose_header_2&quot;)
+                          .preflightResponseHeader(&quot;x-preflight-cors&quot;, &quot;Hello CORS&quot;)
+                          .newDecorator()));</pre></div>
+</div>
+</div>
+<div class="section" id="applying-different-policies-for-different-origins">
+<h2>Applying different policies for different origins<a class="headerlink" href="#applying-different-policies-for-different-origins" title="Permalink to this headline">¶</a></h2>
+<p>To configure different policies for different groups of origins, use <code class="docutils literal notranslate"><span class="pre">andForOrigins()</span></code> or <code class="docutils literal notranslate"><span class="pre">andForOrigin()</span></code>
+method which creates a new <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/cors/ChainedCorsPolicyBuilder.html">ChainedCorsPolicyBuilder</a></code> with the specific origins.
+Call <code class="docutils literal notranslate"><span class="pre">and()</span></code> to return to <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/cors/CorsServiceBuilder.html">CorsServiceBuilder</a></code> once you are done with building a policy, e.g.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">HttpService myService = (ctx, req) -&gt; ...;
+ServerBuilder sb = new ServerBuilder().service(&quot;/message&quot;, myService.decorate(
+        CorsServiceBuilder.forOrigins(&quot;http://example.com&quot;)
+                          .allowCredentials()
+                          .allowNullOrigin() // &#x27;Origin: null&#x27; will be accepted.
+                          .allowRequestMethods(HttpMethod.POST, HttpMethod.GET)
+                          .allowRequestHeaders(&quot;allow_request_header&quot;)
+                          .exposeHeaders(&quot;expose_header_1&quot;, &quot;expose_header_2&quot;)
+                          .preflightResponseHeader(&quot;x-preflight-cors&quot;, &quot;Hello CORS&quot;)
+                          .maxAge(3600)
+                          .andForOrigins(&quot;http://example2.com&quot;)
+                          .allowCredentials()
+                          .allowRequestMethods(HttpMethod.GET)
+                          .allowRequestHeaders(&quot;allow_request_header2&quot;)
+                          .exposeHeaders(&quot;expose_header_3&quot;, &quot;expose_header_4&quot;)
+                          .and()
+                          .newDecorator()));</pre></div>
+</div>
+<p>You can also directly add a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/cors/CorsPolicy.html">CorsPolicy</a></code> created by a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/cors/CorsPolicyBuilder.html">CorsPolicyBuilder</a></code>, e.g.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.cors.CorsPolicyBuilder;
+
+HttpService myService = (ctx, req) -&gt; ...;
+ServerBuilder sb = new ServerBuilder().service(&quot;/message&quot;, myService.decorate(
+        CorsServiceBuilder.forOrigins(&quot;http://example.com&quot;)
+                          .allowCredentials()
+                          .allowNullOrigin() // &#x27;Origin: null&#x27; will be accepted.
+                          .allowRequestMethods(HttpMethod.POST, HttpMethod.GET)
+                          .allowRequestHeaders(&quot;allow_request_header&quot;)
+                          .exposeHeaders(&quot;expose_header_1&quot;, &quot;expose_header_2&quot;)
+                          .preflightResponseHeader(&quot;x-preflight-cors&quot;, &quot;Hello CORS&quot;)
+                          .maxAge(3600)
+                          .addPolicy(new CorsPolicyBuilder(&quot;http://example2.com&quot;)
+                                        .allowCredentials()
+                                        .allowRequestMethods(HttpMethod.GET)
+                                        .allowRequestHeaders(&quot;allow_request_header2&quot;)
+                                        .exposeHeaders(&quot;expose_header_3&quot;, &quot;expose_header_4&quot;)
+                                        .build())
+                          .newDecorator()));</pre></div>
+</div>
+</div>
+<div class="section" id="applying-a-policy-to-the-specific-paths">
+<h2>Applying a policy to the specific paths<a class="headerlink" href="#applying-a-policy-to-the-specific-paths" title="Permalink to this headline">¶</a></h2>
+<p>To configure a policy to the specific paths, you can use <code class="docutils literal notranslate"><span class="pre">route()</span></code> methods in the
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/cors/CorsServiceBuilder.html">CorsServiceBuilder</a></code> and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/cors/ChainedCorsPolicyBuilder.html">ChainedCorsPolicyBuilder</a></code>. They can help you to adjust the scope that
+a policy is applied to, e.g.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">HttpService myService = (ctx, req) -&gt; ...;
+ServerBuilder sb = new ServerBuilder().service(&quot;/message&quot;, myService.decorate(
+        CorsServiceBuilder.forOrigins(&quot;http://example.com&quot;)
+                          // CORS policy will be applied for the path that starts with &#x27;/message/web/api/&#x27;.
+                          .route(&quot;prefix:/message/web/api/&quot;)
+                          .allowRequestMethods(HttpMethod.POST, HttpMethod.GET)
+                          .newDecorator()));</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please refer to the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Route.html">Route</a></code> in order to learn how to specify a path pattern.</p>
+</div>
+</div>
+<div class="section" id="configuring-cors-via-annotation">
+<h2>Configuring CORS via annotation<a class="headerlink" href="#configuring-cors-via-annotation" title="Permalink to this headline">¶</a></h2>
+<p>You can also configure CORS for <a class="reference internal" href="server-annotated-service.html#server-annotated-service"><span class="std std-ref">Annotated services</span></a> using the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/decorator/CorsDecorator.html">@CorsDecorator</a></code> annotation, e.g.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.annotation.AdditionalHeader;
+import com.linecorp.armeria.server.annotation.Get;
+import com.linecorp.armeria.server.annotation.decorator.CorsDecorator;
+
+Server s = new ServerBuilder().annotatedService(&quot;/example&quot;, new Object() {
+    @Get(&quot;/get&quot;)
+    @CorsDecorator(origins = &quot;http://example.com&quot;, credentialsAllowed = true,
+                   nullOriginAllowed = true, exposedHeaders = &quot;expose_header&quot;,
+                   allowedRequestMethods = HttpMethod.GET, allowedRequestHeaders = &quot;allow_header&quot;,
+                   preflightResponseHeaders = {
+                       @AdditionalHeader(name = &quot;preflight_header&quot;, value = &quot;preflight_value&quot;)
+                   })
+    // In case you want to configure different CORS policies for different origins.
+    @CorsDecorator(origins = &quot;http://example2.com&quot;, credentialsAllowed = true)
+    public HttpResponse get() {
+        return HttpResponse.of(HttpStatus.OK);
+    }
+
+    @Post(&quot;/post&quot;)
+    // In case you want to allow any origin (*):
+    @CorsDecorator(origins = &quot;*&quot;, exposedHeaders = &quot;expose_header&quot;)
+    // You can not add a policy after adding the decorator allowing any origin (*).
+    public HttpResponse post() {
+        return HttpResponse.of(HttpStatus.OK)
+    }
+}).build();</pre></div>
+</div>
+<p>You can also use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/decorator/CorsDecorator.html">@CorsDecorator</a></code> at the class level to apply the decorator to all service methods in the class.
+Note that the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/decorator/CorsDecorator.html">@CorsDecorator</a></code> annotation specified at the method level takes precedence over what’s specified at the class level:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// This decorator will be ignored for the path &quot;/post&quot;.
+@CorsDecorator(origins = &quot;http://example.com&quot;, credentialsAllowed = true)
+class MyAnnotatedService {
+    @Get(&quot;/get&quot;)
+    public HttpResponse get() {
+        return HttpResponse.of(HttpStatus.OK);
+    }
+
+    @Post(&quot;/post&quot;)
+    @CorsDecorator(origins = &quot;http://example2.com&quot;, credentialsAllowed = true)
+    public HttpResponse post() {
+        return HttpResponse.of(HttpStatus.OK);
+    }
+}</pre></div>
+</div>
+<p>If you want to allow a CORS policy to the specific paths, you can use <code class="docutils literal notranslate"><span class="pre">pathPatterns</span></code> property:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// This policy will be applied only to the paths matched by the pattern.
+@CorsDecorator(origins = &quot;http://example.com&quot;, pathPatterns = &quot;glob:/**/web/api&quot;, credentialsAllowed = true)
+class MyAnnotatedService {
+    ...
+}</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="server-sse.html" class="btn btn-neutral float-right" title="Serving Server-Sent Events" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="server-access-log.html" class="btn btn-neutral float-left" title="Writing an access log" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

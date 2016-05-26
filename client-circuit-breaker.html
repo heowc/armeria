@@ -1,0 +1,657 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Circuit breaker &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Client-side load balancing and service discovery" href="client-service-discovery.html" />
+    <link rel="prev" title="Automatic retry" href="client-retry.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Writing a server</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="client.html">Writing a client</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="client-http.html">Calling an HTTP service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-thrift.html">Calling a Thrift service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-grpc.html">Calling a gRPC service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-decorator.html">Decorating a client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-retrofit.html">Retrofit integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-custom-http-headers.html">Sending custom HTTP headers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-timeouts.html">Overriding client timeouts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-retry.html">Automatic retry</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Circuit breaker</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#state-of-circuitbreaker">State of <code class="docutils literal notranslate"><span class="pre">CircuitBreaker</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#circuitbreakerclient"><code class="docutils literal notranslate"><span class="pre">CircuitBreakerClient</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#circuitbreakerstrategy"><code class="docutils literal notranslate"><span class="pre">CircuitBreakerStrategy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#grouping-circuitbreakers">Grouping <code class="docutils literal notranslate"><span class="pre">CircuitBreaker</span></code>s</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#circuitbreakerbuilder"><code class="docutils literal notranslate"><span class="pre">CircuitBreakerBuilder</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-circuitbreaker-with-non-armeria-client">Using <code class="docutils literal notranslate"><span class="pre">CircuitBreaker</span></code> with non-Armeria client</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="client-service-discovery.html">Client-side load balancing and service discovery</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="client.html">Writing a client</a> &raquo;</li>
+        
+      <li>Circuit breaker</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/client-circuit-breaker.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="circuit-breaker">
+<span id="client-circuit-breaker"></span><h1>Circuit breaker<a class="headerlink" href="#circuit-breaker" title="Permalink to this headline">¶</a></h1>
+<p>In microservice architecture, it’s common that various services running on different machines are connected to
+each other through remote calls. If one of the services becomes unreachable somehow such as due to network
+issues, the client which connects to that service will take long to get a response from it or to fail to
+get one. Situation will get even worse if there are many remote calls to such unresponsive service.
+You can configure an Armeria client with a circuit breaker to prevent this circumstance. The circuit breaker
+can automatically detect failures by continuously updating success and failure events. If the remote service
+is unresponsive, it will immediately respond with an error and not make remote calls.
+Please refer to <a class="reference external" href="https://martinfowler.com/bliki/CircuitBreaker.html">CircuitBreaker wiki page</a> by Martin Fowler and
+<a class="reference external" href="https://engineering.linecorp.com/en/blog/detail/76">LINE Engineering blog post about circuit breaker</a> for more information.</p>
+<div class="section" id="state-of-circuitbreaker">
+<h2>State of <code class="docutils literal notranslate"><span class="pre">CircuitBreaker</span></code><a class="headerlink" href="#state-of-circuitbreaker" title="Permalink to this headline">¶</a></h2>
+<p>A <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> can be one of the following three states:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">CLOSED</span></code></p>
+<ul>
+<li><p>Initial state. All requests are treated normally.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OPEN</span></code></p>
+<ul>
+<li><p>The state machine enters the <code class="docutils literal notranslate"><span class="pre">OPEN</span></code> state once the number of failures divided by the total number of
+requests exceeds a certain threshold. All requests are blocked off responding with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/FailFastException.html">FailFastException</a></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HALF_OPEN</span></code>.</p>
+<ul>
+<li><p>After a certain amount of time in the <code class="docutils literal notranslate"><span class="pre">OPEN</span></code> state, the state machine enters the <code class="docutils literal notranslate"><span class="pre">HALF_OPEN</span></code> state
+which sends a request to find out if the service is still unavailable or not.
+If the request succeeds, it enters the <code class="docutils literal notranslate"><span class="pre">CLOSED</span></code> state. If it fails, it enters the <code class="docutils literal notranslate"><span class="pre">OPEN</span></code> state again.</p></li>
+</ul>
+</li>
+</ul>
+<p class="plantuml">
+<img src="_images/plantuml-f98b92eeb687a1152868ec1617e14da615a16077.png" alt="&#64;startditaa(--no-separation)
+
+                                   +----------------+
+                                   |                |
+                                   |      OPEN      |
+                                   |                |&lt;-------------------+
+                                   +------------+---+     failed again   |
+                                       ^        |                        |
+                                       |        |                        |
+                                       |        |                        |
+                                       |        |                        |
+ under threshold                       |        |                        |
+     +---+                             |        |                        |
+     |   |                             |        |                        |
+     |   v                             |        |                        |
++----+-----------+  exceeded threshold |        |     timed out       +--+-------------+
+|                +---------------------+        +--------------------&gt;|                |
+|     CLOSED     |                                                    |    HALF_OPEN   |
+|                |&lt;---------------------------------------------------+                |
++----------------+          back to normal (request succeeded)        +----------------+
+
+&#64;endditaa"/>
+</p>
+</div>
+<div class="section" id="circuitbreakerclient">
+<h2><code class="docutils literal notranslate"><span class="pre">CircuitBreakerClient</span></code><a class="headerlink" href="#circuitbreakerclient" title="Permalink to this headline">¶</a></h2>
+<p>Armeria provides two different <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Client.html">Client</a></code> implementations depending on the
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Request.html">Request</a></code> and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Response.html">Response</a></code> types:</p>
+<ul class="simple">
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerHttpClient.html">CircuitBreakerHttpClient</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerRpcClient.html">CircuitBreakerRpcClient</a></code></p></li>
+</ul>
+<p>Let’s use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerHttpClient.html">CircuitBreakerHttpClient</a></code> to find out what we can do.
+You can use the <code class="docutils literal notranslate"><span class="pre">decorator()</span></code> method in <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ClientBuilder.html">ClientBuilder</a></code> to build a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerHttpClient.html">CircuitBreakerHttpClient</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.circuitbreaker.CircuitBreaker;
+import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerHttpClient;
+import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerStrategy;
+import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerHttpClientBuilder;
+import com.linecorp.armeria.client.HttpClientBuilder;
+import com.linecorp.armeria.client.HttpClient;
+import com.linecorp.armeria.common.AggregatedHttpResponse;
+import com.linecorp.armeria.common.HttpRequest;
+import com.linecorp.armeria.common.HttpResponse;
+
+final CircuitBreakerStrategy strategy = CircuitBreakerStrategy.onServerErrorStatus();
+final HttpClient client = new HttpClientBuilder(...)
+        .decorator(new CircuitBreakerHttpClientBuilder(strategy).newDecorator())
+        .build();
+
+final AggregatedHttpResponse res = client.execute(...).aggregate().join(); // Send requests on and on.</pre></div>
+</div>
+<p>Now, the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Client.html">Client</a></code> can track the number of success or failure events depending on the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Response.html">Response</a><span class="code api-reference plural-suffix">s</span></code>.
+The <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> will enter <code class="docutils literal notranslate"><span class="pre">OPEN</span></code>, when the number of failures divided by the total number of
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Request.html">Request</a><span class="code api-reference plural-suffix">s</span></code> exceeds the failure rate. Then the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Client.html">Client</a></code> will immediately get
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/FailFastException.html">FailFastException</a></code> by the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code>.</p>
+</div>
+<div class="section" id="circuitbreakerstrategy">
+<span id="circuit-breaker-strategy"></span><h2><code class="docutils literal notranslate"><span class="pre">CircuitBreakerStrategy</span></code><a class="headerlink" href="#circuitbreakerstrategy" title="Permalink to this headline">¶</a></h2>
+<p>How does a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> know whether a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Response.html">Response</a></code> is successful or not?
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerStrategy.html">CircuitBreakerStrategy</a></code> does the job. In the example above, if the status of a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Response.html">Response</a></code> is <code class="docutils literal notranslate"><span class="pre">5xx</span></code>
+or an <code class="docutils literal notranslate"><span class="pre">Exception</span></code> is raised during the call, the count of failure is increased.
+Of course, you can have your own <code class="docutils literal notranslate"><span class="pre">strategy</span></code> by implementing <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerStrategy.html">CircuitBreakerStrategy</a></code>.
+The following example shows a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerStrategy.html">CircuitBreakerStrategy</a></code> implementation that fails when an <code class="docutils literal notranslate"><span class="pre">Exception</span></code>
+is raised or the status is <code class="docutils literal notranslate"><span class="pre">5xx</span></code>, succeeds when the status is <code class="docutils literal notranslate"><span class="pre">2xx</span></code> and ignores others.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.ClientRequestContext;
+import com.linecorp.armeria.client.UnprocessedRequestException;
+import com.linecorp.armeria.common.HttpStatus;
+import com.linecorp.armeria.common.HttpStatusClass;
+
+final CircuitBreakerStrategy myStrategy = new CircuitBreakerStrategy() {
+
+    @Override
+    public CompletionStage&lt;Boolean&gt; shouldReportAsSuccess(ClientRequestContext ctx,
+                                                          @Nullable Throwable cause) {
+        if (cause != null) {
+            if (cause instanceof UnprocessedRequestException) {
+                // Neither a success nor a failure because the request has not been handled by the server.
+                return CompletableFuture.completedFuture(null);
+            }
+            // A failure if an Exception is raised.
+            return CompletableFuture.completedFuture(false);
+        }
+
+        final HttpStatus status = ctx.log().responseHeaders().status();
+        if (status != null) {
+            // A failure if the response is 5xx.
+            if (status.codeClass() == HttpStatusClass.SERVER_ERROR) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            // A success if the response is 2xx.
+            if (status.codeClass() == HttpStatusClass.SUCCESS) {
+                return CompletableFuture.completedFuture(true);
+            }
+        }
+
+        // Neither a success nor a failure. Do not take this response into account.
+        return CompletableFuture.completedFuture(null);
+    }
+};</pre></div>
+</div>
+<p>If you want to treat a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Response.html">Response</a></code> as a success, return <code class="docutils literal notranslate"><span class="pre">true</span></code>. Return <code class="docutils literal notranslate"><span class="pre">false</span></code> to treat as a failure.
+Note that <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerStrategy.html">CircuitBreakerStrategy</a></code> can return <code class="docutils literal notranslate"><span class="pre">null</span></code> as well. It won’t be counted as a success nor
+a failure.</p>
+<p>If you need to determine whether the request was successful by looking into the response content,
+you should implement <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerStrategyWithContent.html">CircuitBreakerStrategyWithContent</a></code> and specify it when you create an
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/HttpClient.html">HttpClient</a></code> using <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerHttpClientBuilder.html">CircuitBreakerHttpClientBuilder</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerStrategyWithContent;
+
+final CircuitBreakerStrategyWithContent&lt;HttpResponse&gt; myStrategy =
+        new CircuitBreakerStrategyWithContent&lt;HttpResponse&gt;() {
+
+            @Override
+            public CompletionStage&lt;Boolean&gt; shouldReportAsSuccess(ClientRequestContext ctx,
+                                                                  HttpResponse response) {
+                return response.aggregate().handle((res, cause) -&gt; {
+                    if (cause != null) {
+                        if (cause instanceof UnprocessedRequestException) {
+                            // Neither a success nor a failure because the request has not been handled
+                            // by the server.
+                            return null;
+                        }
+                        // A failure if an Exception is raised.
+                        return false;
+                    }
+
+                    final String content = res.contentUtf8();
+                    if (&quot;Success&quot;.equals(content)) {
+                        return true;
+                    } else if (&quot;Failure&quot;.equals(content)) {
+                        return false;
+                    }
+
+                    // Neither a success nor a failure. Do not take this response into account.
+                    return null;
+                });
+            }
+        };
+
+final HttpClient client = new HttpClientBuilder(...)
+        .decorator(new CircuitBreakerHttpClientBuilder(myStrategy).newDecorator()) // Specify the strategy
+        .build();
+
+final AggregatedHttpResponse res = client.execute(...).aggregate().join();</pre></div>
+</div>
+</div>
+<div class="section" id="grouping-circuitbreakers">
+<h2>Grouping <code class="docutils literal notranslate"><span class="pre">CircuitBreaker</span></code>s<a class="headerlink" href="#grouping-circuitbreakers" title="Permalink to this headline">¶</a></h2>
+<p>In the very first example above, a single <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> was used to track the events. However,
+in many cases, you will want to use different <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> for different endpoints. For example, there
+might be an API which performs heavy calculation which fails often. On the other hand, there can be another API
+which is not resource hungry and this is not likely to fail.
+Having one <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> that tracks all the success and failure does not make sense in this scenario.
+It’s even worse if the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Client.html">Client</a></code> connects to the services on different machines.
+When one of the remote services is down, your <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> will probably be <code class="docutils literal notranslate"><span class="pre">OPEN</span></code> state although
+you can connect to other services.
+Therefore, Armeria provides various ways that let users group the range of circuit breaker instances.</p>
+<ul>
+<li><p>Group by host: a single <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> is used for each remote host.</p>
+<blockquote>
+<div><div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerRpcClient;
+import com.linecorp.armeria.common.RpcResponse;
+
+// Create a CircuitBreaker with the key name
+final Function&lt;String, CircuitBreaker&gt; factory = key -&gt; CircuitBreaker.of(&quot;my-cb-&quot; + key);
+final CircuitBreakerStrategy httpStrategy = CircuitBreakerStrategy.onServerErrorStatus();
+final CircuitBreakerStrategy rpcStrategy =
+        response -&gt; response.completionFuture().handle((res, cause) -&gt; cause == null);
+
+// Create CircuitBreakers per host (a.com, b.com ...)
+CircuitBreakerHttpClient.newPerHostDecorator(factory, httpStrategy);
+CircuitBreakerRpcClient.newPerHostDecorator(factory, rpcStrategy);
+// The names of the created CircuitBreaker: my-cb-a.com, my-cb-b.com, ...</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Group by method: a single <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> is used for each method.</p>
+<blockquote>
+<div><div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// Create CircuitBreakers per method
+CircuitBreakerHttpClient.newPerMethodDecorator(factory, httpStrategy);
+// The names of the created CircuitBreaker: my-cb-GET, my-cb-POST, ...
+
+CircuitBreakerRpcClient.newPerMethodDecorator(factory, rpcStrategy);
+// The names of the created CircuitBreaker: my-cb-methodA, my-cb-methodB, ...</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Group by host and method: a single <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> is used for each method and host combination.</p>
+<blockquote>
+<div><div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// Create CircuitBreakers per host and method
+CircuitBreakerHttpClient.newPerHostAndMethodDecorator(factory, httpStrategy);
+// The names of the created CircuitBreaker: my-cb-a.com#GET,
+// my-cb-a.com#POST, my-cb-b.com#GET, my-cb-b.com#POST, ...
+
+CircuitBreakerRpcClient.newPerHostAndMethodDecorator(factory, rpcStrategy);
+// The names of the created CircuitBreaker: my-cb-a.com#methodA,
+// my-cb-a.com#methodB, my-cb-b.com#methodA, my-cb-b.com#methodB, ...</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<p>If you want none of the above groupings, you can group them however you want using
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/KeyedCircuitBreakerMapping.html">KeyedCircuitBreakerMapping</a></code> and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/KeyedCircuitBreakerMapping.KeySelector.html">KeyedCircuitBreakerMapping.KeySelector</a></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.circuitbreaker.KeyedCircuitBreakerMapping;
+import com.linecorp.armeria.client.circuitbreaker.KeyedCircuitBreakerMapping.KeySelector;
+
+// I want to create CircuitBreakers per path!
+final KeyedCircuitBreakerMapping&lt;String&gt; mapping =
+        new KeyedCircuitBreakerMapping&lt;&gt;((ctx, req) -&gt; ctx.path(), factory);
+
+CircuitBreakerHttpClient.newDecorator(mapping, httpStrategy);</pre></div>
+</div>
+</div>
+<div class="section" id="circuitbreakerbuilder">
+<h2><code class="docutils literal notranslate"><span class="pre">CircuitBreakerBuilder</span></code><a class="headerlink" href="#circuitbreakerbuilder" title="Permalink to this headline">¶</a></h2>
+<p>We have used static factory methods in <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> interface to create a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> so far.
+If you use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerBuilder.html">CircuitBreakerBuilder</a></code>, you can configure the parameters which decide
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code>’s behavior. Here are the parameters:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>:</p>
+<ul class="simple">
+<li><p>The name of the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">failureRateThreshold</span></code>:</p>
+<ul class="simple">
+<li><p>The threshold that changes <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code>’s state to <code class="docutils literal notranslate"><span class="pre">OPEN</span></code> when the number of failed
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Request.html">Request</a><span class="code api-reference plural-suffix">s</span></code> divided by the number of total <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Request.html">Request</a><span class="code api-reference plural-suffix">s</span></code> exceeds it.
+The default value is <code class="docutils literal notranslate"><span class="pre">0.5</span></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minimumRequestThreshold</span></code>:</p>
+<ul class="simple">
+<li><p>The minimum number of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Request.html">Request</a><span class="code api-reference plural-suffix">s</span></code> to detect failures. The default value is <code class="docutils literal notranslate"><span class="pre">10</span></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">trialRequestInterval</span></code>:</p>
+<ul class="simple">
+<li><p>The duration that a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> remains in <code class="docutils literal notranslate"><span class="pre">HALF_OPEN</span></code> state. All requests are blocked off
+responding with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/FailFastException.html">FailFastException</a></code> during this state. The default value is <code class="docutils literal notranslate"><span class="pre">3</span></code> seconds.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">circuitOpenWindow</span></code>:</p>
+<ul class="simple">
+<li><p>The duration that a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> remains in <code class="docutils literal notranslate"><span class="pre">OPEN</span></code> state. All <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Request.html">Request</a><span class="code api-reference plural-suffix">s</span></code> are blocked
+off responding with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/FailFastException.html">FailFastException</a></code> during this state. The default value is <code class="docutils literal notranslate"><span class="pre">10</span></code> seconds.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">counterSlidingWindow</span></code>:</p>
+<ul class="simple">
+<li><p>The duration of a sliding window that a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> counts successful and failed
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Request.html">Request</a><span class="code api-reference plural-suffix">s</span></code> in it. The default value is <code class="docutils literal notranslate"><span class="pre">20</span></code> seconds.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">counterUpdateInterval</span></code>:</p>
+<ul class="simple">
+<li><p>The duration that a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> stores events in a bucket. The default value is <code class="docutils literal notranslate"><span class="pre">1</span></code> second.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">listeners</span></code>:</p>
+<ul>
+<li><p>The listeners which are notified by a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> when an event occurs. The events are one of
+<code class="docutils literal notranslate"><span class="pre">stateChanged</span></code>, <code class="docutils literal notranslate"><span class="pre">eventCountUpdated</span></code> and <code class="docutils literal notranslate"><span class="pre">requestRejected</span></code>. You can use
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/MetricCollectingCircuitBreakerListener.html">MetricCollectingCircuitBreakerListener</a></code> to export metrics:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.circuitbreaker.MetricCollectingCircuitBreakerListener
+
+import io.micrometer.core.instrument.Metrics;
+
+final MetricCollectingCircuitBreakerListener listener =
+        new MetricCollectingCircuitBreakerListener(Metrics.globalRegistry);
+final CircuitBreakerBuilder builder = new CircuitBreakerBuilder().listener(listener);</pre></div>
+</div>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="using-circuitbreaker-with-non-armeria-client">
+<span id="circuit-breaker-with-non-armeria-client"></span><h2>Using <code class="docutils literal notranslate"><span class="pre">CircuitBreaker</span></code> with non-Armeria client<a class="headerlink" href="#using-circuitbreaker-with-non-armeria-client" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> API is designed to be framework-agnostic and thus can be used with any non-Armeria
+clients:</p>
+<ol class="arabic simple">
+<li><p>Create a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code>.</p></li>
+<li><p>Guard your client calls with <code class="docutils literal notranslate"><span class="pre">CircuitBreaker.canRequest()</span></code>.</p></li>
+<li><p>Update the state of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code> by calling <code class="docutils literal notranslate"><span class="pre">CircuitBreaker.onSuccess()</span></code> or <code class="docutils literal notranslate"><span class="pre">onFailure()</span></code>
+depending on the outcome of the client call.</p></li>
+</ol>
+<p>For example:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">private final CircuitBreaker cb = CircuitBreaker.of(&quot;some-client&quot;);
+private final SomeClient client = ...;
+
+public void sendRequestWithCircuitBreaker() {
+    if (!cb.canRequest()) {
+        throw new RuntimeException();
+    }
+
+    boolean success = false;
+    try {
+        success = client.sendRequest();
+    } finally {
+        if (success) {
+            cb.onSuccess();
+        } else {
+            cb.onFailure();
+        }
+    }
+}</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="client-service-discovery.html" class="btn btn-neutral float-right" title="Client-side load balancing and service discovery" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="client-retry.html" class="btn btn-neutral float-left" title="Automatic retry" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

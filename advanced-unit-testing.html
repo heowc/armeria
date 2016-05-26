@@ -1,0 +1,440 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Unit-testing Client and Service &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Production checklist" href="advanced-production-checklist.html" />
+    <link rel="prev" title="Structured logging with Kafka" href="advanced-structured-logging-kafka.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Writing a server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="advanced.html">Advanced topics</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="advanced-logging.html">Logging contextual information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-structured-logging.html">Structured logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-custom-attributes.html"><code class="docutils literal notranslate"><span class="pre">RequestContext</span></code> custom attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-structured-logging-kafka.html">Structured logging with Kafka</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Unit-testing <code class="docutils literal notranslate"><span class="pre">Client</span></code> and <code class="docutils literal notranslate"><span class="pre">Service</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#using-a-fake-context-to-emulate-an-incoming-request">Using a fake context to emulate an incoming request</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-production-checklist.html">Production checklist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-zipkin.html">Zipkin integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-zookeeper.html">Service discovery with ZooKeeper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-saml.html">SAML Single Sign-On</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-spring-webflux-integration.html">Using Armeria with Spring WebFlux</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="advanced.html">Advanced topics</a> &raquo;</li>
+        
+      <li>Unit-testing <code class="docutils literal notranslate"><span class="pre">Client</span></code> and <code class="docutils literal notranslate"><span class="pre">Service</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/advanced-unit-testing.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="unit-testing-client-and-service">
+<span id="advanced-unit-testing"></span><h1>Unit-testing <code class="docutils literal notranslate"><span class="pre">Client</span></code> and <code class="docutils literal notranslate"><span class="pre">Service</span></code><a class="headerlink" href="#unit-testing-client-and-service" title="Permalink to this headline">¶</a></h1>
+<p>A unit test of a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Client.html">Client</a></code> or a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code> will require you to prepare two objects:</p>
+<ul class="simple">
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ClientRequestContext.html">ClientRequestContext</a></code> or <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServiceRequestContext.html">ServiceRequestContext</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpRequest.html">HttpRequest</a></code> or <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/RpcRequest.html">RpcRequest</a></code></p></li>
+</ul>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ClientRequestContext.html">ClientRequestContext</a></code> or <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServiceRequestContext.html">ServiceRequestContext</a></code> is a more complex object with many properties than
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpRequest.html">HttpRequest</a></code> or <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/RpcRequest.html">RpcRequest</a></code>, and thus Armeria provides the API dedicated to building a fake context
+object easily:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import org.junit.Before;
+import org.junit.Test;
+
+import com.linecorp.armeria.common.HttpRequest;
+import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.AggregatedHttpResponse;
+import com.linecorp.armeria.client.ClientRequestContext;
+import com.linecorp.armeria.server.ServiceRequestContext;
+
+public class MyJUnit4Test {
+
+    private MyClient client;
+    private MyService service;
+
+    @Before
+    public void setUp() {
+        client = ...;
+        service = ...;
+    }
+
+    @Test
+    public void testClient() throws Exception {
+        // Given
+        HttpRequest req = HttpRequest.of(HttpMethod.GET, &quot;/greet?name=foo&quot;);
+        ClientRequestContext cctx = ClientRequestContext.of(req);
+
+        // When
+        HttpResponse res = client.execute(cctx, req);
+
+        // Then
+        AggregatedHttpResponse aggregatedRes = res.aggregate().get();
+        assertEquals(200, aggregatedRes.status().code());
+    }
+
+    @Test
+    public void testService() throws Exception {
+        // Given
+        HttpRequest req = HttpRequest.of(HttpMethod.POST, &quot;/greet&quot;,
+                                         MediaType.JSON_UTF_8,
+                                         &quot;{ \&quot;name\&quot;: \&quot;foo\&quot; }&quot;);
+        ServiceRequestContext sctx = ServiceRequestContext.of(req);
+
+        // When
+        HttpResponse res = service.serve(sctx, req);
+
+        // Then
+        AggregatedHttpResponse aggregatedRes = res.aggregate().get();
+        assertEquals(200, aggregatedRes.status().code());
+    }
+}</pre></div>
+</div>
+<p>Although the fake context returned by <code class="docutils literal notranslate"><span class="pre">ClientRequestContext.of()</span></code> and <code class="docutils literal notranslate"><span class="pre">ServiceRequestContext.of()</span></code> will
+provide sensible defaults, you can override its default properties using a builder:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.Map;
+
+import com.linecorp.armeria.common.SessionProtocol;
+import com.linecorp.armeria.client.ClientRequestContextBuilder;
+import com.linecorp.armeria.server.RoutingResult;
+import com.linecorp.armeria.server.ServiceRequestContextBuilder;
+
+HttpRequest req = HttpRequest.of(...);
+
+ClientRequestContext cctx =
+        ClientRequestContextBuilder.of(req)
+                                   .sessionProtocol(SessionProtocol.H1C)
+                                   .remoteAddress(new InetSocketAddress(&quot;192.168.0.2&quot;, 443))
+                                   .build();
+
+RoutingResult routingResult =
+        RoutingResult.builder()
+                     .path(&quot;/mapped/path&quot;)                       // Mapped path
+                     .query(&quot;foo=bar&amp;baz=qux&quot;)                   // Query string
+                     .pathParams(Map.of(&quot;pathParam1&quot;, &quot;value1&quot;,  // Path parameters
+                                        &quot;pathParam2&quot;, &quot;value2&quot;))
+                     .build();
+
+ServiceRequestContext sctx =
+        ServiceRequestContextBuilder.of(req)
+                                    .clientAddress(InetAddress.getByName(&quot;192.168.1.2&quot;))
+                                    .routingResult(routingResult);
+                                    .build();</pre></div>
+</div>
+<div class="section" id="using-a-fake-context-to-emulate-an-incoming-request">
+<h2>Using a fake context to emulate an incoming request<a class="headerlink" href="#using-a-fake-context-to-emulate-an-incoming-request" title="Permalink to this headline">¶</a></h2>
+<p>It is usually not necessary to build a context object by yourself except when writing a unit test,
+because Armeria will always create a context object for you. However, you may need to build a fake context and
+invoke your request processing pipeline with it when you want to handle the requests received via other sources
+such as:</p>
+<ul class="simple">
+<li><p>Non-Armeria services</p></li>
+<li><p>Non-HTTP protocols, e.g. Kafka and STOMP</p></li>
+<li><p>Timers, i.e. Trigger a certain request every N minutes.</p></li>
+</ul>
+<p>The following example shows how to emit a fake request every minute:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import com.linecorp.armeria.server.HttpService;
+
+ScheduledExecutorService executor = ...;
+HttpService sessionManagementService = (ctx, req) -&gt; ...;
+
+// Send a session expiration request to the session management service
+// every minute.
+executor.scheduleWithFixedDelay(() -&gt; {
+    HttpRequest req = HttpRequest.of(HttpMethod.POST, &quot;/expire_stall_sessions&quot;);
+    ServiceRequestContext ctx = ServiceRequestContext.of(req);
+    try {
+        HttpResponse res = sessionManagementService.servce(ctx, req);
+        AggregatedHttpResponse aggregatedRes = res.aggregate().get();
+        if (aggregatedRes.status().code() != 200) {
+            System.err.println(&quot;Failed to expire stall sessions: &quot; +
+                               aggregatedRes);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}, 1, 1, TimeUnit.MINUTES);</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="advanced-production-checklist.html" class="btn btn-neutral float-right" title="Production checklist" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="advanced-structured-logging-kafka.html" class="btn btn-neutral float-left" title="Structured logging with Kafka" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

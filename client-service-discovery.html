@@ -1,0 +1,519 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Client-side load balancing and service discovery &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Advanced topics" href="advanced.html" />
+    <link rel="prev" title="Circuit breaker" href="client-circuit-breaker.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Writing a server</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="client.html">Writing a client</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="client-http.html">Calling an HTTP service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-thrift.html">Calling a Thrift service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-grpc.html">Calling a gRPC service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-decorator.html">Decorating a client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-retrofit.html">Retrofit integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-custom-http-headers.html">Sending custom HTTP headers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-timeouts.html">Overriding client timeouts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-retry.html">Automatic retry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-circuit-breaker.html">Circuit breaker</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Client-side load balancing and service discovery</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-an-endpointgroup">Creating an <code class="docutils literal notranslate"><span class="pre">EndpointGroup</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#registering-an-endointgroup">Registering an <code class="docutils literal notranslate"><span class="pre">EndointGroup</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#connecting-to-an-endpointgroup">Connecting to an <code class="docutils literal notranslate"><span class="pre">EndpointGroup</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cleaning-up-an-endpointgroup">Cleaning up an <code class="docutils literal notranslate"><span class="pre">EndpointGroup</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#removing-unhealthy-endpoint-with-healthcheckedendpointgroup">Removing unhealthy <code class="docutils literal notranslate"><span class="pre">Endpoint</span></code> with <code class="docutils literal notranslate"><span class="pre">HealthCheckedEndpointGroup</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dns-based-service-discovery-with-dnsendpointgroup">DNS-based service discovery with <code class="docutils literal notranslate"><span class="pre">DnsEndpointGroup</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#zookeeper-based-service-discovery-with-zookeeperendpointgroup">ZooKeeper-based service discovery with <code class="docutils literal notranslate"><span class="pre">ZooKeeperEndpointGroup</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="client.html">Writing a client</a> &raquo;</li>
+        
+      <li>Client-side load balancing and service discovery</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/client-service-discovery.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="client-side-load-balancing-and-service-discovery">
+<span id="client-service-discovery"></span><h1>Client-side load balancing and service discovery<a class="headerlink" href="#client-side-load-balancing-and-service-discovery" title="Permalink to this headline">¶</a></h1>
+<p>You can configure an Armeria client to distribute its requests to more than one server autonomously, unlike
+traditional server-side load balancing where the requests go through a dedicated load balancer such as
+<a class="reference external" href="https://en.wikipedia.org/wiki/Multilayer_switch#Layer_4%E2%80%937_switch,_web_switch,_or_content_switch">L4 and L7 switches</a>.</p>
+<p>There are 4 elements involved in client-side load balancing in Armeria:</p>
+<ul class="simple">
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a></code> represents an individual host (with an optional port number) and its weight.</p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code> represents a set of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a><span class="code api-reference plural-suffix">s</span></code>.</p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroupRegistry.html">EndpointGroupRegistry</a></code> is a global registry of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a><span class="code api-reference plural-suffix">s</span></code> where each
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code> is identified by its unique name.</p></li>
+<li><p>A user specifies the target group name in the authority part of a URI,
+e.g. <code class="docutils literal notranslate"><span class="pre">http://group:my_group/</span></code> where <code class="docutils literal notranslate"><span class="pre">my_group</span></code> is the group name, prefixed with <code class="docutils literal notranslate"><span class="pre">group:</span></code>.</p></li>
+</ul>
+<p class="plantuml">
+<img src="_images/plantuml-6bf3b37d4affaaf66a71e7aaefd359e4860e517f.png" alt="&#64;startuml
+hide empty members
+
+class EndpointGroupRegistry &lt;&lt;singleton&gt;&gt; {
+    groups : Map&lt;String, EndpointGroup&gt;
+}
+
+class EndpointGroup {
+    endpoints : Set&lt;Endpoint&gt;
+}
+
+class Endpoint {
+    host : String
+    port : int
+    weight : int
+}
+
+EndpointGroupRegistry o-right- &quot;*&quot; EndpointGroup
+EndpointGroup o-right- &quot;*&quot; Endpoint
+&#64;enduml"/>
+</p>
+<div class="section" id="creating-an-endpointgroup">
+<span id="creating-endpoint-group"></span><h2>Creating an <code class="docutils literal notranslate"><span class="pre">EndpointGroup</span></code><a class="headerlink" href="#creating-an-endpointgroup" title="Permalink to this headline">¶</a></h2>
+<p>There are various <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code> implementations provided out of the box, but let’s start simple with
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/StaticEndpointGroup.html">StaticEndpointGroup</a></code> which always yields a pre-defined set of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a><span class="code api-reference plural-suffix">s</span></code> specified
+at construction time:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// Create a group of well-known search engine endpoints.
+EndpointGroup searchEngineGroup = new StaticEndpointGroup(
+        Endpoint.of(&quot;www.google.com&quot;, 443),
+        Endpoint.of(&quot;www.bing.com&quot;, 443),
+        Endpoint.of(&quot;duckduckgo.com&quot;, 443);
+
+List&lt;Endpoint&gt; endpoints = searchEngineGroup.endpoints();
+assert endpoints.contains(Endpoint.of(&quot;www.google.com&quot;, 443));
+assert endpoints.contains(Endpoint.of(&quot;www.bing.com&quot;, 443));
+assert endpoints.contains(Endpoint.of(&quot;duckduckgo.com&quot;, 443));</pre></div>
+</div>
+</div>
+<div class="section" id="registering-an-endointgroup">
+<h2>Registering an <code class="docutils literal notranslate"><span class="pre">EndointGroup</span></code><a class="headerlink" href="#registering-an-endointgroup" title="Permalink to this headline">¶</a></h2>
+<p>An <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code> becomes visible by a client such as <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/HttpClient.html">HttpClient</a></code> only after it’s registered in
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroupRegistry.html">EndpointGroupRegistry</a></code>. You need to specify 2 more elements to register an <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code>:</p>
+<ul class="simple">
+<li><p>The name of the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code></p></li>
+<li><p>An <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointSelectionStrategy.html">EndpointSelectionStrategy</a></code> that determines which <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a></code> is used for each request</p>
+<ul>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">EndpointSelectionStrategy.WEIGHTED_ROUND_ROBIN</span></code> for weighted round robin.</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">EndpointSelectionStrategy.ROUND_ROBIN</span></code> for unweighted round robin.</p></li>
+<li><p>Use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/StickyEndpointSelectionStrategy.html">StickyEndpointSelectionStrategy</a></code> if you want to pin the requests based on a criteria
+such as a request parameter value.</p></li>
+<li><p>You can implement your own <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointSelectionStrategy.html">EndpointSelectionStrategy</a></code>.</p></li>
+</ul>
+</li>
+</ul>
+<p>The following example registers the <code class="docutils literal notranslate"><span class="pre">searchEngineGroup</span></code> we created at <a class="reference internal" href="#creating-endpoint-group"><span class="std std-ref">Creating an EndpointGroup</span></a>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">EndpointGroupRegistry.register(&quot;search_engines&quot;, searchEngineGroup,
+                               EndpointSelectionStrategy.WEIGHTED_ROUND_ROBIN);
+
+assert EndpointGroupRegistry.get(&quot;search_engines&quot;) == searchEngineGroup;</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can create an <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a></code> with non-default weight using <code class="docutils literal notranslate"><span class="pre">withWeight()</span></code> method:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// The default weight is 1000.
+Endpoint endpointWithDefaultWeight = Endpoint.of(&quot;foo.com&quot;, 8080);
+Endpoint endpointWithCustomWeight = endpointWithDefaultWeight.withWeight(1500);
+assert endpointWithDefaultWeight.weight() == 1000;
+assert endpointWithCustomWeight.weight() == 1500;</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="connecting-to-an-endpointgroup">
+<h2>Connecting to an <code class="docutils literal notranslate"><span class="pre">EndpointGroup</span></code><a class="headerlink" href="#connecting-to-an-endpointgroup" title="Permalink to this headline">¶</a></h2>
+<p>Once an <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code> is registered, you can use its name in the authority part of a URI:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// Create an HTTP client that sends requests to the &#x27;search_engines&#x27; group.
+HttpClient client = HttpClient.of(&quot;https://group:search_engines/&quot;);
+
+// Send a GET request to each search engine.
+List&lt;CompletableFuture&lt;?&gt;&gt; futures = new ArrayList&lt;&gt;();
+for (int i = 0; i &lt; 3; i++) {
+    final HttpResponse res = client.get(&quot;/&quot;);
+    final CompletableFuture&lt;AggregatedHttpResponse&gt; f = res.aggregate();
+    futures.add(f.thenRun(() -&gt; {
+        // And print the response.
+        System.err.println(f.getNow(null));
+    }));
+}
+
+// Wait until all GET requests are finished.
+CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();</pre></div>
+</div>
+</div>
+<div class="section" id="cleaning-up-an-endpointgroup">
+<span id="cleaning-up-endpoint-group"></span><h2>Cleaning up an <code class="docutils literal notranslate"><span class="pre">EndpointGroup</span></code><a class="headerlink" href="#cleaning-up-an-endpointgroup" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code> extends <code class="docutils literal notranslate"><span class="pre">java.lang.AutoCloseable</span></code>, which means you need to call the <code class="docutils literal notranslate"><span class="pre">close()</span></code>
+method once you are done using it, usually when your application terminates:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// Unregister the group from the registry.
+EndpointGroupRegistry.unregister(&quot;search_engines&quot;);
+// Release all resources claimed by the group.
+searchEngines.close();</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">close()</span></code> is a no-op for some <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code> implementations, but not all implementations are so,
+especially those which updates the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a></code> list dynamically, such as refreshing the list periodically.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>An <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code>, whose <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a><span class="code api-reference plural-suffix">s</span></code> change even after it’s instantiated and registered,
+is called <em>dynamic endpoint group</em>.</p>
+</div>
+</div>
+<div class="section" id="removing-unhealthy-endpoint-with-healthcheckedendpointgroup">
+<h2>Removing unhealthy <code class="docutils literal notranslate"><span class="pre">Endpoint</span></code> with <code class="docutils literal notranslate"><span class="pre">HealthCheckedEndpointGroup</span></code><a class="headerlink" href="#removing-unhealthy-endpoint-with-healthcheckedendpointgroup" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/healthcheck/HealthCheckedEndpointGroup.html">HealthCheckedEndpointGroup</a></code> decorates an existing <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code> to filter out the unhealthy
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a><span class="code api-reference plural-suffix">s</span></code> from it so that a client has less chance of sending its requests to the unhealthy
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a><span class="code api-reference plural-suffix">s</span></code>. It determines the healthiness by sending so called ‘health check request’ to each
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a></code>, which is by default a simple <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> request to a certain path. If an <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a></code>
+responds with non-200 status code or does not respond in time, it will be marked as unhealthy and thus
+be removed from the list.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// Create an EndpointGroup with 2 Endpoints.
+StaticEndpointGroup group = new StaticEndpointGroup(
+    Endpoint.of(&quot;192.168.0.1&quot;, 80),
+    Endpoint.of(&quot;192.168.0.2&quot;, 80));
+
+// Decorate the EndpointGroup with HealthCheckedEndpointGroup
+// that sends HTTP health check requests to &#x27;/internal/l7check&#x27; every 10 seconds.
+HealthCheckedEndpointGroup healthCheckedGroup =
+        HealthCheckedEndpointGroup.builder(group, &quot;/internal/l7check&quot;)
+                                  .protocol(SessionProtocol.HTTP)
+                                  .retryInterval(Duration.ofSeconds(10))
+                                  .build();
+
+// Wait until the initial health check is finished.
+healthCheckedGroup.awaitInitialEndpoints();
+
+// Register the health-checked group.
+EndpointGroupRegistry.register(&quot;my-group&quot;, healthCheckedGroup);</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can decorate <em>any</em> <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code> implementations with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/healthcheck/HealthCheckedEndpointGroup.html">HealthCheckedEndpointGroup</a></code>,
+including what we will explain later in this page.</p>
+</div>
+</div>
+<div class="section" id="dns-based-service-discovery-with-dnsendpointgroup">
+<h2>DNS-based service discovery with <code class="docutils literal notranslate"><span class="pre">DnsEndpointGroup</span></code><a class="headerlink" href="#dns-based-service-discovery-with-dnsendpointgroup" title="Permalink to this headline">¶</a></h2>
+<p>Armeria provides 3 DNS-based <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/EndpointGroup.html">EndpointGroup</a></code> implementations:</p>
+<ul class="simple">
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/dns/DnsAddressEndpointGroup.html">DnsAddressEndpointGroup</a></code> that retrieves the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a></code> list from <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">AAAA</span></code> records</p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/dns/DnsServiceEndpointGroup.html">DnsServiceEndpointGroup</a></code> that retrieves the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a></code> list from <code class="docutils literal notranslate"><span class="pre">SRV</span></code> records</p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/dns/DnsTextEndpointGroup.html">DnsTextEndpointGroup</a></code> that retrieves the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a></code> list from <code class="docutils literal notranslate"><span class="pre">TXT</span></code> records</p></li>
+</ul>
+<p>They refresh the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a></code> list automatically, respecting TTL values, and retry when DNS queries fail.</p>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/dns/DnsAddressEndpointGroup.html">DnsAddressEndpointGroup</a></code> is useful when accessing an external service with multiple public IP addresses:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">DnsAddressEndpointGroup group =
+        new DnsAddressEndpointGroupBuilder(&quot;www.google.com&quot;)
+                // Refresh more often than every 10 seconds and
+                // less often than every 60 seconds even if DNS server asks otherwise.
+                .ttl(/* minTtl */ 10, /* maxTtl */ 60)
+                .build();
+
+// Wait until the initial DNS queries are finished.
+group.awaitInitialEndpoints();</pre></div>
+</div>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/dns/DnsServiceEndpointGroup.html">DnsServiceEndpointGroup</a></code> is useful when accessing an internal service with
+<a class="reference external" href="https://en.wikipedia.org/wiki/SRV_record">SRV records</a>, which is often found in modern container
+environments that leverage DNS for service discovery such as Kubernetes:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">DnsServiceEndpointGroup group =
+        new DnsServiceEndpointGroupBuilder(&quot;_http._tcp.example.com&quot;)
+                // Custom backoff strategy.
+                .backoff(Backoff.exponential(1000, 16000).withJitter(0.3))
+                .build();
+
+// Wait until the initial DNS queries are finished.
+group.awaitInitialEndpoints();</pre></div>
+</div>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/endpoint/dns/DnsTextEndpointGroup.html">DnsTextEndpointGroup</a></code> is useful if you need to represent your <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Endpoint.html">Endpoint</a><span class="code api-reference plural-suffix">s</span></code> in a non-standard
+form:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// A mapping function must be specified.
+DnsTextEndpointGroup group = DnsTextEndpointGroup.of(&quot;example.com&quot;, (byte[] text) -&gt; {
+    Endpoint e = /* Convert &#x27;text&#x27; into an Endpoint here. */;
+    return e
+});
+
+// Wait until the initial DNS queries are finished.
+group.awaitInitialEndpoints();</pre></div>
+</div>
+</div>
+<div class="section" id="zookeeper-based-service-discovery-with-zookeeperendpointgroup">
+<h2>ZooKeeper-based service discovery with <code class="docutils literal notranslate"><span class="pre">ZooKeeperEndpointGroup</span></code><a class="headerlink" href="#zookeeper-based-service-discovery-with-zookeeperendpointgroup" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference internal" href="advanced-zookeeper.html#advanced-zookeeper"><span class="std std-ref">Service discovery with ZooKeeper</span></a>.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="advanced.html" class="btn btn-neutral float-right" title="Advanced topics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="client-circuit-breaker.html" class="btn btn-neutral float-left" title="Circuit breaker" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

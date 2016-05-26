@@ -1,0 +1,566 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Running a gRPC service &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Running a Thrift service" href="server-thrift.html" />
+    <link rel="prev" title="Decorating a service" href="server-decorator.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="server.html">Writing a server</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="server-basics.html">Server basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-decorator.html">Decorating a service</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Running a gRPC service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#grpcservice"><code class="docutils literal notranslate"><span class="pre">GrpcService</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#decorating-a-grpcservice">Decorating a <code class="docutils literal notranslate"><span class="pre">GrpcService</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">gRPC-Web</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#unframed-requests">Unframed requests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#blocking-service-implementation">Blocking service implementation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exception-propagation">Exception propagation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#server-reflection">Server Reflection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="server-thrift.html">Running a Thrift service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-docservice.html">Browsing and invoking services with <code class="docutils literal notranslate"><span class="pre">DocService</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-annotated-service.html">Annotated services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-http-file.html">Serving static files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-servlet.html">Embedding a servlet container</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-access-log.html">Writing an access log</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-cors.html">Configuring CORS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-sse.html">Serving Server-Sent Events</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="server.html">Writing a server</a> &raquo;</li>
+        
+      <li>Running a gRPC service</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/server-grpc.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="running-a-grpc-service">
+<span id="server-grpc"></span><h1>Running a gRPC service<a class="headerlink" href="#running-a-grpc-service" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Visit <a class="reference external" href="https://github.com/line/armeria-examples">armeria-examples</a> to find a fully working example.</p>
+</div>
+<p>Let’s assume we have the following <a class="reference external" href="https://grpc.io/">gRPC</a> service definition:</p>
+<div class="highlight-protobuf notranslate"><div class="highlight hljs"><pre class="protobuf">syntax = &quot;proto3&quot;;
+
+package grpc.hello;
+
+option java_package = &quot;com.example.grpc.hello&quot;;
+
+service HelloService {
+  rpc Hello (HelloRequest) returns (HelloReply) {}
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloReply {
+  string message = 1;
+}</pre></div>
+</div>
+<p>The Protobuf compiler will produce some Java code under the <code class="docutils literal notranslate"><span class="pre">com.example.grpc.hello</span></code> package.
+The most noteworthy one is <code class="docutils literal notranslate"><span class="pre">HelloServiceGrpc.java</span></code> which defines the base service class we will implement:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class HelloServiceGrpc {
+    ...
+    public static abstract class HelloServiceImplBase implements BindableService {
+        public void hello(HelloRequest req, StreamObserver&lt;HelloReply&gt; responseObserver) {
+            asyncUnimplementedUnaryCall(METHOD_HELLO, responseObserver);
+        }
+        ...
+    }
+    ...
+}</pre></div>
+</div>
+<p>Our implementation would look like the following:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyHelloService extends HelloServiceGrpc.HelloServiceImplBase {
+    @Override
+    public void hello(HelloRequest req, StreamObserver&lt;HelloReply&gt; responseObserver) {
+        HelloReply reply = HelloReply.newBuilder()
+                                     .setMessage(&quot;Hello, &quot; + req.getName() + &#x27;!&#x27;)
+                                     .build();
+        responseObserver.onNext(reply);
+        responseObserver.onCompleted();
+    }
+}</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is recommended to use the build plugin as explained in <a class="reference external" href="https://github.com/grpc/grpc-java/blob/master/README.md#download">the gRPC-Java README</a> rather than
+running <code class="docutils literal notranslate"><span class="pre">protoc</span></code> manually.</p>
+</div>
+<div class="section" id="grpcservice">
+<h2><code class="docutils literal notranslate"><span class="pre">GrpcService</span></code><a class="headerlink" href="#grpcservice" title="Permalink to this headline">¶</a></h2>
+<p>Once you’ve finished the implementation of the service, you need to build a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcService.html">GrpcService</a></code> using
+a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcServiceBuilder.html">GrpcServiceBuilder</a></code> and add it to the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServerBuilder.html">ServerBuilder</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.Server;
+import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.server.grpc.GrpcServiceBuilder;
+
+ServerBuilder sb = new ServerBuilder();
+...
+sb.service(new GrpcServiceBuilder().addService(new MyHelloService())
+                                   .build());
+...
+Server server = sb.build();
+server.start();</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We bound the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcService.html">GrpcService</a></code> without specifying any path. It is because <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcService.html">GrpcService</a></code>
+implements <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServiceWithRoutes.html">ServiceWithRoutes</a></code>, which dynamically provides <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Route.html">Route</a><span class="code api-reference plural-suffix">s</span></code> by itself.</p>
+</div>
+</div>
+<div class="section" id="decorating-a-grpcservice">
+<span id="server-grpc-decorator"></span><h2>Decorating a <code class="docutils literal notranslate"><span class="pre">GrpcService</span></code><a class="headerlink" href="#decorating-a-grpcservice" title="Permalink to this headline">¶</a></h2>
+<p>Unlike a usual Armeria <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code>, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcService.html">GrpcService</a></code> implements a special interface called
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServiceWithRoutes.html">ServiceWithRoutes</a></code>. Therefore, it is recommended to decorate a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcService.html">GrpcService</a></code> by specifying
+decorator functions as extra parameters rather than using <code class="docutils literal notranslate"><span class="pre">Service.decorate()</span></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.logging.LoggingService;
+
+ServerBuilder sb = new ServerBuilder();
+...
+sb.service(new GrpcServiceBuilder().addService(new MyHelloService())
+                                   .build(),
+           LoggingService.newDecorator());
+...
+Server server = sb.build();
+server.start();</pre></div>
+</div>
+<p>See <a class="reference internal" href="server-decorator.html#server-decorator-service-with-routes"><span class="std std-ref">Decorating ServiceWithRoutes</span></a> for more information about <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServiceWithRoutes.html">ServiceWithRoutes</a></code>.</p>
+</div>
+<div class="section" id="id1">
+<h2><code class="docutils literal notranslate"><span class="pre">gRPC-Web</span></code><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcService.html">GrpcService</a></code> supports the <a class="reference external" href="https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md">gRPC-Web</a> protocol, a small modification to the <a class="reference external" href="https://grpc.io/">gRPC</a> wire format
+that can be used from a browser. To enable it for a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcService.html">GrpcService</a></code>, add the web formats from
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/grpc/GrpcSerializationFormats.html">GrpcSerializationFormats</a></code> to the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcServiceBuilder.html">GrpcServiceBuilder</a></code>. It is usually convenient
+to just pass <code class="docutils literal notranslate"><span class="pre">GrpcSerializationFormats.values()</span></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.grpc.GrpcSerializationFormats;
+
+ServerBuilder sb = new ServerBuilder();
+...
+sb.service(new GrpcServiceBuilder().addService(new MyHelloService())
+                                   .supportedSerializationFormats(GrpcSerializationFormats.values())
+                                   .build());
+...
+Server server = sb.build();
+server.start();</pre></div>
+</div>
+<p>The server will support both native <a class="reference external" href="https://grpc.io/">gRPC</a> and <a class="reference external" href="https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md">gRPC-Web</a> from the same endpoint. Use the unofficial
+<a class="reference external" href="https://github.com/improbable-eng/grpc-web">gRPC-Web-Client</a> to access the service from a browser. <a class="reference external" href="https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md">gRPC-Web</a> does not support RPC methods with streaming
+requests.</p>
+<p>If the origin of the Javascript and API server are different, <a class="reference external" href="https://github.com/improbable-eng/grpc-web">gRPC-Web-Client</a> first sends <code class="docutils literal notranslate"><span class="pre">preflight</span></code>
+requests by the HTTP <code class="docutils literal notranslate"><span class="pre">OPTIONS</span></code> method, in order to determine whether the actual request is safe to send
+in terms of CORS. Armeria provides <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/cors/CorsService.html">CorsService</a></code> to handle this requests, so you need to decorate it when
+you build a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcService.html">GrpcService</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.grpc.GrpcHeaderNames;
+import com.linecorp.armeria.server.cors.CorsServiceBuilder;
+
+ServerBuilder sb = new ServerBuilder();
+...
+
+final CorsServiceBuilder corsBuilder =
+        CorsServiceBuilder.forOrigin(&quot;http://foo.com&quot;)
+                          .allowRequestMethods(HttpMethod.POST) // Allow POST method.
+                          // Allow Content-type and X-GRPC-WEB headers.
+                          .allowRequestHeaders(HttpHeaderNames.CONTENT_TYPE,
+                                               HttpHeaderNames.of(&quot;X-GRPC-WEB&quot;))
+                          // Expose trailers of the HTTP response to the client.
+                          .exposeHeaders(GrpcHeaderNames.GRPC_STATUS,
+                                         GrpcHeaderNames.GRPC_MESSAGE,
+                                         GrpcHeaderNames.ARMERIA_GRPC_THROWABLEPROTO_BIN);
+
+sb.service(new GrpcServiceBuilder().addService(new MyHelloService())
+                                   .supportedSerializationFormats(GrpcSerializationFormats.values())
+                                   .build(),
+           corsBuilder.newDecorator(),
+           LoggingService.newDecorator());
+...
+Server server = sb.build();
+server.start();</pre></div>
+</div>
+<p>Please refer to <a class="reference internal" href="server-cors.html#server-cors"><span class="std std-ref">Configuring CORS</span></a> for more information.</p>
+</div>
+<div class="section" id="unframed-requests">
+<h2>Unframed requests<a class="headerlink" href="#unframed-requests" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcService.html">GrpcService</a></code> supports serving unary RPC methods (no streaming request or response) without
+<a class="reference external" href="https://grpc.io/">gRPC</a> wire format framing. This can be useful for gradually migrating an existing HTTP POST based API to <a class="reference external" href="https://grpc.io/">gRPC</a>.
+As <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcService.html">GrpcService</a></code> supports both binary protobuf and <a class="reference external" href="https://developers.google.com/protocol-buffers/docs/proto3#json">Protobuf-JSON</a>, either legacy protobuf or JSON APIs
+can be used.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">ServerBuilder sb = new ServerBuilder();
+...
+sb.service(new GrpcServiceBuilder().addService(new MyHelloService())
+                                   .enableUnframedRequests(true)
+                                   // Needed to support JSON in addition to binary
+                                   .supportedSerializationFormats(GrpcSerializationFormats.PROTO,
+                                                                  GrpcSerializationFormats.JSON)
+                                   .build());
+...
+Server server = sb.build();
+server.start();</pre></div>
+</div>
+<p>This service’s unary methods can be accessed from any HTTP client at e.g., URL <code class="docutils literal notranslate"><span class="pre">/grpc.hello.HelloService/Hello</span></code>
+with Content-Type <code class="docutils literal notranslate"><span class="pre">application/protobuf</span></code> for binary protobuf POST body or <code class="docutils literal notranslate"><span class="pre">application/json;</span> <span class="pre">charset=utf-8</span></code>
+for JSON POST body.</p>
+</div>
+<div class="section" id="blocking-service-implementation">
+<h2>Blocking service implementation<a class="headerlink" href="#blocking-service-implementation" title="Permalink to this headline">¶</a></h2>
+<p>Unlike upstream gRPC-Java, Armeria does not run service logic in a separate thread pool by default. If your
+service implementation requires blocking, either run the individual blocking logic in a thread pool, wrap the
+entire service implementation in <code class="docutils literal notranslate"><span class="pre">RequestContext.current().blockingTaskExecutor().submit</span></code>, or set
+<code class="docutils literal notranslate"><span class="pre">GrpcServiceBuilder.useBlockingTaskExecutor()</span></code> so the above happens automatically for all service methods
+and lifecycle callbacks.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.RequestContext;
+import com.linecorp.armeria.server.ServiceRequestContext;
+
+public class MyHelloService extends HelloServiceGrpc.HelloServiceImplBase {
+    @Override
+    public void hello(HelloRequest req, StreamObserver&lt;HelloReply&gt; responseObserver) {
+        ServiceRequestContext ctx = (ServiceRequestContext) RequestContext.current();
+        ctx.blockingTaskExecutor().submit(() -&gt; {
+            Thread.sleep(10000);
+            HelloReply reply = HelloReply.newBuilder()
+                                         .setMessage(&quot;Hello, &quot; + req.getName() + &#x27;!&#x27;)
+                                         .build();
+            responseObserver.onNext(reply);
+            responseObserver.onCompleted();
+        });
+    }
+}</pre></div>
+</div>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.RequestContext;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.grpc.GrpcServiceBuilder;
+
+public class MyHelloService extends HelloServiceGrpc.HelloServiceImplBase {
+    @Override
+    public void hello(HelloRequest req, StreamObserver&lt;HelloReply&gt; responseObserver) {
+        Thread.sleep(10000);
+        HelloReply reply = HelloReply.newBuilder()
+                                     .setMessage(&quot;Hello, &quot; + req.getName() + &#x27;!&#x27;)
+                                     .build();
+        responseObserver.onNext(reply);
+        responseObserver.onCompleted();
+    }
+}
+
+ServerBuilder sb = new ServerBuilder();
+sb.service(new GrpcServiceBuilder().addService(new MyHelloService())
+                                   // All service methods will be run within
+                                   // the blocking executor.
+                                   .useBlockingTaskExecutor(true)
+                                   .build());</pre></div>
+</div>
+</div>
+<div class="section" id="exception-propagation">
+<h2>Exception propagation<a class="headerlink" href="#exception-propagation" title="Permalink to this headline">¶</a></h2>
+<p>It can be very useful to enable <code class="docutils literal notranslate"><span class="pre">Flags.verboseResponses()</span></code> in your server by specifying the
+<code class="docutils literal notranslate"><span class="pre">-Dcom.linecorp.armeria.verboseResponses=true</span></code> system property, which will automatically return
+information about an exception thrown in the server to gRPC clients. Armeria clients will automatically
+convert it back into an exception for structured logging, etc. This response will include information about
+the actual source code in the server - make sure it is safe to send such potentially sensitive information
+to all your clients before enabling this flag!</p>
+<p>See more details at <a class="reference internal" href="client-grpc.html#client-grpc"><span class="std std-ref">Calling a gRPC service</span></a>.</p>
+</div>
+<div class="section" id="server-reflection">
+<h2>Server Reflection<a class="headerlink" href="#server-reflection" title="Permalink to this headline">¶</a></h2>
+<p>Armeria supports gRPC server reflection - just add an instance of <code class="docutils literal notranslate"><span class="pre">ProtoReflectionService</span></code> to your server.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import io.grpc.protobuf.services.ProtoReflectionService;
+
+ServerBuilder sb = new ServerBuilder();
+...
+sb.service(new GrpcServiceBuilder().addService(new MyHelloService())
+                                   .addService(ProtoReflectionService.newInstance())
+                                   .build());
+...
+Server server = sb.build();
+server.start();</pre></div>
+</div>
+<p>For more information, see the official <a class="reference external" href="https://github.com/grpc/grpc-java/blob/master/documentation/server-reflection-tutorial.md">gRPC Server Reflection tutorial</a>.</p>
+</div>
+<div class="section" id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="client-grpc.html#client-grpc"><span class="std std-ref">Calling a gRPC service</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="server-thrift.html" class="btn btn-neutral float-right" title="Running a Thrift service" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="server-decorator.html" class="btn btn-neutral float-left" title="Decorating a service" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

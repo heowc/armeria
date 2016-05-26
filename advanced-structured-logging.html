@@ -1,0 +1,800 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Structured logging &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="RequestContext custom attributes" href="advanced-custom-attributes.html" />
+    <link rel="prev" title="Logging contextual information" href="advanced-logging.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Writing a server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="advanced.html">Advanced topics</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="advanced-logging.html">Logging contextual information</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Structured logging</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-properties-can-be-retrieved">What properties can be retrieved?</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#request-properties">Request properties</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#response-properties">Response properties</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#client-connection-timing-properties">Client connection timing properties</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#availability-of-properties">Availability of properties</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#availability-of-client-timing-properties">Availability of client timing properties</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#set-serializationformat-and-requestcontent-early-if-possible">Set <code class="docutils literal notranslate"><span class="pre">serializationFormat</span></code> and <code class="docutils literal notranslate"><span class="pre">requestContent</span></code> early if possible</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enabling-content-previews">Enabling content previews</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nested-log">Nested log</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-custom-attributes.html"><code class="docutils literal notranslate"><span class="pre">RequestContext</span></code> custom attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-structured-logging-kafka.html">Structured logging with Kafka</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-unit-testing.html">Unit-testing <code class="docutils literal notranslate"><span class="pre">Client</span></code> and <code class="docutils literal notranslate"><span class="pre">Service</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-production-checklist.html">Production checklist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-zipkin.html">Zipkin integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-zookeeper.html">Service discovery with ZooKeeper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-saml.html">SAML Single Sign-On</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-spring-webflux-integration.html">Using Armeria with Spring WebFlux</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="advanced.html">Advanced topics</a> &raquo;</li>
+        
+      <li>Structured logging</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/advanced-structured-logging.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="structured-logging">
+<span id="advanced-structured-logging"></span><h1>Structured logging<a class="headerlink" href="#structured-logging" title="Permalink to this headline">¶</a></h1>
+<p>Although traditional logging is a useful tool to diagnose the behavior of an application, it has its own
+problem; the resulting log messages are not always machine-friendly. This section explains the Armeria API for
+retrieving the information collected during request life cycle in a machine-friendly way.</p>
+<div class="section" id="what-properties-can-be-retrieved">
+<h2>What properties can be retrieved?<a class="headerlink" href="#what-properties-can-be-retrieved" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/RequestLog.html">RequestLog</a></code> provides various properties recorded while handling a request:</p>
+<div class="section" id="request-properties">
+<h3>Request properties<a class="headerlink" href="#request-properties" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">requestStartTimeMicros</span></code></p></td>
+<td><p>when the request processing started, in microseconds since the
+epoch (01-Jan-1970 00:00:00 UTC)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">requestDurationNanos</span></code></p></td>
+<td><p>the duration took to process the request completely</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">requestLength</span></code></p></td>
+<td><p>the byte length of the request content</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">requestCause</span></code></p></td>
+<td><p>the cause of request processing failure (if any)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sessionProtocol</span></code></p></td>
+<td><p>the protocol of the connection (e.g. <code class="docutils literal notranslate"><span class="pre">H2C</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">serializationFormat</span></code></p></td>
+<td><p>the serialization format of the content (e.g. <code class="docutils literal notranslate"><span class="pre">tbinary</span></code>, <code class="docutils literal notranslate"><span class="pre">none</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">host</span></code></p></td>
+<td><p>the name of the virtual host that serves the request</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">requestHeaders</span></code></p></td>
+<td><p>the HTTP headers of the request.
+the header contains the method (e.g. <code class="docutils literal notranslate"><span class="pre">GET</span></code>, <code class="docutils literal notranslate"><span class="pre">POST</span></code>),
+the path (e.g. <code class="docutils literal notranslate"><span class="pre">/thrift/foo</span></code>),
+the query (e.g. <code class="docutils literal notranslate"><span class="pre">foo=bar&amp;bar=baz</span></code>), the content type, etc.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">requestContent</span></code></p></td>
+<td><p>the serialization-dependent content object of the request.
+<code class="docutils literal notranslate"><span class="pre">ThriftCall</span></code> for Thrift. <code class="docutils literal notranslate"><span class="pre">null</span></code> otherwise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">requestContentPreview</span></code></p></td>
+<td><p>the preview of the request content</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="response-properties">
+<h3>Response properties<a class="headerlink" href="#response-properties" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">responseStartTimeMicros</span></code></p></td>
+<td><p>when the response processing started, in microseconds since the
+epoch (01-Jan-1970 00:00:00 UTC)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">responseDurationNanos</span></code></p></td>
+<td><p>the duration took to process the response completely</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">responseLength</span></code></p></td>
+<td><p>the byte length of the response content</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">responseCause</span></code></p></td>
+<td><p>the cause of response processing failure (if any)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">totalDurationNanos</span></code></p></td>
+<td><p>the duration between the request start and the response end
+(i.e. response time)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">responseHeaders</span></code></p></td>
+<td><p>the HTTP headers of the response.
+the header contains the statusCode (e.g. 404), the content type, etc.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">responseContent</span></code></p></td>
+<td><p>the serialization-dependent content object of the response.
+<code class="docutils literal notranslate"><span class="pre">ThriftReply</span></code> for Thrift. <code class="docutils literal notranslate"><span class="pre">null</span></code> otherwise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">responseContentPreview</span></code></p></td>
+<td><p>the preview of the response content</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="client-connection-timing-properties">
+<h3>Client connection timing properties<a class="headerlink" href="#client-connection-timing-properties" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 39%" />
+<col style="width: 61%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">connectionAcquisitionStartTimeMicros</span></code></p></td>
+<td><p>when the client started to acquire a connection, in microseconds
+since the epoch (01-Jan-1970 00:00:00 UTC)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">connectionAcquisitionDurationNanos</span></code></p></td>
+<td><p>the duration took to get a connection (i.e. the total duration)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dnsResolutionStartTimeMicros</span></code></p></td>
+<td><p>when the client started to resolve a domain name, in microseconds
+since the epoch (01-Jan-1970 00:00:00 UTC), <code class="docutils literal notranslate"><span class="pre">-1</span></code> if DNS lookup
+did not occur</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dnsResolutionDurationNanos</span></code></p></td>
+<td><p>the duration took to resolve a domain name, <code class="docutils literal notranslate"><span class="pre">-1</span></code> if DNS lookup
+did not occur</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">socketConnectStartTimeMicros</span></code></p></td>
+<td><p>when the client started to connect to a remote peer, in
+microseconds since the epoch (01-Jan-1970 00:00:00 UTC), <code class="docutils literal notranslate"><span class="pre">-1</span></code>
+if socket connection attempt did not occur</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">socketConnectDurationNanos</span></code></p></td>
+<td><p>the duration took to connect to a remote peer, <code class="docutils literal notranslate"><span class="pre">-1</span></code> if socket
+connection attempt did not occur</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pendingAcquisitionStartTimeMicros</span></code></p></td>
+<td><p>when the client started to wait for the completion of an existing
+connection attempt, in microseconds since the
+epoch (01-Jan-1970 00:00:00 UTC), <code class="docutils literal notranslate"><span class="pre">-1</span></code> if waiting did not occur</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pendingAcquisitionDurationNanos</span></code></p></td>
+<td><p>the duration took to wait for the completion of an existing
+connection attempt to use one connection in HTTP/2, <code class="docutils literal notranslate"><span class="pre">-1</span></code> if
+waiting did not occur</p></td>
+</tr>
+</tbody>
+</table>
+<p>The total duration is the sum of <code class="docutils literal notranslate"><span class="pre">dnsResolutionDurationNanos</span></code>, <code class="docutils literal notranslate"><span class="pre">socketConnectDurationNanos</span></code> and
+<code class="docutils literal notranslate"><span class="pre">pendingAcquisitionDurationNanos</span></code>. They may or may not occur depending on circumstances.
+These are some of the scenarios how the total duration is composed of:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p>Resolving a domain name and connecting to the remote peer.</p>
+<p class="plantuml">
+<img src="_images/plantuml-642b6cb3c43c601de788719279983e2b147a6a2e.png" alt="&#64;startditaa(--no-separation, --no-shadows)
++---------------------------------------------------------------+                               #1
+:&lt;---------------------connectionAcquisition-------------------&gt;|
++---------------------------------------------------------------+
+:&lt;--------dnsResolution--------&gt;|
++-------------------------------+-------------------------------+
+                                :&lt;--------socketConnect--------&gt;|
+                                +-------------------------------+
+&#64;endditaa"/>
+</p>
+</li>
+</ol>
+<p>2. Waiting for the connection to be established, since there’s an existing connection attempt, to use one
+connection in HTTP/2. (Note that, if you create a client with an IP address, <code class="docutils literal notranslate"><span class="pre">dnsResolution</span></code> did not
+occur. Also note that, there’s no <code class="docutils literal notranslate"><span class="pre">socketConnect</span></code> because the client just waits for the connection and
+uses it.)</p>
+<blockquote>
+<div><p class="plantuml">
+<img src="_images/plantuml-4835289be23539f548bfa49123a3f4e592899745.png" alt="&#64;startditaa(--no-separation, --no-shadows)
++-----------------------------+                                                                 #2
+:&lt;---connectionAcquisition---&gt;|
++-----------------------------+
+:&lt;-----pendingAcquisition----&gt;|
++-----------------------------+
+&#64;enduml"/>
+</p>
+</div></blockquote>
+<p>3. Connecting to the remote peer with the resolved IP address after the existing connection attempt is
+failed.</p>
+<blockquote>
+<div><p class="plantuml">
+<img src="_images/plantuml-4340899724dbf034ca4898a62a1c320da766f334.png" alt="&#64;startditaa(--no-separation, --no-shadows)
++------------------------------------------------------------------------------------------+    #3
+:&lt;-----------------------------------connectionAcquisition--------------------------------&gt;|
++------------------------------------------------------------------------------------------+
+:&lt;--------dnsResolution--------&gt;|
++-------------------------------+--------------------------+
+                                :&lt;---pendingAcquisition---&gt;|
+                                +--------------------------+-------------------------------+
+                                                           :&lt;--------socketConnect--------&gt;|
+                                                           +-------------------------------+
+&#64;endditaa"/>
+</p>
+</div></blockquote>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="availability-of-properties">
+<h2>Availability of properties<a class="headerlink" href="#availability-of-properties" title="Permalink to this headline">¶</a></h2>
+<p>Armeria handles requests and responses in a stream-oriented way, which means that some properties are revealed
+only after the streams are processed to some point. For example, there’s no way to know the <code class="docutils literal notranslate"><span class="pre">requestLength</span></code>
+until the request processing ends. Also, some properties related to the (de)serialization of request content,
+such as <code class="docutils literal notranslate"><span class="pre">serializationFormat</span></code> and <code class="docutils literal notranslate"><span class="pre">requestContent</span></code>, will not be available when request processing just
+started.</p>
+<p>To get notified when a certain set of properties are available, you can add a listener to a <code class="docutils literal notranslate"><span class="pre">RequestLog</span></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpRequest;
+import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.logging.RequestLog;
+import com.linecorp.armeria.common.logging.RequestLogAvailability;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.AbstractHttpService;
+
+public class MyService extends AbstractHttpService {
+    @Override
+    public HttpResponse serve(ServiceRequestContext ctx, HttpRequest req) {
+        final RequestLog log = ctx.log();
+
+        log.addListener(log -&gt; {
+            System.err.println(&quot;Handled a request: &quot; + log);
+        }, RequestLogAvailability.COMPLETE);
+
+        return super.serve(ctx, req);
+    }
+}</pre></div>
+</div>
+<p>Note that <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/RequestLogAvailability.html">RequestLogAvailability</a></code> is specified when adding a listener.
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/RequestLogAvailability.html">RequestLogAvailability</a></code> is an enum that is used to express which <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/RequestLog.html">RequestLog</a></code> properties
+you are interested in. <code class="docutils literal notranslate"><span class="pre">COMPLETE</span></code> will make your listener invoked when all properties are available.</p>
+<div class="section" id="availability-of-client-timing-properties">
+<h3>Availability of client timing properties<a class="headerlink" href="#availability-of-client-timing-properties" title="Permalink to this headline">¶</a></h3>
+<p>On the client side, you can also get the timing information about the related connection attempt. Unlike
+request and response properties, you need to use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ClientConnectionTimings.html">ClientConnectionTimings</a></code> as follows:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.ClientConnectionTimings;
+import com.linecorp.armeria.client.HttpClient;
+import com.linecorp.armeria.client.HttpClientBuilder;
+
+final HttpClient client = new HttpClientBuilder(&quot;http://armeria.com&quot;)
+        .decorator((delegate, ctx, req) -&gt; {
+            ctx.log().addListener(
+                    log -&gt; {
+                        final ClientConnectionTimings timings = ClientConnectionTimings.get(log);
+                        if (timings != null) {
+                            System.err.println(&quot;Connection acquisition duration: &quot; +
+                                               timings.connectionAcquisitionDurationNanos());
+                        }
+                    }, RequestLogAvailability.REQUEST_START); // Can get after a request is started.
+            return delegate.execute(ctx, req);
+        })
+        .build();</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The reason why we used the static method is that the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ClientConnectionTimings.html">ClientConnectionTimings</a></code> is stored using
+the attribute. See <a class="reference internal" href="advanced-custom-attributes.html#advanced-custom-attribute"><span class="std std-ref">RequestContext custom attributes</span></a> for more information.</p>
+</div>
+</div>
+</div>
+<div class="section" id="set-serializationformat-and-requestcontent-early-if-possible">
+<h2>Set <code class="docutils literal notranslate"><span class="pre">serializationFormat</span></code> and <code class="docutils literal notranslate"><span class="pre">requestContent</span></code> early if possible<a class="headerlink" href="#set-serializationformat-and-requestcontent-early-if-possible" title="Permalink to this headline">¶</a></h2>
+<p>Armeria depends on the <code class="docutils literal notranslate"><span class="pre">serializationFormat</span></code> and <code class="docutils literal notranslate"><span class="pre">requestContent</span></code> property to determine whether a request
+is an RPC and what the method name of the call is. If you are sure the request you handle is not an RPC, set
+the <code class="docutils literal notranslate"><span class="pre">serializationFormat</span></code> and <code class="docutils literal notranslate"><span class="pre">requestContent</span></code> property explicitly to <code class="docutils literal notranslate"><span class="pre">NONE</span></code> and <code class="docutils literal notranslate"><span class="pre">null</span></code> so that Armeria
+and other log listeners get the information sooner:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpRequest;
+import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.SerializationFormat;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.HttpService;
+
+public class MyService implements HttpService {
+    @Override
+    public HttpResponse serve(ServiceRequestContext ctx, HttpRequest req) {
+        ctx.logBuilder().serializationFormat(SerializationFormat.NONE);
+        ctx.logBuilder().requestContent(null);
+        ...
+    }
+}</pre></div>
+</div>
+<p>Consider using <code class="docutils literal notranslate"><span class="pre">AbstractHttpService</span></code> which sets the <code class="docutils literal notranslate"><span class="pre">serializationFormat</span></code> and <code class="docutils literal notranslate"><span class="pre">requestContent</span></code>
+automatically for you:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpResponseWriter;
+import com.linecorp.armeria.common.thrift.ThriftSerializationFormats;
+import com.linecorp.armeria.server.AbstractHttpService;
+
+public class MyService extends AbstractHttpService {
+    @Override
+    public void doGet(ServiceRequestContext ctx, HttpRequest req, HttpResponseWriter res) {
+        // serializationFormat and requestContent will be set to NONE and null
+        // automatically when this method returns.
+        ...
+    }
+
+    @Override
+    public void doPost(ServiceRequestContext ctx, HttpRequest req, HttpResponseWriter res) {
+        // Set serializationFormat explicitly.
+        ctx.logBuilder().serializationFormat(ThriftSerializationFormats.BINARY);
+        // This will prevent AbstractHttpService from setting requestContent to null
+        // automatically. You should call RequestLogBuilder.requestContent(...) later
+        // when the content is determined.
+        ctx.logBuilder().deferRequestContent();
+        // Alternatively, you can set requestContent right here:
+        // ctx.logBuilder().requestContent(...);
+        ...
+    }
+}</pre></div>
+</div>
+</div>
+<div class="section" id="enabling-content-previews">
+<h2>Enabling content previews<a class="headerlink" href="#enabling-content-previews" title="Permalink to this headline">¶</a></h2>
+<p>Armeria provides the <code class="docutils literal notranslate"><span class="pre">requestContentPreview</span></code> and <code class="docutils literal notranslate"><span class="pre">responseContentPreview</span></code> properties in <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/RequestLog.html">RequestLog</a></code>
+to retrieve the textual representation of the first N bytes of the request and response content.
+However, the properties are disabled by default due to performance overhead and thus they always return <code class="docutils literal notranslate"><span class="pre">null</span></code>.
+You can enable it when you configure <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Server.html">Server</a></code>, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/VirtualHost.html">VirtualHost</a></code> or <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/Client.html">Client</a></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.ServerBuilder;
+
+ServerBuilder sb = new ServerBuilder();
+...
+// Enable previewing the content with the maximum length of 100 for textual content.
+sb.contentPreview(100);
+...
+sb.virtualHost(&quot;http://example.com&quot;)
+  // In this case, the property of virtual host takes precedence over that of server.
+  .contentPreview(150);
+...
+sb.build();</pre></div>
+</div>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.HttpClientBuilder;
+
+HttpClientBuilder cb = new HttpClientBuilder();
+...
+cb.contentPreview(100);</pre></div>
+</div>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">contentPreview()</span></code> method enables the previews only for textual content
+which meets one of the following cases:</p>
+<ul class="simple">
+<li><p>when its type matches <code class="docutils literal notranslate"><span class="pre">text/*</span></code> or <code class="docutils literal notranslate"><span class="pre">application/x-www-form-urlencoded</span></code>.</p></li>
+<li><p>when its charset has been specified. e.g. application/json; charset=utf-8.</p></li>
+<li><p>when its subtype is <code class="docutils literal notranslate"><span class="pre">xml</span></code> or <code class="docutils literal notranslate"><span class="pre">json</span></code>. e.g. application/xml, application/json.</p></li>
+<li><p>when its subtype ends with <code class="docutils literal notranslate"><span class="pre">+xml</span></code> or <code class="docutils literal notranslate"><span class="pre">+json</span></code>. e.g. application/atom+xml, application/hal+json</p></li>
+</ul>
+<p>You can also customize the previews by specifying your own <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/ContentPreviewerFactory.html">ContentPreviewerFactory</a></code> implementation.
+The following example enables the textual preview of first 100 characters for the content type of <code class="docutils literal notranslate"><span class="pre">text/*</span></code>,
+and the hex dump preview of first 100 bytes for other types:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import io.netty.buffer.ByteBufUtil;
+import com.linecorp.armeria.common.MediaType;
+import com.linecorp.armeria.common.logging.ContentPreviewer;
+
+ServerBuilder sb = new ServerBuilder();
+
+sb.contentPreviewerFactory((ctx, headers) -&gt; {
+    MediaType contentType = headers.contentType();
+    if (contentType != null &amp;&amp; contentType.is(MediaType.ANY_TEXT_TYPE)) {
+        // Produces the textual preview of the first 100 characters.
+        return ContentPreviewer.ofText(100);
+    }
+    // Produces the hex dump of the first 100 bytes.
+    return ContentPreviewer.ofBinary(100, byteBuf -&gt; {
+        // byteBuf has no more than 100 bytes.
+        return ByteBufUtil.hexDump(byteBuf);
+    });
+});</pre></div>
+</div>
+<p>You can write your own <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/ContentPreviewer.html">ContentPreviewer</a></code> to change the way to make the preview, e.g.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">class HexDumpContentPreviewer implements ContentPreviewer {
+    @Nullable
+    private StringBuilder builder = new StringBuilder();
+    @Nullable
+    private String preview;
+
+    @Override
+    public void onHeaders(HttpHeaders headers) {
+        // Invoked when headers of a request or response is received.
+    }
+
+    @Override
+    public void onData(HttpData data) {
+        // Invoked when a new content is received.
+        assert builder != null;
+        builder.append(ByteBufUtil.hexDump(data.array(), data.offset(), data.length()));
+    }
+
+    @Override
+    public boolean isDone() {
+        // If it returns true, no further event is invoked but produce().
+        return preview != null;
+    }
+
+    @Override
+    public String produce() {
+        // Invoked when a request or response ends.
+        if (preview != null) {
+            return preview;
+        }
+        preview = builder.toString();
+        builder = null;
+        return preview;
+    }
+}
+...
+ServerBuilder sb = new ServerBuilder();
+...
+sb.contentPreviewerFactory((ctx, headers) -&gt; new HexDumpContentPreviewer());</pre></div>
+</div>
+</div>
+<div class="section" id="nested-log">
+<span id="id1"></span><h2>Nested log<a class="headerlink" href="#nested-log" title="Permalink to this headline">¶</a></h2>
+<p>When you retry a failed attempt, you might want to record the result of each attempt and to group them under
+a single <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/RequestLog.html">RequestLog</a></code>. A <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/RequestLog.html">RequestLog</a></code> can contain more than one child <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/RequestLog.html">RequestLog</a></code>
+to support this sort of use cases.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.logging.RequestLogBuilder;
+
+RequestLogBuilder.addChild(RequestLog);</pre></div>
+</div>
+<p>If the added <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/RequestLog.html">RequestLog</a></code> is the first child, the request-side log of the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/RequestLog.html">RequestLog</a></code> will
+be propagated to the parent log. You can add as many child logs as you want, but the rest of logs would not
+be affected. If you want to fill the response-side log of the parent log, please invoke:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">RequestLogBuilder.endResponseWithLastChild();</pre></div>
+</div>
+<p>This will propagate the response-side log of the last added child to the parent log. The following diagram
+illustrates how a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/logging/RequestLog.html">RequestLog</a></code> with child logs looks like:</p>
+<p class="plantuml">
+<img src="_images/plantuml-77308ffbcf7f2b77a478813eeab0f78a8a56906d.png" alt="&#64;startditaa(--no-separation, scale=0.85)
+/--------------------------------------------------------------\
+|                                                              |
+|  RequestLog                                                  |
+|                                                              |
+|                             /-----------------------------\  |
+|                             :                             |  |
+|  +----------------------+   |      Child RequestLogs      |  |
+|  |                      |   |        e.g. retries         |  |
+|  |                      |   |                             |  |
+|  |   Request side log   |   |  +-----------------------+  |  |
+|  |                      |   |  | Child #1              |  |  |
+|  |                      |   |  | +-------------------+ |  |  |
+|  |     Copied from      |&lt;-------+ Request side log  | |  |  |
+|  |     the first child  |   :  | +-------------------+ |  |  |
+|  |                      |   |  | : Response side log | |  |  |
+|  |                      |   |  | +-------------------+ |  |  |
+|  +----------------------+   |  +-----------------------+  |  |
+|                             |  | ...                   |  |  |
+|  +----------------------+   |  +-----------------------+  |  |
+|  |                      |   |              .              |  |
+|  |                      |   |              .              |  |
+|  |  Response side log   |   |  +-----------------------+  |  |
+|  |                      |   |  | Child #N              |  |  |
+|  |                      |   |  | +-------------------+ |  |  |
+|  |     Copied from      |   |  | : Request side log  | |  |  |
+|  |     the last child   |   |  | +-------------------+ |  |  |
+|  |                      |&lt;-------+ Response side log | |  |  |
+|  |                      |   :  | +-------------------+ |  |  |
+|  +----------------------+   |  +-----------------------+  |  |
+|                             |                             |  |
+|                             \-----------------------------/  |
+|                                                              |
+\--------------------------------------------------------------/
+&#64;endditaa"/>
+</p>
+<p>You can retrieve the child logs using <code class="docutils literal notranslate"><span class="pre">RequestLog.children()</span></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">final RequestContext ctx = ...;
+ctx.log().addListner(log -&gt; {
+    if (!log.children().isEmpty()) {
+        System.err.println(&quot;A request finished after &quot; + log.children().size() + &quot; attempt(s): &quot; + log);
+    } else {
+        System.err.println(&quot;A request is done: &quot; + log);
+    }
+}, RequestLogAvailability.COMPLETE);</pre></div>
+</div>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code> is a good example that leverages this feature.
+See <a class="reference internal" href="client-retry.html#retry-with-logging"><span class="std std-ref">RetryingClient with logging</span></a> for more information.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="advanced-custom-attributes.html" class="btn btn-neutral float-right" title="RequestContext custom attributes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="advanced-logging.html" class="btn btn-neutral float-left" title="Logging contextual information" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

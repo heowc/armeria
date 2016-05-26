@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Zipkin integration &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Service discovery with ZooKeeper" href="advanced-zookeeper.html" />
+    <link rel="prev" title="Production checklist" href="advanced-production-checklist.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Writing a server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="advanced.html">Advanced topics</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="advanced-logging.html">Logging contextual information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-structured-logging.html">Structured logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-custom-attributes.html"><code class="docutils literal notranslate"><span class="pre">RequestContext</span></code> custom attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-structured-logging-kafka.html">Structured logging with Kafka</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-unit-testing.html">Unit-testing <code class="docutils literal notranslate"><span class="pre">Client</span></code> and <code class="docutils literal notranslate"><span class="pre">Service</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-production-checklist.html">Production checklist</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Zipkin integration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-zookeeper.html">Service discovery with ZooKeeper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-saml.html">SAML Single Sign-On</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-spring-webflux-integration.html">Using Armeria with Spring WebFlux</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="advanced.html">Advanced topics</a> &raquo;</li>
+        
+      <li>Zipkin integration</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/advanced-zipkin.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="zipkin-integration">
+<span id="advanced-zipkin"></span><h1>Zipkin integration<a class="headerlink" href="#zipkin-integration" title="Permalink to this headline">¶</a></h1>
+<p>If you want to troubleshoot latency problems in microservice architecture, you will want to use distributed
+tracing system such as <a class="reference external" href="https://zipkin.io/">Zipkin</a>. It gathers timing data and shows which component is
+failing or taking more time than others in a distributed environment. Armeria supports distributed tracing via
+<a class="reference external" href="https://github.com/openzipkin/brave/">Brave</a>, which is a Java tracing library compatible with
+<a class="reference external" href="https://zipkin.io/">Zipkin</a>. Let’s find out how to use it to trace requests.</p>
+<p>First, you need to create the <code class="docutils literal notranslate"><span class="pre">HttpTracing</span></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.brave.RequestContextCurrentTraceContext;
+
+import brave.Tracing;
+import brave.http.HttpTracing;
+import zipkin2.reporter.Reporter;
+
+Reporter&lt;Span&gt; myReporter = ...
+Tracing tracing = Tracing.newBuilder()
+                         .localServiceName(&quot;myService&quot;)
+                         .currentTraceContext(RequestContextCurrentTraceContext.ofDefault())
+                         .spanReporter(myReporter)
+                         .build();
+HttpTracing httpTracing = HttpTracing.create(tracing);</pre></div>
+</div>
+<p>Please note that we specified <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/brave/RequestContextCurrentTraceContext.html">RequestContextCurrentTraceContext</a></code>. It stores the trace context into a
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/RequestContext.html">RequestContext</a></code> and loads the trace context from the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/RequestContext.html">RequestContext</a></code> automatically. Because of that,
+we don’t need to use a thread local variable which can lead to unpredictable behavior in asynchronous
+programming. If you want to send timing data to the span collecting server, you should specify <code class="docutils literal notranslate"><span class="pre">spanReporter</span></code>.
+For more information about the <code class="docutils literal notranslate"><span class="pre">spanReporter</span></code>, please refer to
+<a class="reference external" href="https://github.com/openzipkin/zipkin-reporter-java">Zipkin reporter</a> or
+<a class="reference external" href="https://github.com/openzipkin-contrib/zipkin-armeria-example">the fully working example</a>.</p>
+<p>Now, you can specify <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/brave/BraveService.html">BraveService</a></code> using <a class="reference internal" href="server-decorator.html#server-decorator"><span class="std std-ref">Decorating a service</span></a> with the <code class="docutils literal notranslate"><span class="pre">HttpTracing</span></code> you just built:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.server.Server;
+import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.server.brave.BraveService;
+
+Tracing tracing = ...
+Server server = new ServerBuilder().http(8081)
+                                   .service(&quot;/&quot;, (ctx, res) -&gt; HttpResponse.of(200))
+                                   .decorator(BraveService.newDecorator(httpTracing))
+                                   .build();</pre></div>
+</div>
+<p>If the requests come to Armeria server and go to another backend, you can trace them using
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/brave/BraveClient.html">BraveClient</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.BraveClient;
+import com.linecorp.armeria.client.HttpClient;
+import com.linecorp.armeria.client.HttpClientBuilder;
+import com.linecorp.armeria.server.brave.BraveService;
+
+Tracing tracing = ...
+HttpClient client = new HttpClientBuilder(&quot;https://myBackend.com&quot;)
+        .decorator(BraveClient.newDecorator(httpTracing.clientOf(&quot;myBackend&quot;)))
+        .build();
+
+Server server = new ServerBuilder().http(8081)
+                                   .service(&quot;/&quot;, (ctx, res) -&gt; client.get(&quot;/api&quot;))
+                                   .decorator(BraveService.newDecorator(httpTracing))
+                                   .build();</pre></div>
+</div>
+<p>Please note that our <code class="docutils literal notranslate"><span class="pre">HttpTracing</span></code> instance used the same <code class="docutils literal notranslate"><span class="pre">Tracing</span></code> instance when we
+create <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/brave/BraveClient.html">BraveClient</a></code> and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/brave/BraveService.html">BraveService</a></code>. Otherwise, there might be problems if the instances are not
+configured exactly the same.
+In the same manner, you can use the <code class="docutils literal notranslate"><span class="pre">Tracing</span></code> instance with any
+<a class="reference external" href="https://github.com/openzipkin/brave/tree/master/instrumentation">Brave instrumentation libraries</a>.
+For example, you can use it with <a class="reference external" href="https://kafka.apache.org/">Kafka</a> producer:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+
+import brave.kafka.clients.KafkaTracing;
+
+Tracing tracing = ...
+KafkaTracing kafkaTracing = KafkaTracing.newBuilder(tracing)
+                                        .remoteServiceName(&quot;backend&quot;)
+                                        .writeB3SingleFormat(true)
+                                        .build();
+
+Properties props = new Properties();
+props.put(&quot;bootstrap.servers&quot;, &quot;https://myKafka.com&quot;);
+props.put(&quot;acks&quot;, &quot;all&quot;);
+...
+
+Producer&lt;String, String&gt; kafkaProducer = kafkaTracing.producer(new KafkaProducer&lt;&gt;(props));
+
+Server server = new ServerBuilder()
+        .http(8081)
+        .service(&quot;/&quot;, (ctx, req) -&gt; {
+            kafkaProducer.send(new ProducerRecord&lt;&gt;(&quot;test&quot;, &quot;foo&quot;, &quot;bar&quot;));
+            return HttpResponse.of(200);
+        })
+        .decorator(BraveService.newDecorator(tracing))
+        .build();</pre></div>
+</div>
+<p>This will trace all the requests sent from the client to the above example server to
+<a class="reference external" href="https://kafka.apache.org/">Kafka</a>, and report timing data using the <code class="docutils literal notranslate"><span class="pre">spanReporter</span></code> you specified.
+The following screenshot shows a trace of a request:</p>
+<img alt="_images/zipkin_1.png" src="_images/zipkin_1.png" />
+<div class="section" id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/openzipkin-contrib/zipkin-armeria-example">Armeria Zipkin example</a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="advanced-zookeeper.html" class="btn btn-neutral float-right" title="Service discovery with ZooKeeper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="advanced-production-checklist.html" class="btn btn-neutral float-left" title="Production checklist" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

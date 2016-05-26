@@ -1,0 +1,506 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Decorating a service &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Running a gRPC service" href="server-grpc.html" />
+    <link rel="prev" title="Server basics" href="server-basics.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="server.html">Writing a server</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="server-basics.html">Server basics</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Decorating a service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#implementing-decoratingservicefunction">Implementing <code class="docutils literal notranslate"><span class="pre">DecoratingServiceFunction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extending-simpledecoratingservice">Extending <code class="docutils literal notranslate"><span class="pre">SimpleDecoratingService</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extending-decoratingservice">Extending <code class="docutils literal notranslate"><span class="pre">DecoratingService</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#unwrapping-decoration">Unwrapping decoration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#decorating-servicewithroutes">Decorating <code class="docutils literal notranslate"><span class="pre">ServiceWithRoutes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="server-grpc.html">Running a gRPC service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-thrift.html">Running a Thrift service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-docservice.html">Browsing and invoking services with <code class="docutils literal notranslate"><span class="pre">DocService</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-annotated-service.html">Annotated services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-http-file.html">Serving static files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-servlet.html">Embedding a servlet container</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-access-log.html">Writing an access log</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-cors.html">Configuring CORS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-sse.html">Serving Server-Sent Events</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="server.html">Writing a server</a> &raquo;</li>
+        
+      <li>Decorating a service</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/server-decorator.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="decorating-a-service">
+<span id="server-decorator"></span><h1>Decorating a service<a class="headerlink" href="#decorating-a-service" title="Permalink to this headline">¶</a></h1>
+<p>A ‘decorating service’ (or a ‘decorator’) is a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code> that wraps another <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code>
+to intercept an incoming request or an outgoing response. As its name says, it is an implementation of
+<a class="reference external" href="https://en.wikipedia.org/wiki/Decorator_pattern">the decorator pattern</a>. Service decoration takes a crucial role in Armeria. A lot of core features
+such as logging, metrics and distributed tracing are implemented as decorators and you will also find it
+useful when <a class="reference external" href="https://en.wikipedia.org/wiki/Separation_of_concerns">separating concerns</a>.</p>
+<p>There are basically three ways to write a decorating service:</p>
+<ul class="simple">
+<li><p>Implementing <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/DecoratingServiceFunction.html">DecoratingServiceFunction</a></code></p></li>
+<li><p>Extending <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/SimpleDecoratingService.html">SimpleDecoratingService</a></code></p></li>
+<li><p>Extending <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/DecoratingService.html">DecoratingService</a></code></p></li>
+</ul>
+<div class="section" id="implementing-decoratingservicefunction">
+<h2>Implementing <code class="docutils literal notranslate"><span class="pre">DecoratingServiceFunction</span></code><a class="headerlink" href="#implementing-decoratingservicefunction" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/DecoratingServiceFunction.html">DecoratingServiceFunction</a></code> is a functional interface that greatly simplifies the implementation of
+a decorating service. It enables you to write a decorating service with a single lambda expression:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.HttpStatus;
+import com.linecorp.armeria.server.HttpService;
+
+ServerBuilder sb = new ServerBuilder();
+HttpService service = ...;
+sb.serviceUnder(&quot;/web&quot;, service.decorate((delegate, ctx, req) -&gt; {
+    if (!authenticate(req)) {
+        // Authentication failed; fail the request.
+        return HttpResponse.of(HttpStatus.UNAUTHORIZED);
+    }
+
+    // Authenticated; pass the request to the actual service.
+    return delegate.serve(ctx, req);
+});</pre></div>
+</div>
+</div>
+<div class="section" id="extending-simpledecoratingservice">
+<h2>Extending <code class="docutils literal notranslate"><span class="pre">SimpleDecoratingService</span></code><a class="headerlink" href="#extending-simpledecoratingservice" title="Permalink to this headline">¶</a></h2>
+<p>If your decorator is expected to be reusable, it is recommended to define a new top-level class that extends
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/SimpleDecoratingService.html">SimpleDecoratingService</a></code> :</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpRequest;
+import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.server.Service;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.SimpleDecoratingService;
+
+public class AuthService extends SimpleDecoratingService&lt;HttpRequest, HttpResponse&gt; {
+    public AuthService(Service&lt;HttpRequest, HttpResponse&gt; delegate) {
+        super(delegate);
+    }
+
+    @Override
+    public HttpResponse serve(ServiceRequestContext ctx, HttpRequest req) throws Exception {
+        if (!authenticate(req)) {
+            // Authentication failed; fail the request.
+            return HttpResponse.of(HttpStatus.UNAUTHORIZED);
+
+        }
+
+        Service&lt;HttpRequest, HttpResponse&gt; delegate = delegate();
+        return delegate.serve(ctx, req);
+    }
+}
+
+ServerBuilder sb = new ServerBuilder();
+// Using a lambda expression:
+sb.serviceUnder(&quot;/web&quot;, service.decorate(delegate -&gt; new AuthService(delegate)));
+// Using reflection:
+sb.serviceUnder(&quot;/web&quot;, service.decorate(AuthService.class));</pre></div>
+</div>
+</div>
+<div class="section" id="extending-decoratingservice">
+<h2>Extending <code class="docutils literal notranslate"><span class="pre">DecoratingService</span></code><a class="headerlink" href="#extending-decoratingservice" title="Permalink to this headline">¶</a></h2>
+<p>So far, we only demonstrated the case where a decorating service does not transform the type of the request and
+response. You can do that as well, of course, using <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/DecoratingService.html">DecoratingService</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.RpcRequest;
+import com.linecorp.armeria.common.RpcResponse;
+
+// Transforms a Service&lt;RpcRequest, RpcResponse&gt; into Service&lt;HttpRequest, HttpResponse&gt;.
+public class MyRpcService extends DecoratingService&lt;RpcRequest, RpcResponse,
+                                                    HttpRequest, HttpResponse&gt; {
+
+    public MyRpcService(Service&lt;? super RpcRequest, ? extends RpcResponse&gt; delegate) {
+        super(delegate);
+    }
+
+    @Override
+    public HttpResponse serve(ServiceRequestContext ctx, HttpRequest req) throws Exception {
+        // This method has been greatly simplified for easier understanding.
+        // In reality, we will have to do this asynchronously.
+        RpcRequest rpcReq = convertToRpcRequest(req);
+        RpcResponse rpcRes = delegate().serve(ctx, rpcReq);
+        return convertToHttpResponse(rpcRes);
+    }
+
+    private RpcRequest convertToRpcRequest(HttpRequest req) { ... }
+    private HttpResponse convertToHttpResponse(RpcResponse res) { ... }
+}</pre></div>
+</div>
+</div>
+<div class="section" id="unwrapping-decoration">
+<h2>Unwrapping decoration<a class="headerlink" href="#unwrapping-decoration" title="Permalink to this headline">¶</a></h2>
+<p>Once a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code> is decorated, the type of the service is not that of the original <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code>
+anymore. Therefore, you cannot simply down-cast it to access the method exposed by the original <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code>.
+Instead, you need to ‘unwrap’ the decorator using the <code class="docutils literal notranslate"><span class="pre">Service.as()</span></code> method:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">MyService service = ...;
+MyDecoratedService decoratedService = service.decorate(...);
+
+assert !(decoratedService instanceof MyService);
+assert decoratedService.as(MyService.class).get() == service;
+assert decoratedService.as(MyDecoratedService.class).get() == decoratedService;
+assert !decoratedService.as(SomeOtherService.class).isPresent();</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">as()</span></code> is especially useful when you are looking for the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code> instances that implements
+a certain type from a server:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.ServerConfig;
+import java.util.List;
+
+Server server = ...;
+ServerConfig serverConfig = server.config();
+List&lt;ServiceConfig&gt; serviceConfigs = serverConfig.serviceConfigs();
+for (ServiceConfig sc : serviceConfigs) {
+    if (sc.service().as(SomeType.class).isPresent()) {
+        // Handle the service who implements or extends SomeType.
+    }
+}</pre></div>
+</div>
+</div>
+<div class="section" id="decorating-servicewithroutes">
+<span id="server-decorator-service-with-routes"></span><h2>Decorating <code class="docutils literal notranslate"><span class="pre">ServiceWithRoutes</span></code><a class="headerlink" href="#decorating-servicewithroutes" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServiceWithRoutes.html">ServiceWithRoutes</a></code> is a special variant of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code> which allows a user to register multiple
+routes for a single service. It has a method called <code class="docutils literal notranslate"><span class="pre">routes()</span></code> which returns a <code class="docutils literal notranslate"><span class="pre">Set</span></code> of
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Route.html">Route</a><span class="code api-reference plural-suffix">s</span></code> so that you do not have to specify path when registering your service:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.Route;
+import com.linecorp.armeria.server.ServiceWithRoutes;
+import java.util.HashSet;
+import java.util.Set;
+
+public class MyServiceWithRoutes implements ServiceWithRoutes&lt;HttpRequest, HttpResponse&gt; {
+    @Override
+    public HttpResponse serve(ServiceRequestContext ctx, HttpRequest req) { ... }
+
+    @Override
+    public Set&lt;Route&gt; routes() {
+        Set&lt;Route&gt; routes = new HashSet&lt;&gt;();
+        routes.add(Route.builder().path(&quot;/services/greet&quot;).build());
+        routes.add(Route.builder().path(&quot;/services/hello&quot;).build());
+        return routes;
+    }
+}
+
+ServerBuilder sb = new ServerBuilder();
+// No path is specified.
+sb.service(new MyServiceWithRoutes());
+// Override the path provided by routes().
+sb.service(&quot;/services/hola&quot;, new MyServiceWithRoutes());</pre></div>
+</div>
+<p>However, decorating a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServiceWithRoutes.html">ServiceWithRoutes</a></code> can lead to a compilation error when you attempt to
+register it without specifying a path explicitly, because a decorated service is not a
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServiceWithRoutes.html">ServiceWithRoutes</a></code> anymore but just a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.logging.LoggingService;
+
+ServerBuilder sb = new ServerBuilder();
+
+// Works.
+ServiceWithRoutes&lt;HttpRequest, HttpResponse&gt; service =
+        new MyServiceWithRoutes();
+sb.service(service);
+
+// Does not work - not a ServiceWithRoutes anymore due to decoration.
+Service&lt;HttpRequest, HttpResponse&gt; decoratedService =
+        service.decorate(LoggingService.newDecorator());
+sb.service(decoratedService); // Compilation error
+
+// Works if a path is specified explicitly.
+sb.service(&quot;/services/bonjour&quot;, decoratedService);</pre></div>
+</div>
+<p>Therefore, you need to specify the decorators as extra parameters:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">ServerBuilder sb = new ServerBuilder();
+// Register a service decorated with two decorators at multiple routes.
+sb.service(new MyServiceWithRoutes(),
+           MyDecoratedService::new,
+           LoggingService.newDecorator())</pre></div>
+</div>
+<p>A good real-world example of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServiceWithRoutes.html">ServiceWithRoutes</a></code> is <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/grpc/GrpcService.html">GrpcService</a></code>.
+See <a class="reference internal" href="server-grpc.html#server-grpc-decorator"><span class="std std-ref">Decorating a GrpcService</span></a> for more information.</p>
+</div>
+<div class="section" id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="client-decorator.html#client-decorator"><span class="std std-ref">Decorating a client</span></a></p></li>
+<li><p><a class="reference internal" href="advanced-custom-attributes.html#advanced-custom-attribute"><span class="std std-ref">RequestContext custom attributes</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="server-grpc.html" class="btn btn-neutral float-right" title="Running a gRPC service" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="server-basics.html" class="btn btn-neutral float-left" title="Server basics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

@@ -1,0 +1,688 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Automatic retry &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Circuit breaker" href="client-circuit-breaker.html" />
+    <link rel="prev" title="Overriding client timeouts" href="client-timeouts.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Writing a server</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="client.html">Writing a client</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="client-http.html">Calling an HTTP service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-thrift.html">Calling a Thrift service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-grpc.html">Calling a gRPC service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-decorator.html">Decorating a client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-retrofit.html">Retrofit integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-custom-http-headers.html">Sending custom HTTP headers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-timeouts.html">Overriding client timeouts</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Automatic retry</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#retryingclient"><code class="docutils literal notranslate"><span class="pre">RetryingClient</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#retrystrategy"><code class="docutils literal notranslate"><span class="pre">RetryStrategy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#backoff"><code class="docutils literal notranslate"><span class="pre">Backoff</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#maxtotalattempts-vs-per-backoff-maxattempts"><code class="docutils literal notranslate"><span class="pre">maxTotalAttempts</span></code> vs per-Backoff <code class="docutils literal notranslate"><span class="pre">maxAttempts</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#per-attempt-timeout">Per-attempt timeout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#retryingclient-with-logging"><code class="docutils literal notranslate"><span class="pre">RetryingClient</span></code> with logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#retryingclient-with-circuit-breaker"><code class="docutils literal notranslate"><span class="pre">RetryingClient</span></code> with circuit breaker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="client-circuit-breaker.html">Circuit breaker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-service-discovery.html">Client-side load balancing and service discovery</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="client.html">Writing a client</a> &raquo;</li>
+        
+      <li>Automatic retry</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/client-retry.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="automatic-retry">
+<span id="client-retry"></span><h1>Automatic retry<a class="headerlink" href="#automatic-retry" title="Permalink to this headline">¶</a></h1>
+<p>When a client gets an error response, it might want to retry the request depending on the response.
+This can be accomplished using a <a class="reference external" href="client-decorator.html">decorator</a>, and Armeria provides the following implementations out-of-the box.</p>
+<ul class="simple">
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingHttpClient.html">RetryingHttpClient</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingRpcClient.html">RetryingRpcClient</a></code></p></li>
+</ul>
+<p>Both behave the same except for the different request and response types.
+So, let’s find out what we can do with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code>.</p>
+<div class="section" id="retryingclient">
+<h2><code class="docutils literal notranslate"><span class="pre">RetryingClient</span></code><a class="headerlink" href="#retryingclient" title="Permalink to this headline">¶</a></h2>
+<p>You can just use the <code class="docutils literal notranslate"><span class="pre">decorator()</span></code> method in <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ClientBuilder.html">ClientBuilder</a></code> or <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/HttpClientBuilder.html">HttpClientBuilder</a></code> to build a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingHttpClient.html">RetryingHttpClient</a></code>. For example:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.HttpClient;
+import com.linecorp.armeria.client.HttpClientBuilder;
+import com.linecorp.armeria.client.retry.RetryingHttpClient;
+import com.linecorp.armeria.client.retry.RetryStrategy;
+import com.linecorp.armeria.common.AggregatedHttpResponse;
+
+RetryStrategy strategy = RetryStrategy.onServerErrorStatus();
+HttpClient client = new HttpClientBuilder(&quot;http://example.com/hello&quot;)
+        .decorator(RetryingHttpClient.newDecorator(strategy))
+        .build();
+
+final AggregatedHttpResponse res = client.execute(...).aggregate().join();</pre></div>
+</div>
+<p>That’s it. The client will keep attempting until it succeeds or the number of attempts exceeds the maximum
+number of total attempts. You can configure the <code class="docutils literal notranslate"><span class="pre">maxTotalAttempts</span></code> when making the decorator using
+<code class="docutils literal notranslate"><span class="pre">RetryingHttpClient.newDecorator(strategy,</span> <span class="pre">maxTotalAttempts)</span></code>. Meanwhile, the <code class="docutils literal notranslate"><span class="pre">strategy</span></code> will decide to
+retry depending on the response. In this case, the client retries when it receives <code class="docutils literal notranslate"><span class="pre">5xx</span></code> response error or
+an exception is raised.</p>
+</div>
+<div class="section" id="retrystrategy">
+<span id="retry-strategy"></span><h2><code class="docutils literal notranslate"><span class="pre">RetryStrategy</span></code><a class="headerlink" href="#retrystrategy" title="Permalink to this headline">¶</a></h2>
+<p>You can customize the <code class="docutils literal notranslate"><span class="pre">strategy</span></code> by implementing <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryStrategy.html">RetryStrategy</a></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.ClientRequestContext;
+import com.linecorp.armeria.client.ResponseTimeoutException;
+import com.linecorp.armeria.client.UnprocessedRequestException;
+import com.linecorp.armeria.client.retry.Backoff;
+import com.linecorp.armeria.common.HttpStatus;
+
+new RetryStrategy() {
+    final Backoff backoff = Backoff.ofDefault();
+
+    @Override
+    public CompletionStage&lt;Backoff&gt; shouldRetry(ClientRequestContext ctx,
+                                                @Nullable Throwable cause) {
+        if (cause != null) {
+            if (cause instanceof ResponseTimeoutException ||
+                cause instanceof UnprocessedRequestException) {
+                // The response timed out or the request has not been handled
+                // by the server.
+                return CompletableFuture.completedFuture(backoff);
+            }
+        }
+
+        if (ctx.log().responseHeaders().status() == HttpStatus.CONFLICT) {
+            return CompletableFuture.completedFuture(backoff);
+        }
+
+        // Return null to stop retrying.
+        return CompletableFuture.completedFuture(null);
+    }
+};</pre></div>
+</div>
+<p>This will retry when one of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ResponseTimeoutException.html">ResponseTimeoutException</a></code> and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/UnprocessedRequestException.html">UnprocessedRequestException</a></code> is raised or
+the response’s status is <code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">Conflict</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We declare a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> as a member and reuse it when a <code class="docutils literal notranslate"><span class="pre">strategy</span></code> returns it, so that we do not
+return a different <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> instance for each <code class="docutils literal notranslate"><span class="pre">shouldRetry()</span></code>. <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code>
+internally tracks the reference of the returned <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> and increases the counter that keeps
+the number of attempts made so far, and resets it to 0 when the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> returned by the strategy
+is not the same as before. Therefore, it is important to return the same <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> instance unless
+you decided to change your <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> strategy. If you do not return the same one, when the
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> yields a different delay based on the number of retries, such as an exponential backoff,
+it will not work as expected. We will take a close look into a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> at the next section.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/UnprocessedRequestException.html">UnprocessedRequestException</a></code> literally means that the request has not been processed by the server.
+Therefore, you can safely retry the request without worrying about the idempotency of the request.
+For more information about idempotency, please refer to <a class="reference external" href="http://restcookbook.com/HTTP%20Methods/idempotency/">What are idempotent and/or safe methods?</a>.</p>
+</div>
+<p>You can return a different <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> according to the response status.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpStatusClass;
+
+new RetryStrategy() {
+    final Backoff backoffOnServerErrorOrTimeout = Backoff.ofDefault();
+    final Backoff backoffOnConflict = Backoff.fixed(100);
+
+    @Override
+    public CompletionStage&lt;Backoff&gt; shouldRetry(ClientRequestContext ctx,
+                                                @Nullable Throwable cause) {
+        if (cause != null) {
+            if (cause instanceof ResponseTimeoutException ||
+                cause instanceof UnprocessedRequestException) {
+                // The response timed out or the request has not been handled
+                // by the server.
+                return CompletableFuture.completedFuture(backoffOnServerErrorOrTimeout);
+            }
+        }
+
+        HttpStatus status = ctx.log().responseHeaders().status();
+        if (status.codeClass() == HttpStatusClass.SERVER_ERROR) {
+            return CompletableFuture.completedFuture(backoffOnServerErrorOrTimeout);
+        } else if (status == HttpStatus.CONFLICT) {
+            return CompletableFuture.completedFuture(backoffOnConflict);
+        }
+
+        // Return null to stop retrying.
+        return CompletableFuture.completedFuture(null);
+    }
+};</pre></div>
+</div>
+<p>If you need to determine whether you need to retry by looking into the response content, you should implement
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryStrategyWithContent.html">RetryStrategyWithContent</a></code> and specify it when you create an <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/HttpClient.html">HttpClient</a></code>
+using <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingHttpClientBuilder.html">RetryingHttpClientBuilder</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.retry.RetryingHttpClientBuilder;
+import com.linecorp.armeria.client.retry.RetryStrategyWithContent;
+
+final RetryStrategyWithContent&lt;HttpResponse&gt; strategy =
+    new RetryStrategyWithContent&lt;HttpResponse&gt;() {
+
+        final Backoff backoff = Backoff.ofDefault();
+
+        @Override
+        public CompletionStage&lt;Backoff&gt; shouldRetry(ClientRequestContext ctx,
+                                                    HttpResponse response) {
+            return response.aggregate().handle((result, thrown) -&gt; {
+                if (thrown != null) {
+                    if (thrown instanceof ResponseTimeoutException ||
+                        thrown instanceof UnprocessedRequestException) {
+                        // The response timed out or the request has not been handled
+                        // by the server.
+                        return backoff;
+                    }
+                } else if (&quot;Should I retry?&quot;.equals(result.contentUtf8())) {
+                    return backoff;
+                }
+                return null; // Return null to stop retrying.
+            });
+        }
+    };
+
+// Create an HttpClient with a custom strategy.
+final HttpClient client = new HttpClientBuilder(...)
+        .decorator(new RetryingHttpClientBuilder(strategy).newDecorator())
+        .build();
+
+final AggregatedHttpResponse res = client.execute(...).aggregate().join();</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You might find the <code class="docutils literal notranslate"><span class="pre">peel()</span></code> method in <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/util/Exceptions.html">Exceptions</a></code> useful when the exception you are trying to
+handle is wrapped by exceptions like <code class="docutils literal notranslate"><span class="pre">CompletionException</span></code> and <code class="docutils literal notranslate"><span class="pre">ExecutionException</span></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.Exceptions;
+
+@Override
+public CompletionStage&lt;Backoff&gt; shouldRetry(ClientRequestContext ctx,
+                                            @Nullable Throwable cause) {
+    if (cause != null) {
+        if (cause instanceof ResponseTimeoutException ||
+            cause instanceof UnprocessedRequestException) {
+            // The response timed out or the request has not been handled
+            // by the server.
+            return CompletableFuture.completedFuture(backoff);
+        }
+
+        Throwable peeled = Exceptions.peel(cause);
+        if (peeled instanceof MyException) { ... }
+    }
+    ...
+}</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="backoff">
+<h2><code class="docutils literal notranslate"><span class="pre">Backoff</span></code><a class="headerlink" href="#backoff" title="Permalink to this headline">¶</a></h2>
+<p>You can use a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> to determine the delay between attempts. Armeria provides <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code>
+implementations which produce the following delays out of the box:</p>
+<ul class="simple">
+<li><p>Fixed delay, created with <code class="docutils literal notranslate"><span class="pre">Backoff.fixed()</span></code></p></li>
+<li><p>Random delay, created with <code class="docutils literal notranslate"><span class="pre">Backoff.random()</span></code></p></li>
+<li><p>Exponential delay which is multiplied on each attempt, created with <code class="docutils literal notranslate"><span class="pre">Backoff.exponential()</span></code></p></li>
+</ul>
+<p>Armeria provides <code class="docutils literal notranslate"><span class="pre">Backoff.ofDefault()</span></code> that you might use by default. It is exactly the same as:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">Backoff.exponential(200   /* minDelayMillis */,
+                    10000 /* maxDelayMillis */,
+                    2.0   /* multiplier     */)
+       .withJitter(0.2 /* jitterRate */);</pre></div>
+</div>
+<p>The delay starts from <code class="docutils literal notranslate"><span class="pre">minDelayMillis</span></code> until it reaches <code class="docutils literal notranslate"><span class="pre">maxDelayMillis</span></code> multiplying by multiplier every
+retry. Please note that the <code class="docutils literal notranslate"><span class="pre">.withJitter()</span></code> will add jitter value to the calculated delay.</p>
+<p>For more information, please refer to the API documentation of the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/package-summary.html">com.linecorp.armeria.client.retry</a></code>
+package.</p>
+</div>
+<div class="section" id="maxtotalattempts-vs-per-backoff-maxattempts">
+<h2><code class="docutils literal notranslate"><span class="pre">maxTotalAttempts</span></code> vs per-Backoff <code class="docutils literal notranslate"><span class="pre">maxAttempts</span></code><a class="headerlink" href="#maxtotalattempts-vs-per-backoff-maxattempts" title="Permalink to this headline">¶</a></h2>
+<p>If you create a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> using <code class="docutils literal notranslate"><span class="pre">.withMaxAttempts(maxAttempts)</span></code> in a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryStrategy.html">RetryStrategy</a></code>,
+the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code> which uses the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryStrategy.html">RetryStrategy</a></code> will stop retrying when the number of
+attempts passed <code class="docutils literal notranslate"><span class="pre">maxAttempts</span></code>. However, if you have more than one <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> and return one after
+the other continuously, it will keep retrying over and over again because the counter that
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code> internally tracks is initialized every time the different <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> is
+returned. To limit the number of attempts in a whole retry session, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code> limits
+the maximum number of total attempts to 10 by default. You can change this value by specifying
+<code class="docutils literal notranslate"><span class="pre">maxTotalAttempts</span></code> when you build a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">RetryingHttpClient.newDecorator(strategy, maxTotalAttempts);</pre></div>
+</div>
+<p>Or, you can override the default value of 10 using the JVM system property
+<code class="docutils literal notranslate"><span class="pre">-Dcom.linecorp.armeria.defaultMaxTotalAttempts=&lt;integer&gt;</span></code>.</p>
+<p>Note that when a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code> stops due to the attempts limit, the client will get the last received
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Response.html">Response</a></code> from the server.</p>
+</div>
+<div class="section" id="per-attempt-timeout">
+<h2>Per-attempt timeout<a class="headerlink" href="#per-attempt-timeout" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ResponseTimeoutException.html">ResponseTimeoutException</a></code> can occur in two different situations while retrying. First, it occurs
+when the time of whole retry session has passed the time previously configured using:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">ClientBuilder.responseTimeoutMillis(millis);
+// or..
+ClientRequestContext.setResponseTimeoutMillis(millis);</pre></div>
+</div>
+<p>You cannot retry on this <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ResponseTimeoutException.html">ResponseTimeoutException</a></code>.
+Second, it occurs when the time of individual attempt in retry has passed the time which is per-attempt timeout.
+You can configure it when you create the decorator:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">RetryingHttpClient.newDecorator(strategy, maxTotalAttempts,
+                                responseTimeoutMillisForEachAttempt);</pre></div>
+</div>
+<p>You can retry on this <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ResponseTimeoutException.html">ResponseTimeoutException</a></code>.</p>
+<p>For example, when making a retrying request to an unresponsive service
+with <code class="docutils literal notranslate"><span class="pre">responseTimeoutMillis</span> <span class="pre">=</span> <span class="pre">10,000</span></code>, <code class="docutils literal notranslate"><span class="pre">responseTimeoutMillisForEachAttempt</span> <span class="pre">=</span> <span class="pre">3,000</span></code> and disabled
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code>, the first three attempts will be timed out by the per-attempt timeout (3,000ms).
+The 4th one will be aborted after 1,000ms since the request session has reached at 10,000ms before
+it is timed out by the per-attempt timeout.</p>
+<p class="plantuml">
+<img src="_images/plantuml-2c0a981c4190e0055d494c8af179d3be4f434a5a.png" alt="&#64;startditaa(--no-separation, --no-shadows, scale=0.95)
+0ms         3,000ms     6,000ms     9,000ms
+|           |           |           |
++-----------+-----------+-----------+----+
+| Attempt 1 | Attempt 2 | Attempt 3 | A4 |
++-----------+-----------+-----------+----+
+                                         |
+                                       10,000ms (ResponseTimeoutException)
+&#64;endditaa"/>
+</p>
+<p>In the example above, every attempt is made before it is timed out because the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> is disabled.
+However, what if a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> is enabled and the moment of trying next attempt is after the point of
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ResponseTimeoutException.html">ResponseTimeoutException</a></code>? In such a case, the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code> does not schedule for the
+next attempt, but finishes the retry session immediately with the last received <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Response.html">Response</a></code>.
+Consider the following example:</p>
+<p class="plantuml">
+<img src="_images/plantuml-6ce54c30135b06eb53811c494ceb8ce7d283331d.png" alt="&#64;startditaa(--no-separation, --no-shadows, scale=0.95)
+0ms         3,000ms     6,000ms     9,000ms     12,000ms
+|           |           |           |           |
++-----------+-----------+-----------+-----------+-----------------------+
+| Attempt 1 |           | Attempt 2 |           | Attempt 3 is not made |
++-----------+-----------+-----------+----+------+-----------------------+
+                                    |    |
+                                    | 10,000ms (retry session deadline)
+                                    |
+                                stops retrying at this point
+&#64;endditaa"/>
+</p>
+<p>Unlike the example above, the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/Backoff.html">Backoff</a></code> is enabled and it makes the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code> perform retries
+with 3-second delay. When the second attempt is finished at 9,000ms, the next attempt will be at 12,000ms
+exceeding the response timeout of 10,000ms.
+The <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code>, at this point, stops retrying and finished the retry session with the last received
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Response.html">Response</a></code>, retrieved at 9,000ms from the attempt 2.</p>
+</div>
+<div class="section" id="retryingclient-with-logging">
+<span id="retry-with-logging"></span><h2><code class="docutils literal notranslate"><span class="pre">RetryingClient</span></code> with logging<a class="headerlink" href="#retryingclient-with-logging" title="Permalink to this headline">¶</a></h2>
+<p>You can use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code> with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/logging/LoggingClient.html">LoggingClient</a></code> to log. If you want to log all of the
+requests and responses, decorate <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/logging/LoggingClient.html">LoggingClient</a></code> with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code>. That is:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">RetryStrategy strategy = RetryStrategy.onServerErrorStatus();
+HttpClient client = new HttpClientBuilder(...)
+        .decorator(LoggingClient.newDecorator())
+        .decorator(RetryingHttpClient.newDecorator(strategy))
+        .build();</pre></div>
+</div>
+<p>This will produce following logs when there are three attempts:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">Request: {startTime=..., length=..., duration=..., scheme=..., host=..., headers=[...]
+Response: {startTime=..., length=..., duration=..., headers=[:status=500, ...]
+Request: {startTime=..., ..., headers=[..., armeria-retry-count=1, ...]
+Response: {startTime=..., length=..., duration=..., headers=[:status=500, ...]
+Request: {startTime=..., ..., headers=[..., armeria-retry-count=2, ...]
+Response: {startTime=..., length=..., duration=..., headers=[:status=200, ...]</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Did you notice that the <code class="docutils literal notranslate"><span class="pre">armeria-retry-count</span></code> header is inserted from the second request?
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingClient.html">RetryingClient</a></code> inserts it to indicate the retry count of a request.
+The server might use this value to reject excessive retries, etc.</p>
+</div>
+<p>If you want to log the first request and the last response, no matter if it’s successful or not,
+do the reverse:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.logging.LoggingClient;
+
+RetryStrategy strategy = RetryStrategy.onServerErrorStatus();
+// Note the order of decoration.
+HttpClient client = new HttpClientBuilder(...)
+        .decorator(RetryingHttpClient.newDecorator(strategy))
+        .decorator(LoggingClient.newDecorator())
+        .build();</pre></div>
+</div>
+<p>This will produce single request and response log pair and the total number of attempts only, regardless
+how many attempts are made:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">Request: {startTime=..., length=..., duration=..., scheme=..., host=..., headers=[...]
+Response: {startTime=..., length=..., headers=[:status=200, ...]}, {totalAttempts=3}</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please refer to <a class="reference internal" href="advanced-structured-logging.html#nested-log"><span class="std std-ref">Nested log</span></a>, if you are curious about how this works internally.</p>
+</div>
+</div>
+<div class="section" id="retryingclient-with-circuit-breaker">
+<h2><code class="docutils literal notranslate"><span class="pre">RetryingClient</span></code> with circuit breaker<a class="headerlink" href="#retryingclient-with-circuit-breaker" title="Permalink to this headline">¶</a></h2>
+<p>You might want to use <a class="reference internal" href="client-circuit-breaker.html#client-circuit-breaker"><span class="std std-ref">Circuit breaker</span></a> with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingHttpClient.html">RetryingHttpClient</a></code> using <a class="reference external" href="client-decorator.html">decorator</a>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerStrategy;
+import com.linecorp.armeria.client.circuitbreaker.CircuitBreakerHttpClientBuilder;
+
+CircuitBreakerStrategy cbStrategy = CircuitBreakerStrategy.onServerErrorStatus();
+RetryStrategy myRetryStrategy = new RetryStrategy() { ... };
+
+HttpClient client = new HttpClientBuilder(...)
+        .decorator(new CircuitBreakerHttpClientBuilder(cbStrategy).newDecorator())
+        .decorator(new RetryingHttpClientBuilder(myRetryStrategy).newDecorator())
+        .build();
+
+final AggregatedHttpResponse res = client.execute(...).aggregate().join();</pre></div>
+</div>
+<p>This decorates <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreakerHttpClient.html">CircuitBreakerHttpClient</a></code> with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingHttpClient.html">RetryingHttpClient</a></code> so that the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/CircuitBreaker.html">CircuitBreaker</a></code>
+judges every request and retried request as successful or failed. If the failure rate exceeds a certain
+threshold, it raises a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/FailFastException.html">FailFastException</a></code>. When using both clients, you need to write a custom
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryStrategy.html">RetryStrategy</a></code> to handle this exception so that the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/retry/RetryingHttpClient.html">RetryingHttpClient</a></code> does not attempt
+a retry unnecessarily when the circuit is open, e.g.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.circuitbreaker.FailFastException;
+
+new RetryStrategy() {
+    final Backoff backoff = Backoff.ofDefault();
+
+    @Override
+    public CompletionStage&lt;Backoff&gt; shouldRetry(ClientRequestContext ctx,
+                                                @Nullable Throwable cause) {
+        if (cause != null) {
+            if (cause instanceof FailFastException) {
+                // The circuit is already open so returns null to stop retrying.
+                return CompletableFuture.completedFuture(null);
+            }
+
+            if (cause instanceof ResponseTimeoutException ||
+                cause instanceof UnprocessedRequestException) {
+                // The response timed out or the request has not been handled
+                // by the server.
+                return CompletableFuture.completedFuture(backoff);
+            }
+        }
+        ... // Implement the rest of your own strategy.
+    }
+};</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may want to allow retrying even on <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/circuitbreaker/FailFastException.html">FailFastException</a></code> when your endpoint is configured with
+client-side load balancing because the next attempt might be sent to the next available endpoint.
+See <a class="reference internal" href="client-service-discovery.html#client-service-discovery"><span class="std std-ref">Client-side load balancing and service discovery</span></a> for more information about client-side load balancing.</p>
+</div>
+</div>
+<div class="section" id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="advanced-structured-logging.html#advanced-structured-logging"><span class="std std-ref">Structured logging</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="client-circuit-breaker.html" class="btn btn-neutral float-right" title="Circuit breaker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="client-timeouts.html" class="btn btn-neutral float-left" title="Overriding client timeouts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

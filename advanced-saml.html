@@ -1,0 +1,502 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>SAML Single Sign-On &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Using Armeria with Spring WebFlux" href="advanced-spring-webflux-integration.html" />
+    <link rel="prev" title="Service discovery with ZooKeeper" href="advanced-zookeeper.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Writing a server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="advanced.html">Advanced topics</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="advanced-logging.html">Logging contextual information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-structured-logging.html">Structured logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-custom-attributes.html"><code class="docutils literal notranslate"><span class="pre">RequestContext</span></code> custom attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-structured-logging-kafka.html">Structured logging with Kafka</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-unit-testing.html">Unit-testing <code class="docutils literal notranslate"><span class="pre">Client</span></code> and <code class="docutils literal notranslate"><span class="pre">Service</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-production-checklist.html">Production checklist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-zipkin.html">Zipkin integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-zookeeper.html">Service discovery with ZooKeeper</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SAML Single Sign-On</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-is-saml">What is SAML?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuring-your-server-as-a-service-provider">Configuring your server as a service provider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-handle-the-authentication-response">How to handle the authentication response</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#what-services-are-automatically-configured">What services are automatically configured</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="advanced-spring-webflux-integration.html">Using Armeria with Spring WebFlux</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="advanced.html">Advanced topics</a> &raquo;</li>
+        
+      <li>SAML Single Sign-On</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/advanced-saml.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="saml-single-sign-on">
+<span id="advanced-saml"></span><h1>SAML Single Sign-On<a class="headerlink" href="#saml-single-sign-on" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Visit <a class="reference external" href="https://github.com/line/armeria-examples">armeria-examples</a> to find a fully working example.</p>
+</div>
+<div class="section" id="what-is-saml">
+<h2>What is SAML?<a class="headerlink" href="#what-is-saml" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language">Security Assertion Markup Language (SAML)</a> is an open standard for exchanging authentication and authorization
+data between an identity provider and a service provider. In this protocol, a service provider is an endpoint
+which provides a web service to an end user, and an identity provider is in charge of authenticating an end
+user with information sent by the service provider.
+Armeria currently provides <a class="reference external" href="https://wiki.shibboleth.net/confluence/display/OS30/Home">OpenSAML</a> based <code class="docutils literal notranslate"><span class="pre">armeria-saml</span></code> module in order to support the integration with
+an identity provider from a service provider’s point of view.</p>
+</div>
+<div class="section" id="configuring-your-server-as-a-service-provider">
+<h2>Configuring your server as a service provider<a class="headerlink" href="#configuring-your-server-as-a-service-provider" title="Permalink to this headline">¶</a></h2>
+<p>The first step to configure a service provider is adding <code class="docutils literal notranslate"><span class="pre">armeria-saml</span></code> to your dependencies.</p>
+<p>For Maven:</p>
+<pre class="highlight-xml literal-block">&lt;dependency&gt;
+    &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+    &lt;artifactId&gt;saml&lt;/artifactId&gt;
+    &lt;version&gt;0.90.2&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+<p>For Gradle:</p>
+<pre class="highlight-gradle literal-block">dependencies {
+    compile 'com.linecorp.armeria:saml:0.90.2'
+}</pre>
+<p>After that, you need to prepare your keystore file which contains a key pair for signing and encryption
+of a SAML message. Also, you need to import the certificate of your identity provider into the keystore
+which contains your key pairs. In this example, we are using a free identity provider service hosted by
+<a class="reference external" href="https://www.ssocircle.com/en/">SSOCircle</a> in order to authenticate an end user. The following commands
+may help you to get a keystore.</p>
+<div class="highlight-bash notranslate"><div class="highlight hljs"><pre class="bash"># Generate new key pairs as alias &#x27;signing&#x27; and &#x27;encryption&#x27;.
+keytool -genkeypair -keystore sample.jks -storepass &#x27;N5^X[hvG&#x27; -keyalg rsa -sigalg sha1withrsa \
+  -dname &#x27;CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown&#x27; -alias signing
+keytool -genkeypair -keystore sample.jks -storepass &#x27;N5^X[hvG&#x27; -keyalg rsa -sigalg sha1withrsa \
+  -dname &#x27;CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown&#x27; -alias encryption
+
+# Import a certificate into the keystore as alias &#x27;https://idp.ssocircle.com&#x27;, which is the entity ID
+# of the SSOCircle. You can make &#x27;ssocircle.crt&#x27; file with the certificate from
+# &#x27;https://www.ssocircle.com/en/idp-tips-tricks/public-idp-configuration/&#x27;.
+keytool -importcert -keystore sample.jks -storepass &#x27;N5^X[hvG&#x27; -file ssocircle.crt \
+  -alias &#x27;https://idp.ssocircle.com&#x27;</pre></div>
+</div>
+<p>Finally, you need to create your <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/saml/SamlServiceProvider.html">SamlServiceProvider</a></code> with a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/saml/SamlServiceProviderBuilder.html">SamlServiceProviderBuilder</a></code>, and
+attach it to your <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Server.html">Server</a></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">SamlServiceProvider ssp = new SamlServiceProviderBuilder()
+        // Specify information about your keystore. The keystore contains two key pairs
+        // which are identified as &#x27;signing&#x27; and &#x27;encryption&#x27;.
+        .credentialResolver(new KeyStoreCredentialResolverBuilder(&quot;sample.jks&quot;)
+                                    .type(&quot;PKCS12&quot;)
+                                    .password(&quot;N5^X[hvG&quot;)
+                                    // You need to specify your key pair and its password here.
+                                    .addKeyPassword(&quot;signing&quot;, &quot;N5^X[hvG&quot;)
+                                    .addKeyPassword(&quot;encryption&quot;, &quot;N5^X[hvG&quot;)
+                                    .build())
+        // Specify the entity ID of this service provider. You can specify what you want.
+        .entityId(&quot;your-sp-id&quot;)
+        .hostname(&quot;your-service-domain-name&quot;)
+        // Specify an authorizer in order to authenticate a request.
+        .authorizer(new Authorizer&lt;HttpRequest&gt;() { ... })
+        // Speicify an SAML single sign-on handler which sends a response to an end user
+        // after he or she is authenticated or not.
+        .ssoHandler(new SamlSingleSignOnHandler() { ... })
+        // Specify the signature algorithm of your key.
+        .signatureAlgorithm(SignatureConstants.ALGO_ID_SIGNATURE_RSA)
+        .idp()
+        // Specify the entity ID of the identity provider. It can be found from the metadata of
+        // the identity provider.
+        .entityId(&quot;https://idp.ssocircle.com&quot;)
+        // Specify the endpoint that is supposed to send an authentication request.
+        .ssoEndpoint(ofHttpPost(&quot;https://idp.ssocircle.com:443/sso/SSOPOST/metaAlias/publicidp&quot;))
+        .and()
+        .build();
+
+Server server = new ServerBuilder()
+        .https(8443)
+        // Configure TLS with your key and certificate.
+        .tls(new File(&quot;your-certificate-file-path&quot;), new File(&quot;your-key-file-path&quot;))
+        // Decorate you service with SAML decorator.
+        .annotatedService(&quot;/&quot;, new MyService(), ssp.newSamlDecorator())
+        // Add SAML service to your server which handles a SAML response and a metadata request.
+        .service(ssp.newSamlService())
+        .build();</pre></div>
+</div>
+</div>
+<div class="section" id="how-to-handle-the-authentication-response">
+<h2>How to handle the authentication response<a class="headerlink" href="#how-to-handle-the-authentication-response" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">armeria-saml</span></code> provides <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/saml/SamlSingleSignOnHandler.html">SamlSingleSignOnHandler</a></code> to handle the response from an identity provider.
+It consists of <code class="docutils literal notranslate"><span class="pre">loginSucceeded()</span></code> and <code class="docutils literal notranslate"><span class="pre">loginFailed()</span></code> methods which handle the response,
+and <code class="docutils literal notranslate"><span class="pre">beforeInitiatingSso()</span></code> which handles a request. In most cases, you only need to write the two methods
+which handle the response, but if you want to send data to your identity provider and get it back
+with a response, you need to implement <code class="docutils literal notranslate"><span class="pre">beforeInitiatingSso()</span></code> method.</p>
+<p>The following example shows a simple implementation of the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/saml/SamlSingleSignOnHandler.html">SamlSingleSignOnHandler</a></code>. In this example,
+if an authentication is succeeded, an email address is retrieved from the response by referring to a <code class="docutils literal notranslate"><span class="pre">name</span> <span class="pre">ID</span></code>
+element in the assertion, then it is sent to the end user via <code class="docutils literal notranslate"><span class="pre">Set-Cookie</span></code> header. It means that your
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/auth/Authorizer.html">Authorizer</a></code> can identify an authenticated session with a <code class="docutils literal notranslate"><span class="pre">Cookie</span></code> header in the following requests,
+like <code class="docutils literal notranslate"><span class="pre">MyAuthorizer</span></code> in this example.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">class MySamlSingleSignOnHandler implements SamlSingleSignOnHandler {
+    @Override
+    public HttpResponse loginSucceeded(ServiceRequestContext ctx, AggregatedHttpRequest req,
+                                       MessageContext&lt;Response&gt; message, @Nullable String sessionIndex,
+                                       @Nullable String relayState) {
+        final Response response = message.getMessage();
+        final String username = response.getAssertions().stream()
+                                        .map(s -&gt; s.getSubject().getNameID())
+                                        .filter(id -&gt; id.getFormat().equals(SamlNameIdFormat.EMAIL.urn()))
+                                        .map(NameIDType::getValue)
+                                        .findFirst()
+                                        .orElse(null);
+        if (username == null) {
+            return HttpResponse.of(HttpStatus.UNAUTHORIZED, MediaType.HTML_UTF_8,
+                                   &quot;&lt;html&gt;&lt;body&gt;Username is not found.&lt;/body&gt;&lt;/html&gt;&quot;);
+        }
+
+        // Note that you MUST NOT use this example in a real world application. You may consider encoding
+        // the value using JSON Web Tokens to prevent tempering.
+        final Cookie cookie = new DefaultCookie(&quot;username&quot;, username);
+        cookie.setHttpOnly(true);
+        cookie.setDomain(&quot;localhost&quot;);
+        cookie.setMaxAge(60);
+        cookie.setPath(&quot;/&quot;);
+        return HttpResponse.of(
+                ResponseHeaders,of(HttpStatus.OK,
+                                   HttpHeaderNames.CONTENT_TYPE, MediaType.HTML_UTF_8,
+                                   HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookie)),
+                HttpData.ofUtf8(&quot;&lt;html&gt;&lt;body onLoad=\&quot;window.location.href=&#x27;/welcome&#x27;\&quot;&gt;&lt;/body&gt;&lt;/html&gt;&quot;));
+    }
+
+    @Override
+    public HttpResponse loginFailed(ServiceRequestContext ctx, AggregatedHttpRequest req,
+                                    @Nullable MessageContext&lt;Response&gt; message, Throwable cause) {
+        return HttpResponse.of(HttpStatus.UNAUTHORIZED, MediaType.HTML_UTF_8,
+                               &quot;&lt;html&gt;&lt;body&gt;Login failed.&lt;/body&gt;&lt;/html&gt;&quot;);
+    }
+}
+
+class MyAuthorizer implements Authorizer&lt;HttpRequest&gt; {
+    @Override
+    public CompletionStage&lt;Boolean&gt; authorize(ServiceRequestContext ctx, HttpRequest data) {
+        // Note that you MUST NOT use this example in a real world application. You have to perform
+        // proper validation in your application.
+        final String cookie = data.headers().get(HttpHeaderNames.COOKIE);
+        if (cookie == null) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        final boolean authenticated = ServerCookieDecoder.LAX.decode(cookie).stream().anyMatch(
+                c -&gt; &quot;username&quot;.equals(c.name()) &amp;&amp; !Strings.isNullOrEmpty(c.value()));
+        return CompletableFuture.completedFuture(authenticated);
+    }
+}</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The above implementation is just an example that shows you how to handle the response, so it is recommended
+that you write your own <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/saml/SamlSingleSignOnHandler.html">SamlSingleSignOnHandler</a></code> according to your authentication system.</p>
+</div>
+</div>
+<div class="section" id="what-services-are-automatically-configured">
+<h2>What services are automatically configured<a class="headerlink" href="#what-services-are-automatically-configured" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">armeria-saml</span></code> module automatically adds SAML services to your server with the following default paths:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/saml/acs/post</span></code> and <code class="docutils literal notranslate"><span class="pre">/saml/acs/redirect</span></code></p>
+<ul>
+<li><p>SAML assertion consumer services for HTTP Post binding and HTTP Redirect binding. These services are invoked
+by an identity provider when it responds to an authentication request received from your service.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/saml/slo/post</span></code> and <code class="docutils literal notranslate"><span class="pre">/saml/slo/redirect</span></code></p>
+<ul>
+<li><p>SAML single logout services for HTTP Post binding and HTTP Redirect binding. These services may be invoked
+by an identity provider when it performs global logout.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/saml/metadata</span></code></p>
+<ul>
+<li><p>SAML metadata service. In the metadata, the endpoints for assertion consumer services and single logout
+services are specified by <code class="docutils literal notranslate"><span class="pre">md:AssertionConsumerService</span></code> and <code class="docutils literal notranslate"><span class="pre">md:SingleLogoutService</span></code> elements
+respectively. The certificates of the <code class="docutils literal notranslate"><span class="pre">signing</span></code> and <code class="docutils literal notranslate"><span class="pre">encryption</span></code> key pair are also included.</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In order for your service to act as a service provider, you need to register your service to your identity
+provider, and providing your metadata is the easiest way to do that. You can get your metadata from
+<code class="docutils literal notranslate"><span class="pre">https://your-service-domain-name:your-service-port/saml/metadata</span></code>.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="advanced-spring-webflux-integration.html" class="btn btn-neutral float-right" title="Using Armeria with Spring WebFlux" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="advanced-zookeeper.html" class="btn btn-neutral float-left" title="Service discovery with ZooKeeper" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

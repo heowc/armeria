@@ -1,0 +1,555 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Serving static files &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Embedding a servlet container" href="server-servlet.html" />
+    <link rel="prev" title="Annotated services" href="server-annotated-service.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="server.html">Writing a server</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="server-basics.html">Server basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-decorator.html">Decorating a service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-grpc.html">Running a gRPC service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-thrift.html">Running a Thrift service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-docservice.html">Browsing and invoking services with <code class="docutils literal notranslate"><span class="pre">DocService</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-annotated-service.html">Annotated services</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Serving static files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#auto-generating-directory-listings">Auto-generating directory listings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specifying-additional-response-headers">Specifying additional response headers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adjusting-static-file-cache">Adjusting static file cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#serving-pre-compressed-files">Serving pre-compressed files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#serving-an-individual-file">Serving an individual file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuring-httpfile">Configuring <code class="docutils literal notranslate"><span class="pre">HttpFile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#caching-httpfile">Caching <code class="docutils literal notranslate"><span class="pre">HttpFile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aggregating-httpfile">Aggregating <code class="docutils literal notranslate"><span class="pre">HttpFile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#building-aggregatedhttpfile-from-httpdata">Building <code class="docutils literal notranslate"><span class="pre">AggregatedHttpFile</span></code> from <code class="docutils literal notranslate"><span class="pre">HttpData</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="server-servlet.html">Embedding a servlet container</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-access-log.html">Writing an access log</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-cors.html">Configuring CORS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-sse.html">Serving Server-Sent Events</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="server.html">Writing a server</a> &raquo;</li>
+        
+      <li>Serving static files</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/server-http-file.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="serving-static-files">
+<span id="server-http-file"></span><h1>Serving static files<a class="headerlink" href="#serving-static-files" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Visit <a class="reference external" href="https://github.com/line/armeria-examples">armeria-examples</a> to find a fully working example.</p>
+</div>
+<p>Use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileService.html">HttpFileService</a></code> to serve static files under a certain directory. <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileService.html">HttpFileService</a></code> supports
+<code class="docutils literal notranslate"><span class="pre">GET</span></code> and <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> HTTP methods and will auto-fill <code class="docutils literal notranslate"><span class="pre">Date</span></code>, <code class="docutils literal notranslate"><span class="pre">Last-Modified</span></code>, <code class="docutils literal notranslate"><span class="pre">ETag</span></code> and auto-detected
+<code class="docutils literal notranslate"><span class="pre">Content-Type</span></code> headers for you. It is also capable of sending a <code class="docutils literal notranslate"><span class="pre">304</span> <span class="pre">Not</span> <span class="pre">Modified</span></code> response based on
+<code class="docutils literal notranslate"><span class="pre">If-None-Match</span></code> and <code class="docutils literal notranslate"><span class="pre">If-Modified-Since</span></code> header values.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.server.file.HttpFileService;
+
+ServerBuilder sb = new ServerBuilder();
+sb.serviceUnder(&quot;/images/&quot;,
+                HttpFileService.forFileSystem(&quot;/var/lib/www/images&quot;));
+
+// You can also serve the resources in the class path.
+sb.serviceUnder(&quot;/resources&quot;,
+                HttpFileService.forClassPath(&quot;/com/example/resources&quot;));</pre></div>
+</div>
+<div class="section" id="auto-generating-directory-listings">
+<h2>Auto-generating directory listings<a class="headerlink" href="#auto-generating-directory-listings" title="Permalink to this headline">¶</a></h2>
+<p>You can configure <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileService.html">HttpFileService</a></code> to generate the directory listing of the directories without
+an <code class="docutils literal notranslate"><span class="pre">index.html</span></code> file using the <code class="docutils literal notranslate"><span class="pre">autoIndex(boolean)</span></code> method in <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileServiceBuilder.html">HttpFileServiceBuilder</a></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.file.HttpFileServiceBuilder;
+
+HttpFileServiceBuilder fsb =
+        HttpFileServiceBuilder.forFileSystem(&quot;/var/lib/www/images&quot;);
+
+// Enable auto-index.
+fsb.autoIndex(true);
+
+HttpFileService fs = fsb.build();</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Be careful when you enable this feature in production environment; consider its security implications.</p>
+</div>
+</div>
+<div class="section" id="specifying-additional-response-headers">
+<h2>Specifying additional response headers<a class="headerlink" href="#specifying-additional-response-headers" title="Permalink to this headline">¶</a></h2>
+<p>You can specify additional response headers such as <code class="docutils literal notranslate"><span class="pre">cache-control</span></code> and other custom headers.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.ServerCacheControl;
+import com.linecorp.armeria.common.ServerCacheControlBuilder;
+
+HttpFileServiceBuilder fsb =
+        HttpFileServiceBuilder.forFileSystem(&quot;/var/lib/www/images&quot;);
+
+// Specify cache control directives.
+ServerCacheControl cc = new ServerCacheControlBuilder()
+        .maxAgeSeconds(86400)
+        .cachePublic()
+        .build();
+fsb.cacheControl(cc /* &quot;max-age=86400, public&quot; */);
+
+// Specify a custom header.
+fsb.setHeader(&quot;foo&quot;, &quot;bar&quot;);
+
+HttpFileService fs = fsb.build();</pre></div>
+</div>
+</div>
+<div class="section" id="adjusting-static-file-cache">
+<h2>Adjusting static file cache<a class="headerlink" href="#adjusting-static-file-cache" title="Permalink to this headline">¶</a></h2>
+<p>By default, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileService.html">HttpFileService</a></code> caches up to 1024 files whose length is less than or equal to
+65,536 bytes. You can customize this behavior using <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileServiceBuilder.html">HttpFileServiceBuilder</a></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">HttpFileServiceBuilder fsb =
+        HttpFileServiceBuilder.forFileSystem(&quot;/var/lib/www/images&quot;);
+
+// Cache up to 4096 files.
+fsb.maxCacheEntries(4096);
+// Cache files whose length is less than or equal to 1 MiB.
+fsb.maxCacheEntrySizeBytes(1048576);
+
+HttpFileService fs = fsb.build();</pre></div>
+</div>
+<p>The cache can also be disabled by specifying <code class="docutils literal notranslate"><span class="pre">0</span></code> for <code class="docutils literal notranslate"><span class="pre">maxCacheEntries()</span></code>.</p>
+</div>
+<div class="section" id="serving-pre-compressed-files">
+<h2>Serving pre-compressed files<a class="headerlink" href="#serving-pre-compressed-files" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileService.html">HttpFileService</a></code> can be configured to serve a pre-compressed file based on the value of the
+<code class="docutils literal notranslate"><span class="pre">Accept-Encoding</span></code> header. For example, if a client sent the following HTTP request:</p>
+<div class="highlight-http notranslate"><div class="highlight hljs"><pre class="http">GET /index.html HTTP/1.1
+Host: example.com
+Accept-Encoding: gzip, identity</pre></div>
+</div>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileService.html">HttpFileService</a></code> could look for <code class="docutils literal notranslate"><span class="pre">/index.html.gz</span></code> first and send the following response with the
+<code class="docutils literal notranslate"><span class="pre">Content-Encoding:</span> <span class="pre">gzip</span></code> header if it exists:</p>
+<div class="highlight-http notranslate"><div class="highlight hljs"><pre class="http">HTTP/1.1 200 OK
+Host: example.com
+Content-Encoding: gzip
+Content-Type: text/html
+...
+
+&lt;compressed content&gt;</pre></div>
+</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">/index.html.gz</span></code> does not exist but <code class="docutils literal notranslate"><span class="pre">/index.html</span></code> does, it would fall back on serving the uncompressed
+content:</p>
+<div class="highlight-http notranslate"><div class="highlight hljs"><pre class="http">HTTP/1.1 200 OK
+Host: example.com
+Content-Type: text/html
+...
+
+&lt;uncompressed content&gt;</pre></div>
+</div>
+<p>This behavior is enabled by calling <code class="docutils literal notranslate"><span class="pre">serveCompressedFiles(true)</span></code> for <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileServiceBuilder.html">HttpFileServiceBuilder</a></code>.
+<code class="docutils literal notranslate"><span class="pre">.gz</span></code> (gzip) and <code class="docutils literal notranslate"><span class="pre">.br</span></code> (Brotli) files are supported currently.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">HttpFileServiceBuilder fsb =
+        HttpFileServiceBuilder.forClassPath(&quot;/com/example/resources&quot;);
+
+// Enable serving pre-compressed files.
+fsb.serveCompressedFiles(true);
+
+HttpFileService fs = fsb.build();</pre></div>
+</div>
+</div>
+<div class="section" id="serving-an-individual-file">
+<h2>Serving an individual file<a class="headerlink" href="#serving-an-individual-file" title="Permalink to this headline">¶</a></h2>
+<p>You can also serve an individual file using <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFile.html">HttpFile</a></code>. Like <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileService.html">HttpFileService</a></code> does, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFile.html">HttpFile</a></code>
+supports <code class="docutils literal notranslate"><span class="pre">GET</span></code> and <code class="docutils literal notranslate"><span class="pre">HEAD</span></code> HTTP methods and will auto-fill <code class="docutils literal notranslate"><span class="pre">Date</span></code>, <code class="docutils literal notranslate"><span class="pre">Last-Modified</span></code>, <code class="docutils literal notranslate"><span class="pre">ETag</span></code> and
+auto-detected <code class="docutils literal notranslate"><span class="pre">Content-Type</span></code> headers for you. It is also capable of sending a <code class="docutils literal notranslate"><span class="pre">304</span> <span class="pre">Not</span> <span class="pre">Modified</span></code> response
+based on <code class="docutils literal notranslate"><span class="pre">If-None-Match</span></code> and <code class="docutils literal notranslate"><span class="pre">If-Modified-Since</span></code> header values.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.file.HttpFile;
+
+HttpFile favicon = HttpFile.of(new File(&quot;/var/lib/www/favicon.ico&quot;));
+
+ServerBuilder sb = new ServerBuilder();
+// Serve the favicon.ico file by converting an HttpFile into a service.
+sb.service(&quot;/favicon.ico&quot;, favicon.asService());</pre></div>
+</div>
+<p>For instance, it is possible to serve the same file (e.g. <code class="docutils literal notranslate"><span class="pre">index.html</span></code>) for all requests under a certain
+path, which is useful when serving a frontend application with client-side routing.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">HttpFile index = HttpFile.of(new File(&quot;/var/lib/www/index.html&quot;));
+
+ServerBuilder sb = new ServerBuilder();
+// Register the file service for assets.
+sb.serviceUnder(&quot;/node_modules&quot;,
+                HttpFileService.forFileSystem(&quot;/var/lib/www/node_modules&quot;));
+sb.serviceUnder(&quot;/static&quot;,
+                HttpFileService.forFileSystem(&quot;/var/lib/www/static&quot;));
+// Register the fallback file service.
+sb.serviceUnder(&quot;/&quot;, index.asService());</pre></div>
+</div>
+<p>You can also achieve the same behavior using <a class="reference internal" href="server-annotated-service.html#server-annotated-service"><span class="std std-ref">Annotated services</span></a>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// Register the fallback file service.
+sb.annotatedService(new Object() {
+    final HttpFile index = HttpFile.of(new File(&quot;/var/lib/www/index.html&quot;));
+    @Get
+    @Head
+    @Path(&quot;glob:/**&quot;)
+    public HttpResponse getIndex(ServiceRequestContext ctx, HttpRequest req) {
+        return index.asService().serve(ctx, req);
+    }
+});</pre></div>
+</div>
+</div>
+<div class="section" id="configuring-httpfile">
+<h2>Configuring <code class="docutils literal notranslate"><span class="pre">HttpFile</span></code><a class="headerlink" href="#configuring-httpfile" title="Permalink to this headline">¶</a></h2>
+<p>An <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFile.html">HttpFile</a></code> can be configured to send different headers than the auto-filled ones using
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileBuilder.html">HttpFileBuilder</a></code>. For example, you can:</p>
+<ul class="simple">
+<li><p>Disable auto-generation of <code class="docutils literal notranslate"><span class="pre">Date</span></code>, <code class="docutils literal notranslate"><span class="pre">Last-Modified</span></code>, <code class="docutils literal notranslate"><span class="pre">Content-Type</span></code> and <code class="docutils literal notranslate"><span class="pre">ETag</span></code> header.</p></li>
+<li><p>Customize how <code class="docutils literal notranslate"><span class="pre">ETag</span></code> is calculated from metadata.</p></li>
+<li><p>Add or set additional custom HTTP headers.</p></li>
+</ul>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.file.HttpFileBuilder;
+
+HttpFileBuilder fb = HttpFileBuilder.of(new File(&quot;/var/lib/www/index.html&quot;));
+// Disable the &#x27;Date&#x27; header.
+fb.date(false);
+// Disable the &#x27;Last-Modified&#x27; header.
+fb.lastModified(false);
+// Disable the &#x27;ETag&#x27; header.
+fb.entityTag(false);
+// Disable the &#x27;Content-Type&#x27; header.
+fb.autoDetectContentType(false);
+// Set the &#x27;Content-Type&#x27; header manually.
+fb.contentType(&quot;text/html; charset=EUC-KR&quot;);
+// Set the &#x27;Cache-Control&#x27; header.
+fb.cacheControl(ServerCacheControl.REVALIDATED /* &quot;no-cache&quot; */);
+// Set a custom header.
+fb.setHeader(&quot;x-powered-by&quot;, &quot;Armeria&quot;);
+HttpFile f = fb.build();</pre></div>
+</div>
+</div>
+<div class="section" id="caching-httpfile">
+<h2>Caching <code class="docutils literal notranslate"><span class="pre">HttpFile</span></code><a class="headerlink" href="#caching-httpfile" title="Permalink to this headline">¶</a></h2>
+<p>Unlike <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFileService.html">HttpFileService</a></code>, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFile.html">HttpFile</a></code> does not cache the file content. Use <code class="docutils literal notranslate"><span class="pre">HttpFile.ofCached()</span></code>
+to enable content caching for an existing <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFile.html">HttpFile</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">HttpFile uncachedFile = HttpFile.of(new File(&quot;/var/lib/www/index.html&quot;));
+HttpFile cachedFile = HttpFile.ofCached(uncachedFile, 65536);</pre></div>
+</div>
+<p>Note that you need to specify the maximum allowed length of the cached content. In the above example, the file
+will not be cached if the length of the file exceeds 65,536 bytes.</p>
+</div>
+<div class="section" id="aggregating-httpfile">
+<h2>Aggregating <code class="docutils literal notranslate"><span class="pre">HttpFile</span></code><a class="headerlink" href="#aggregating-httpfile" title="Permalink to this headline">¶</a></h2>
+<p>An <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFile.html">HttpFile</a></code> usually does not store its content in memory but reads its content on demand, allowing you
+to stream a potentially very large file. If you want to ensure the content of the file is kept in memory so
+that file I/O does not occur on each retrieval, you can use the <code class="docutils literal notranslate"><span class="pre">aggregate()</span></code> method:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// You need to prepare an Executor which will be used for reading the file,
+// because file I/O is often a blocking operation.
+Executor ioExecutor = ...;
+
+HttpFile file = HttpFile.of(new File(&quot;/var/lib/www/img/logo.png&quot;);
+CompletableFuture&lt;AggregatedHttpFile&gt; future = file.aggregate(ioExecutor);
+AggregatedHttpFile aggregated = future.join();
+
+// Note that AggregatedHttpFile is a subtype of HttpFile.
+assert aggregated instanceof HttpFile;
+
+// The content of the file can now be retrieved from memory.
+HttpData content = aggregated.content();</pre></div>
+</div>
+<p>Note that an aggregated <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFile.html">HttpFile</a></code> is not linked in any way from the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFile.html">HttpFile</a></code> it was aggregated
+from, which means the content and attributes of the aggregated <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFile.html">HttpFile</a></code> does not change when the original
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/file/HttpFile.html">HttpFile</a></code> changes. Use <code class="docutils literal notranslate"><span class="pre">HttpFile.ofCached()</span></code> instead if such behavior is necessary.</p>
+</div>
+<div class="section" id="building-aggregatedhttpfile-from-httpdata">
+<h2>Building <code class="docutils literal notranslate"><span class="pre">AggregatedHttpFile</span></code> from <code class="docutils literal notranslate"><span class="pre">HttpData</span></code><a class="headerlink" href="#building-aggregatedhttpfile-from-httpdata" title="Permalink to this headline">¶</a></h2>
+<p>The content you need to serve is not always from an external resource but sometimes from memory, such as
+<code class="docutils literal notranslate"><span class="pre">byte[]</span></code> or <code class="docutils literal notranslate"><span class="pre">String</span></code>. Use <code class="docutils literal notranslate"><span class="pre">HttpFile.of(HttpData)</span></code> or <code class="docutils literal notranslate"><span class="pre">HttpFileBuilder.of(HttpData)</span></code> to build an
+<code class="docutils literal notranslate"><span class="pre">AggregatedHttpFile</span></code> from an in-memory resource:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">// Build from a byte array.
+AggregatedHttpFile f1 = HttpFile.of(HttpData.of(new byte[] { 1, 2, 3, 4 }));
+
+// Build from a String.
+AggregatedHttpFile f2 = HttpFile.of(HttpData.ofUtf8(&quot;Hello, world!&quot;));
+
+// Build using a builder with downcast.
+// Note: HttpFileBuilder.build() returns an AggregatedHttpFile
+//       if HttpFileBuilder was created from an HttpData.
+AggregatedHttpFile f3 =
+    (AggregatedHttpFile) HttpFileBuilder.of(HttpData.ofAscii(&quot;Armeria&quot;))
+                                        .lastModified(false)
+                                        .build();</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="server-servlet.html" class="btn btn-neutral float-right" title="Embedding a servlet container" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="server-annotated-service.html" class="btn btn-neutral float-left" title="Annotated services" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

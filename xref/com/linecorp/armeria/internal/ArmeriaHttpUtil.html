@@ -1,0 +1,1034 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="null" lang="null">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>ArmeriaHttpUtil xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../stylesheet.css" />
+</head>
+<body>
+<pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   <em class="jxr_comment"> * Copyright 2016 LINE Corporation</em>
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <em class="jxr_comment"> * LINE Corporation licenses this file to you under the Apache License,</em>
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <em class="jxr_comment"> * version 2.0 (the "License"); you may not use this file except in compliance</em>
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <em class="jxr_comment"> * with the License. You may obtain a copy of the License at:</em>
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <em class="jxr_comment"> *   https://www.apache.org/licenses/LICENSE-2.0</em>
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <em class="jxr_comment"> * Unless required by applicable law or agreed to in writing, software</em>
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <em class="jxr_comment"> * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT</em>
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <em class="jxr_comment"> * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</em>
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <em class="jxr_comment"> * License for the specific language governing permissions and limitations</em>
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <em class="jxr_comment"> * under the License.</em>
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <em class="jxr_comment"> */</em>
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <em class="jxr_comment"> * Copyright 2014 The Netty Project</em>
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <em class="jxr_comment"> * The Netty Project licenses this file to you under the Apache License,</em>
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <em class="jxr_comment"> * version 2.0 (the "License"); you may not use this file except in compliance</em>
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <em class="jxr_comment"> * with the License. You may obtain a copy of the License at:</em>
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <em class="jxr_comment"> *   https://www.apache.org/licenses/LICENSE-2.0</em>
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <em class="jxr_comment"> * Unless required by applicable law or agreed to in writing, software</em>
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <em class="jxr_comment"> * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT</em>
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <em class="jxr_comment"> * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</em>
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <em class="jxr_comment"> * License for the specific language governing permissions and limitations</em>
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <em class="jxr_comment"> * under the License.</em>
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <em class="jxr_comment"> */</em>
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">package</strong> com.linecorp.armeria.internal;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> com.google.common.collect.ImmutableSet.toImmutableSet;
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.handler.codec.http.HttpUtil.isAsteriskForm;
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.handler.codec.http.HttpUtil.isOriginForm;
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.handler.codec.http2.Http2Error.PROTOCOL_ERROR;
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.handler.codec.http2.Http2Exception.streamError;
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.util.AsciiString.EMPTY_STRING;
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.util.ByteProcessor.FIND_COMMA;
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.util.internal.StringUtil.decodeHexNibble;
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.util.internal.StringUtil.isNullOrEmpty;
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.util.internal.StringUtil.length;
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> java.util.Objects.requireNonNull;
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  <strong class="jxr_keyword">import</strong> java.net.InetSocketAddress;
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>  <strong class="jxr_keyword">import</strong> java.net.URI;
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  <strong class="jxr_keyword">import</strong> java.net.URISyntaxException;
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>  <strong class="jxr_keyword">import</strong> java.nio.charset.Charset;
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  <strong class="jxr_keyword">import</strong> java.nio.charset.StandardCharsets;
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>  <strong class="jxr_keyword">import</strong> java.util.Iterator;
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>  <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  <strong class="jxr_keyword">import</strong> java.util.Map.Entry;
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  <strong class="jxr_keyword">import</strong> java.util.Set;
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>  <strong class="jxr_keyword">import</strong> java.util.StringJoiner;
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  <strong class="jxr_keyword">import</strong> java.util.function.BiConsumer;
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>  
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>  <strong class="jxr_keyword">import</strong> javax.annotation.Nullable;
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>  
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  <strong class="jxr_keyword">import</strong> com.github.benmanes.caffeine.cache.Caffeine;
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  <strong class="jxr_keyword">import</strong> com.github.benmanes.caffeine.cache.LoadingCache;
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  <strong class="jxr_keyword">import</strong> com.google.common.annotations.VisibleForTesting;
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  <strong class="jxr_keyword">import</strong> com.google.common.base.Ascii;
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  <strong class="jxr_keyword">import</strong> com.google.common.base.Splitter;
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  <strong class="jxr_keyword">import</strong> com.google.common.base.Strings;
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>  
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.Flags;
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.HttpData;
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.HttpHeaderNames;
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.HttpHeaders;
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.HttpHeadersBuilder;
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.HttpMethod;
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.HttpStatus;
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.HttpStatusClass;
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.RequestHeaders;
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.RequestHeadersBuilder;
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.ResponseHeaders;
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.ResponseHeadersBuilder;
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.server.ServerConfig;
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>  
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>  <strong class="jxr_keyword">import</strong> io.netty.channel.ChannelHandlerContext;
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.DefaultHeaders;
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.UnsupportedValueConverter;
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.http.HttpHeaderValues;
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.http.HttpRequest;
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.http.HttpResponse;
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.http.HttpUtil;
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.http.HttpVersion;
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.http2.DefaultHttp2Headers;
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.http2.Http2Exception;
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.http2.Http2Headers;
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.http2.HttpConversionUtil;
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.http2.HttpConversionUtil.ExtensionHeaderNames;
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>  <strong class="jxr_keyword">import</strong> io.netty.util.AsciiString;
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>  <strong class="jxr_keyword">import</strong> io.netty.util.HashingStrategy;
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  <strong class="jxr_keyword">import</strong> io.netty.util.internal.StringUtil;
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>  
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>  <em class="jxr_javadoccomment"> * Provides various utility functions for internal use related with HTTP.</em>
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L100" href="#L100">100</a> <em class="jxr_javadoccomment"> * &lt;p&gt;The conversion between HTTP/1 and HTTP/2 has been forked from Netty's {@link HttpConversionUtil}.</em>
+<a class="jxr_linenumber" name="L101" href="#L101">101</a> <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L102" href="#L102">102</a> <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">ArmeriaHttpUtil</a> {
+<a class="jxr_linenumber" name="L103" href="#L103">103</a> 
+<a class="jxr_linenumber" name="L104" href="#L104">104</a>     <em class="jxr_comment">// Forked from Netty 4.1.34 at 4921f62c8ab8205fd222439dcd1811760b05daf1</em>
+<a class="jxr_linenumber" name="L105" href="#L105">105</a> 
+<a class="jxr_linenumber" name="L106" href="#L106">106</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L107" href="#L107">107</a> <em class="jxr_javadoccomment">     * The default case-insensitive {@link AsciiString} hasher and comparator for HTTP/2 headers.</em>
+<a class="jxr_linenumber" name="L108" href="#L108">108</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> HashingStrategy&lt;AsciiString&gt; HTTP2_HEADER_NAME_HASHER =
+<a class="jxr_linenumber" name="L110" href="#L110">110</a>             <strong class="jxr_keyword">new</strong> HashingStrategy&lt;AsciiString&gt;() {
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>                 @Override
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>                 <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> hashCode(AsciiString o) {
+<a class="jxr_linenumber" name="L113" href="#L113">113</a>                     <strong class="jxr_keyword">return</strong> o.hashCode();
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>                 }
+<a class="jxr_linenumber" name="L115" href="#L115">115</a> 
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>                 @Override
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>                 <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> equals(AsciiString a, AsciiString b) {
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>                     <strong class="jxr_keyword">return</strong> a.contentEqualsIgnoreCase(b);
+<a class="jxr_linenumber" name="L119" href="#L119">119</a>                 }
+<a class="jxr_linenumber" name="L120" href="#L120">120</a>             };
+<a class="jxr_linenumber" name="L121" href="#L121">121</a> 
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L123" href="#L123">123</a> <em class="jxr_javadoccomment">     * The default HTTP content-type charset.</em>
+<a class="jxr_linenumber" name="L124" href="#L124">124</a> <em class="jxr_javadoccomment">     * See https://tools.ietf.org/html/rfc2616#section-3.7.1</em>
+<a class="jxr_linenumber" name="L125" href="#L125">125</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L126" href="#L126">126</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Charset HTTP_DEFAULT_CONTENT_CHARSET = StandardCharsets.ISO_8859_1;
+<a class="jxr_linenumber" name="L127" href="#L127">127</a> 
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L129" href="#L129">129</a> <em class="jxr_javadoccomment">     * The old {@code "keep-alive"} header which has been superceded by {@code "connection"}.</em>
+<a class="jxr_linenumber" name="L130" href="#L130">130</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L131" href="#L131">131</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> AsciiString HEADER_NAME_KEEP_ALIVE = AsciiString.cached(<span class="jxr_string">"keep-alive"</span>);
+<a class="jxr_linenumber" name="L132" href="#L132">132</a> 
+<a class="jxr_linenumber" name="L133" href="#L133">133</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L134" href="#L134">134</a> <em class="jxr_javadoccomment">     * The old {@code "proxy-connection"} header which has been superceded by {@code "connection"}.</em>
+<a class="jxr_linenumber" name="L135" href="#L135">135</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L136" href="#L136">136</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> AsciiString HEADER_NAME_PROXY_CONNECTION = AsciiString.cached(<span class="jxr_string">"proxy-connection"</span>);
+<a class="jxr_linenumber" name="L137" href="#L137">137</a> 
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> URI ROOT = URI.create(<span class="jxr_string">"/"</span>);
+<a class="jxr_linenumber" name="L139" href="#L139">139</a> 
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L141" href="#L141">141</a> <em class="jxr_javadoccomment">     * The set of headers that should not be directly copied when converting headers from HTTP/1 to HTTP/2.</em>
+<a class="jxr_linenumber" name="L142" href="#L142">142</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a> HTTP_TO_HTTP2_HEADER_BLACKLIST = <strong class="jxr_keyword">new</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a>();
+<a class="jxr_linenumber" name="L144" href="#L144">144</a> 
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L146" href="#L146">146</a> <em class="jxr_javadoccomment">     * The set of headers that should not be directly copied when converting headers from HTTP/2 to HTTP/1.</em>
+<a class="jxr_linenumber" name="L147" href="#L147">147</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L148" href="#L148">148</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a> HTTP2_TO_HTTP_HEADER_BLACKLIST = <strong class="jxr_keyword">new</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a>();
+<a class="jxr_linenumber" name="L149" href="#L149">149</a> 
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L151" href="#L151">151</a> <em class="jxr_javadoccomment">     * The set of headers that must not be directly copied when converting trailers.</em>
+<a class="jxr_linenumber" name="L152" href="#L152">152</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L153" href="#L153">153</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a> HTTP_TRAILER_BLACKLIST = <strong class="jxr_keyword">new</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a>();
+<a class="jxr_linenumber" name="L154" href="#L154">154</a> 
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>     <strong class="jxr_keyword">static</strong> {
+<a class="jxr_linenumber" name="L156" href="#L156">156</a>         HTTP_TO_HTTP2_HEADER_BLACKLIST.add(HttpHeaderNames.CONNECTION, EMPTY_STRING);
+<a class="jxr_linenumber" name="L157" href="#L157">157</a>         HTTP_TO_HTTP2_HEADER_BLACKLIST.add(HEADER_NAME_KEEP_ALIVE, EMPTY_STRING);
+<a class="jxr_linenumber" name="L158" href="#L158">158</a>         HTTP_TO_HTTP2_HEADER_BLACKLIST.add(HEADER_NAME_PROXY_CONNECTION, EMPTY_STRING);
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>         HTTP_TO_HTTP2_HEADER_BLACKLIST.add(HttpHeaderNames.TRANSFER_ENCODING, EMPTY_STRING);
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>         HTTP_TO_HTTP2_HEADER_BLACKLIST.add(HttpHeaderNames.HOST, EMPTY_STRING);
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>         HTTP_TO_HTTP2_HEADER_BLACKLIST.add(HttpHeaderNames.UPGRADE, EMPTY_STRING);
+<a class="jxr_linenumber" name="L162" href="#L162">162</a>         HTTP_TO_HTTP2_HEADER_BLACKLIST.add(ExtensionHeaderNames.STREAM_ID.text(), EMPTY_STRING);
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>         HTTP_TO_HTTP2_HEADER_BLACKLIST.add(ExtensionHeaderNames.SCHEME.text(), EMPTY_STRING);
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>         HTTP_TO_HTTP2_HEADER_BLACKLIST.add(ExtensionHeaderNames.PATH.text(), EMPTY_STRING);
+<a class="jxr_linenumber" name="L165" href="#L165">165</a> 
+<a class="jxr_linenumber" name="L166" href="#L166">166</a>         <em class="jxr_comment">// https://tools.ietf.org/html/rfc7540#section-8.1.2.3</em>
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>         HTTP2_TO_HTTP_HEADER_BLACKLIST.add(HttpHeaderNames.AUTHORITY, EMPTY_STRING);
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>         HTTP2_TO_HTTP_HEADER_BLACKLIST.add(HttpHeaderNames.METHOD, EMPTY_STRING);
+<a class="jxr_linenumber" name="L169" href="#L169">169</a>         HTTP2_TO_HTTP_HEADER_BLACKLIST.add(HttpHeaderNames.PATH, EMPTY_STRING);
+<a class="jxr_linenumber" name="L170" href="#L170">170</a>         HTTP2_TO_HTTP_HEADER_BLACKLIST.add(HttpHeaderNames.SCHEME, EMPTY_STRING);
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>         HTTP2_TO_HTTP_HEADER_BLACKLIST.add(HttpHeaderNames.STATUS, EMPTY_STRING);
+<a class="jxr_linenumber" name="L172" href="#L172">172</a> 
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>         <em class="jxr_comment">// https://tools.ietf.org/html/rfc7540#section-8.1</em>
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>         <em class="jxr_comment">// The "chunked" transfer encoding defined in Section 4.1 of [RFC7230] MUST NOT be used in HTTP/2.</em>
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>         HTTP2_TO_HTTP_HEADER_BLACKLIST.add(HttpHeaderNames.TRANSFER_ENCODING, EMPTY_STRING);
+<a class="jxr_linenumber" name="L176" href="#L176">176</a> 
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>         HTTP2_TO_HTTP_HEADER_BLACKLIST.add(ExtensionHeaderNames.STREAM_ID.text(), EMPTY_STRING);
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>         HTTP2_TO_HTTP_HEADER_BLACKLIST.add(ExtensionHeaderNames.SCHEME.text(), EMPTY_STRING);
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>         HTTP2_TO_HTTP_HEADER_BLACKLIST.add(ExtensionHeaderNames.PATH.text(), EMPTY_STRING);
+<a class="jxr_linenumber" name="L180" href="#L180">180</a> 
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>         <em class="jxr_comment">// https://tools.ietf.org/html/rfc7230#section-4.1.2</em>
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>         <em class="jxr_comment">// https://tools.ietf.org/html/rfc7540#section-8.1</em>
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>         <em class="jxr_comment">// A sender MUST NOT generate a trailer that contains a field necessary for message framing:</em>
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.TRANSFER_ENCODING, EMPTY_STRING);
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.CONTENT_LENGTH, EMPTY_STRING);
+<a class="jxr_linenumber" name="L186" href="#L186">186</a> 
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>         <em class="jxr_comment">// for request modifiers:</em>
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.CACHE_CONTROL, EMPTY_STRING);
+<a class="jxr_linenumber" name="L189" href="#L189">189</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.EXPECT, EMPTY_STRING);
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.HOST, EMPTY_STRING);
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.MAX_FORWARDS, EMPTY_STRING);
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.PRAGMA, EMPTY_STRING);
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.RANGE, EMPTY_STRING);
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.TE, EMPTY_STRING);
+<a class="jxr_linenumber" name="L195" href="#L195">195</a> 
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>         <em class="jxr_comment">// for authentication:</em>
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.WWW_AUTHENTICATE, EMPTY_STRING);
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.AUTHORIZATION, EMPTY_STRING);
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.PROXY_AUTHENTICATE, EMPTY_STRING);
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.PROXY_AUTHORIZATION, EMPTY_STRING);
+<a class="jxr_linenumber" name="L201" href="#L201">201</a> 
+<a class="jxr_linenumber" name="L202" href="#L202">202</a>         <em class="jxr_comment">// for response control data:</em>
+<a class="jxr_linenumber" name="L203" href="#L203">203</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.DATE, EMPTY_STRING);
+<a class="jxr_linenumber" name="L204" href="#L204">204</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.LOCATION, EMPTY_STRING);
+<a class="jxr_linenumber" name="L205" href="#L205">205</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.RETRY_AFTER, EMPTY_STRING);
+<a class="jxr_linenumber" name="L206" href="#L206">206</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.VARY, EMPTY_STRING);
+<a class="jxr_linenumber" name="L207" href="#L207">207</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.WARNING, EMPTY_STRING);
+<a class="jxr_linenumber" name="L208" href="#L208">208</a> 
+<a class="jxr_linenumber" name="L209" href="#L209">209</a>         <em class="jxr_comment">// or for determining how to process the payload:</em>
+<a class="jxr_linenumber" name="L210" href="#L210">210</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.CONTENT_ENCODING, EMPTY_STRING);
+<a class="jxr_linenumber" name="L211" href="#L211">211</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.CONTENT_TYPE, EMPTY_STRING);
+<a class="jxr_linenumber" name="L212" href="#L212">212</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.CONTENT_RANGE, EMPTY_STRING);
+<a class="jxr_linenumber" name="L213" href="#L213">213</a>         HTTP_TRAILER_BLACKLIST.add(HttpHeaderNames.TRAILER, EMPTY_STRING);
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>     }
+<a class="jxr_linenumber" name="L215" href="#L215">215</a> 
+<a class="jxr_linenumber" name="L216" href="#L216">216</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L217" href="#L217">217</a> <em class="jxr_javadoccomment">     * Translations from HTTP/2 header name to the HTTP/1.x equivalent. Currently, we expect these headers to</em>
+<a class="jxr_linenumber" name="L218" href="#L218">218</a> <em class="jxr_javadoccomment">     * only allow a single value in the request. If adding headers that can potentially have multiple values,</em>
+<a class="jxr_linenumber" name="L219" href="#L219">219</a> <em class="jxr_javadoccomment">     * please check the usage in code accordingly.</em>
+<a class="jxr_linenumber" name="L220" href="#L220">220</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L221" href="#L221">221</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a> REQUEST_HEADER_TRANSLATIONS = <strong class="jxr_keyword">new</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a>();
+<a class="jxr_linenumber" name="L222" href="#L222">222</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a> RESPONSE_HEADER_TRANSLATIONS = <strong class="jxr_keyword">new</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a>();
+<a class="jxr_linenumber" name="L223" href="#L223">223</a> 
+<a class="jxr_linenumber" name="L224" href="#L224">224</a>     <strong class="jxr_keyword">static</strong> {
+<a class="jxr_linenumber" name="L225" href="#L225">225</a>         RESPONSE_HEADER_TRANSLATIONS.add(Http2Headers.PseudoHeaderName.AUTHORITY.value(),
+<a class="jxr_linenumber" name="L226" href="#L226">226</a>                                          HttpHeaderNames.HOST);
+<a class="jxr_linenumber" name="L227" href="#L227">227</a>         REQUEST_HEADER_TRANSLATIONS.add(RESPONSE_HEADER_TRANSLATIONS);
+<a class="jxr_linenumber" name="L228" href="#L228">228</a>     }
+<a class="jxr_linenumber" name="L229" href="#L229">229</a> 
+<a class="jxr_linenumber" name="L230" href="#L230">230</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L231" href="#L231">231</a> <em class="jxr_javadoccomment">     * &lt;a href="https://tools.ietf.org/html/rfc7540#section-8.1.2.3"&gt;rfc7540, 8.1.2.3&lt;/a&gt; states the path must not</em>
+<a class="jxr_linenumber" name="L232" href="#L232">232</a> <em class="jxr_javadoccomment">     * be empty, and instead should be {@code /}.</em>
+<a class="jxr_linenumber" name="L233" href="#L233">233</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L234" href="#L234">234</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String EMPTY_REQUEST_PATH = <span class="jxr_string">"/"</span>;
+<a class="jxr_linenumber" name="L235" href="#L235">235</a> 
+<a class="jxr_linenumber" name="L236" href="#L236">236</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Splitter COOKIE_SPLITTER = Splitter.on(';').trimResults().omitEmptyStrings();
+<a class="jxr_linenumber" name="L237" href="#L237">237</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String COOKIE_SEPARATOR = <span class="jxr_string">"; "</span>;
+<a class="jxr_linenumber" name="L238" href="#L238">238</a> 
+<a class="jxr_linenumber" name="L239" href="#L239">239</a>     @Nullable
+<a class="jxr_linenumber" name="L240" href="#L240">240</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> LoadingCache&lt;AsciiString, String&gt; HEADER_VALUE_CACHE =
+<a class="jxr_linenumber" name="L241" href="#L241">241</a>             Flags.headerValueCacheSpec().map(ArmeriaHttpUtil::buildCache).orElse(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L242" href="#L242">242</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Set&lt;AsciiString&gt; CACHED_HEADERS = Flags.cachedHeaders().stream().map(AsciiString::of)
+<a class="jxr_linenumber" name="L243" href="#L243">243</a>                                                                 .collect(toImmutableSet());
+<a class="jxr_linenumber" name="L244" href="#L244">244</a> 
+<a class="jxr_linenumber" name="L245" href="#L245">245</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> LoadingCache&lt;AsciiString, String&gt; buildCache(String spec) {
+<a class="jxr_linenumber" name="L246" href="#L246">246</a>         <strong class="jxr_keyword">return</strong> Caffeine.from(spec).build(AsciiString::toString);
+<a class="jxr_linenumber" name="L247" href="#L247">247</a>     }
+<a class="jxr_linenumber" name="L248" href="#L248">248</a> 
+<a class="jxr_linenumber" name="L249" href="#L249">249</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L250" href="#L250">250</a> <em class="jxr_javadoccomment">     * Concatenates two path strings.</em>
+<a class="jxr_linenumber" name="L251" href="#L251">251</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L252" href="#L252">252</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> String concatPaths(@Nullable String path1, @Nullable String path2) {
+<a class="jxr_linenumber" name="L253" href="#L253">253</a>         path2 = path2 == <strong class="jxr_keyword">null</strong> ? <span class="jxr_string">""</span> : path2;
+<a class="jxr_linenumber" name="L254" href="#L254">254</a> 
+<a class="jxr_linenumber" name="L255" href="#L255">255</a>         <strong class="jxr_keyword">if</strong> (path1 == <strong class="jxr_keyword">null</strong> || path1.isEmpty() || EMPTY_REQUEST_PATH.equals(path1)) {
+<a class="jxr_linenumber" name="L256" href="#L256">256</a>             <strong class="jxr_keyword">if</strong> (path2.isEmpty()) {
+<a class="jxr_linenumber" name="L257" href="#L257">257</a>                 <strong class="jxr_keyword">return</strong> EMPTY_REQUEST_PATH;
+<a class="jxr_linenumber" name="L258" href="#L258">258</a>             }
+<a class="jxr_linenumber" name="L259" href="#L259">259</a> 
+<a class="jxr_linenumber" name="L260" href="#L260">260</a>             <strong class="jxr_keyword">if</strong> (path2.charAt(0) == '/') {
+<a class="jxr_linenumber" name="L261" href="#L261">261</a>                 <strong class="jxr_keyword">return</strong> path2; <em class="jxr_comment">// Most requests will land here.</em>
+<a class="jxr_linenumber" name="L262" href="#L262">262</a>             }
+<a class="jxr_linenumber" name="L263" href="#L263">263</a> 
+<a class="jxr_linenumber" name="L264" href="#L264">264</a>             <strong class="jxr_keyword">return</strong> '/' + path2;
+<a class="jxr_linenumber" name="L265" href="#L265">265</a>         }
+<a class="jxr_linenumber" name="L266" href="#L266">266</a> 
+<a class="jxr_linenumber" name="L267" href="#L267">267</a>         <em class="jxr_comment">// At this point, we are sure path1 is neither empty nor null.</em>
+<a class="jxr_linenumber" name="L268" href="#L268">268</a>         <strong class="jxr_keyword">if</strong> (path2.isEmpty()) {
+<a class="jxr_linenumber" name="L269" href="#L269">269</a>             <em class="jxr_comment">// Only path1 is non-empty. No need to concatenate.</em>
+<a class="jxr_linenumber" name="L270" href="#L270">270</a>             <strong class="jxr_keyword">return</strong> path1;
+<a class="jxr_linenumber" name="L271" href="#L271">271</a>         }
+<a class="jxr_linenumber" name="L272" href="#L272">272</a> 
+<a class="jxr_linenumber" name="L273" href="#L273">273</a>         <strong class="jxr_keyword">if</strong> (path1.charAt(path1.length() - 1) == '/') {
+<a class="jxr_linenumber" name="L274" href="#L274">274</a>             <strong class="jxr_keyword">if</strong> (path2.charAt(0) == '/') {
+<a class="jxr_linenumber" name="L275" href="#L275">275</a>                 <em class="jxr_comment">// path1 ends with '/' and path2 starts with '/'.</em>
+<a class="jxr_linenumber" name="L276" href="#L276">276</a>                 <em class="jxr_comment">// Avoid double-slash by stripping the first slash of path2.</em>
+<a class="jxr_linenumber" name="L277" href="#L277">277</a>                 <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> StringBuilder(path1.length() + path2.length() - 1)
+<a class="jxr_linenumber" name="L278" href="#L278">278</a>                         .append(path1).append(path2, 1, path2.length()).toString();
+<a class="jxr_linenumber" name="L279" href="#L279">279</a>             }
+<a class="jxr_linenumber" name="L280" href="#L280">280</a> 
+<a class="jxr_linenumber" name="L281" href="#L281">281</a>             <em class="jxr_comment">// path1 ends with '/' and path2 does not start with '/'.</em>
+<a class="jxr_linenumber" name="L282" href="#L282">282</a>             <em class="jxr_comment">// Simple concatenation would suffice.</em>
+<a class="jxr_linenumber" name="L283" href="#L283">283</a>             <strong class="jxr_keyword">return</strong> path1 + path2;
+<a class="jxr_linenumber" name="L284" href="#L284">284</a>         }
+<a class="jxr_linenumber" name="L285" href="#L285">285</a> 
+<a class="jxr_linenumber" name="L286" href="#L286">286</a>         <strong class="jxr_keyword">if</strong> (path2.charAt(0) == '/') {
+<a class="jxr_linenumber" name="L287" href="#L287">287</a>             <em class="jxr_comment">// path1 does not end with '/' and path2 starts with '/'.</em>
+<a class="jxr_linenumber" name="L288" href="#L288">288</a>             <em class="jxr_comment">// Simple concatenation would suffice.</em>
+<a class="jxr_linenumber" name="L289" href="#L289">289</a>             <strong class="jxr_keyword">return</strong> path1 + path2;
+<a class="jxr_linenumber" name="L290" href="#L290">290</a>         }
+<a class="jxr_linenumber" name="L291" href="#L291">291</a> 
+<a class="jxr_linenumber" name="L292" href="#L292">292</a>         <em class="jxr_comment">// path1 does not end with '/' and path2 does not start with '/'.</em>
+<a class="jxr_linenumber" name="L293" href="#L293">293</a>         <em class="jxr_comment">// Need to insert '/' between path1 and path2.</em>
+<a class="jxr_linenumber" name="L294" href="#L294">294</a>         <strong class="jxr_keyword">return</strong> path1 + '/' + path2;
+<a class="jxr_linenumber" name="L295" href="#L295">295</a>     }
+<a class="jxr_linenumber" name="L296" href="#L296">296</a> 
+<a class="jxr_linenumber" name="L297" href="#L297">297</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L298" href="#L298">298</a> <em class="jxr_javadoccomment">     * Decodes a percent-encoded path string.</em>
+<a class="jxr_linenumber" name="L299" href="#L299">299</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L300" href="#L300">300</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> String decodePath(String path) {
+<a class="jxr_linenumber" name="L301" href="#L301">301</a>         <strong class="jxr_keyword">if</strong> (path.indexOf('%') &lt; 0) {
+<a class="jxr_linenumber" name="L302" href="#L302">302</a>             <em class="jxr_comment">// No need to decoded; not percent-encoded</em>
+<a class="jxr_linenumber" name="L303" href="#L303">303</a>             <strong class="jxr_keyword">return</strong> path;
+<a class="jxr_linenumber" name="L304" href="#L304">304</a>         }
+<a class="jxr_linenumber" name="L305" href="#L305">305</a> 
+<a class="jxr_linenumber" name="L306" href="#L306">306</a>         <em class="jxr_comment">// Decode percent-encoded characters.</em>
+<a class="jxr_linenumber" name="L307" href="#L307">307</a>         <em class="jxr_comment">// An invalid character is replaced with 0xFF, which will be replaced into '�' by UTF-8 decoder.</em>
+<a class="jxr_linenumber" name="L308" href="#L308">308</a>         <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> len = path.length();
+<a class="jxr_linenumber" name="L309" href="#L309">309</a>         <strong class="jxr_keyword">final</strong> byte[] buf = <strong class="jxr_keyword">new</strong> byte[len];
+<a class="jxr_linenumber" name="L310" href="#L310">310</a>         <strong class="jxr_keyword">int</strong> dstLen = 0;
+<a class="jxr_linenumber" name="L311" href="#L311">311</a>         <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 0; i &lt; len; i++) {
+<a class="jxr_linenumber" name="L312" href="#L312">312</a>             <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">char</strong> ch = path.charAt(i);
+<a class="jxr_linenumber" name="L313" href="#L313">313</a>             <strong class="jxr_keyword">if</strong> (ch != '%') {
+<a class="jxr_linenumber" name="L314" href="#L314">314</a>                 buf[dstLen++] = (byte) ((ch &amp; 0xFF80) == 0 ? ch : 0xFF);
+<a class="jxr_linenumber" name="L315" href="#L315">315</a>                 <strong class="jxr_keyword">continue</strong>;
+<a class="jxr_linenumber" name="L316" href="#L316">316</a>             }
+<a class="jxr_linenumber" name="L317" href="#L317">317</a> 
+<a class="jxr_linenumber" name="L318" href="#L318">318</a>             <em class="jxr_comment">// Decode a percent-encoded character.</em>
+<a class="jxr_linenumber" name="L319" href="#L319">319</a>             <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> hexEnd = i + 3;
+<a class="jxr_linenumber" name="L320" href="#L320">320</a>             <strong class="jxr_keyword">if</strong> (hexEnd &gt; len) {
+<a class="jxr_linenumber" name="L321" href="#L321">321</a>                 <em class="jxr_comment">// '%' or '%x' (must be followed by two hexadigits)</em>
+<a class="jxr_linenumber" name="L322" href="#L322">322</a>                 buf[dstLen++] = (byte) 0xFF;
+<a class="jxr_linenumber" name="L323" href="#L323">323</a>                 <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L324" href="#L324">324</a>             }
+<a class="jxr_linenumber" name="L325" href="#L325">325</a> 
+<a class="jxr_linenumber" name="L326" href="#L326">326</a>             <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> digit1 = decodeHexNibble(path.charAt(++i));
+<a class="jxr_linenumber" name="L327" href="#L327">327</a>             <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> digit2 = decodeHexNibble(path.charAt(++i));
+<a class="jxr_linenumber" name="L328" href="#L328">328</a>             <strong class="jxr_keyword">if</strong> (digit1 &lt; 0 || digit2 &lt; 0) {
+<a class="jxr_linenumber" name="L329" href="#L329">329</a>                 <em class="jxr_comment">// The first or second digit is not hexadecimal.</em>
+<a class="jxr_linenumber" name="L330" href="#L330">330</a>                 buf[dstLen++] = (byte) 0xFF;
+<a class="jxr_linenumber" name="L331" href="#L331">331</a>             } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L332" href="#L332">332</a>                 buf[dstLen++] = (byte) ((digit1 &lt;&lt; 4) | digit2);
+<a class="jxr_linenumber" name="L333" href="#L333">333</a>             }
+<a class="jxr_linenumber" name="L334" href="#L334">334</a>         }
+<a class="jxr_linenumber" name="L335" href="#L335">335</a> 
+<a class="jxr_linenumber" name="L336" href="#L336">336</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> String(buf, 0, dstLen, StandardCharsets.UTF_8);
+<a class="jxr_linenumber" name="L337" href="#L337">337</a>     }
+<a class="jxr_linenumber" name="L338" href="#L338">338</a> 
+<a class="jxr_linenumber" name="L339" href="#L339">339</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L340" href="#L340">340</a> <em class="jxr_javadoccomment">     * Returns {@code true} if the specified {@code path} is an absolute {@code URI}.</em>
+<a class="jxr_linenumber" name="L341" href="#L341">341</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L342" href="#L342">342</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isAbsoluteUri(@Nullable String maybeUri) {
+<a class="jxr_linenumber" name="L343" href="#L343">343</a>         <strong class="jxr_keyword">if</strong> (maybeUri == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L344" href="#L344">344</a>             <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L345" href="#L345">345</a>         }
+<a class="jxr_linenumber" name="L346" href="#L346">346</a>         <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> firstColonIdx = maybeUri.indexOf(':');
+<a class="jxr_linenumber" name="L347" href="#L347">347</a>         <strong class="jxr_keyword">if</strong> (firstColonIdx &lt;= 0 || firstColonIdx + 3 &gt;= maybeUri.length()) {
+<a class="jxr_linenumber" name="L348" href="#L348">348</a>             <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L349" href="#L349">349</a>         }
+<a class="jxr_linenumber" name="L350" href="#L350">350</a>         <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> firstSlashIdx = maybeUri.indexOf('/');
+<a class="jxr_linenumber" name="L351" href="#L351">351</a>         <strong class="jxr_keyword">if</strong> (firstSlashIdx &lt;= 0 || firstSlashIdx &lt; firstColonIdx) {
+<a class="jxr_linenumber" name="L352" href="#L352">352</a>             <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L353" href="#L353">353</a>         }
+<a class="jxr_linenumber" name="L354" href="#L354">354</a> 
+<a class="jxr_linenumber" name="L355" href="#L355">355</a>         <strong class="jxr_keyword">return</strong> maybeUri.charAt(firstColonIdx + 1) == '/' &amp;&amp; maybeUri.charAt(firstColonIdx + 2) == '/';
+<a class="jxr_linenumber" name="L356" href="#L356">356</a>     }
+<a class="jxr_linenumber" name="L357" href="#L357">357</a> 
+<a class="jxr_linenumber" name="L358" href="#L358">358</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L359" href="#L359">359</a> <em class="jxr_javadoccomment">     * Returns {@code true} if the specified HTTP status string represents an informational status.</em>
+<a class="jxr_linenumber" name="L360" href="#L360">360</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L361" href="#L361">361</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isInformational(@Nullable String statusText) {
+<a class="jxr_linenumber" name="L362" href="#L362">362</a>         <strong class="jxr_keyword">return</strong> statusText != <strong class="jxr_keyword">null</strong> &amp;&amp; !statusText.isEmpty() &amp;&amp; statusText.charAt(0) == '1';
+<a class="jxr_linenumber" name="L363" href="#L363">363</a>     }
+<a class="jxr_linenumber" name="L364" href="#L364">364</a> 
+<a class="jxr_linenumber" name="L365" href="#L365">365</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L366" href="#L366">366</a> <em class="jxr_javadoccomment">     * Returns {@code true} if the content of the response with the given {@link HttpStatus} is expected to</em>
+<a class="jxr_linenumber" name="L367" href="#L367">367</a> <em class="jxr_javadoccomment">     * be always empty (1xx, 204, 205 and 304 responses.)</em>
+<a class="jxr_linenumber" name="L368" href="#L368">368</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L369" href="#L369">369</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isContentAlwaysEmpty(<a href="../../../../com/linecorp/armeria/common/HttpStatus.html">HttpStatus</a> status) {
+<a class="jxr_linenumber" name="L370" href="#L370">370</a>         <strong class="jxr_keyword">return</strong> isContentAlwaysEmpty(status.code());
+<a class="jxr_linenumber" name="L371" href="#L371">371</a>     }
+<a class="jxr_linenumber" name="L372" href="#L372">372</a> 
+<a class="jxr_linenumber" name="L373" href="#L373">373</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L374" href="#L374">374</a> <em class="jxr_javadoccomment">     * Returns {@code true} if the content of the response with the given status code is expected to</em>
+<a class="jxr_linenumber" name="L375" href="#L375">375</a> <em class="jxr_javadoccomment">     * be always empty (1xx, 204, 205 and 304 responses.)</em>
+<a class="jxr_linenumber" name="L376" href="#L376">376</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L377" href="#L377">377</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isContentAlwaysEmpty(<strong class="jxr_keyword">int</strong> statusCode) {
+<a class="jxr_linenumber" name="L378" href="#L378">378</a>         <strong class="jxr_keyword">if</strong> (HttpStatusClass.INFORMATIONAL.contains(statusCode)) {
+<a class="jxr_linenumber" name="L379" href="#L379">379</a>             <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L380" href="#L380">380</a>         }
+<a class="jxr_linenumber" name="L381" href="#L381">381</a> 
+<a class="jxr_linenumber" name="L382" href="#L382">382</a>         <strong class="jxr_keyword">switch</strong> (statusCode) {
+<a class="jxr_linenumber" name="L383" href="#L383">383</a>             <strong class="jxr_keyword">case</strong> <em class="jxr_comment">/* NO_CONTENT */</em> 204:
+<a class="jxr_linenumber" name="L384" href="#L384">384</a>             <strong class="jxr_keyword">case</strong> <em class="jxr_comment">/* RESET_CONTENT */</em> 205:
+<a class="jxr_linenumber" name="L385" href="#L385">385</a>             <strong class="jxr_keyword">case</strong> <em class="jxr_comment">/* NOT_MODIFIED */</em> 304:
+<a class="jxr_linenumber" name="L386" href="#L386">386</a>                 <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L387" href="#L387">387</a>         }
+<a class="jxr_linenumber" name="L388" href="#L388">388</a>         <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L389" href="#L389">389</a>     }
+<a class="jxr_linenumber" name="L390" href="#L390">390</a> 
+<a class="jxr_linenumber" name="L391" href="#L391">391</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L392" href="#L392">392</a> <em class="jxr_javadoccomment">     * Returns {@code true} if the content of the response with the given {@link HttpStatus} is expected to</em>
+<a class="jxr_linenumber" name="L393" href="#L393">393</a> <em class="jxr_javadoccomment">     * be always empty (1xx, 204, 205 and 304 responses.)</em>
+<a class="jxr_linenumber" name="L394" href="#L394">394</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L395" href="#L395">395</a> <em class="jxr_javadoccomment">     * @throws IllegalArgumentException if the specified {@code content} or {@code trailers} are</em>
+<a class="jxr_linenumber" name="L396" href="#L396">396</a> <em class="jxr_javadoccomment">     *                                  non-empty when the content is always empty</em>
+<a class="jxr_linenumber" name="L397" href="#L397">397</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L398" href="#L398">398</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isContentAlwaysEmptyWithValidation(
+<a class="jxr_linenumber" name="L399" href="#L399">399</a>             <a href="../../../../com/linecorp/armeria/common/HttpStatus.html">HttpStatus</a> status, <a href="../../../../com/linecorp/armeria/common/HttpData.html">HttpData</a> content, <a href="../../../../com/linecorp/armeria/common/HttpHeaders.html">HttpHeaders</a> trailers) {
+<a class="jxr_linenumber" name="L400" href="#L400">400</a>         <strong class="jxr_keyword">if</strong> (!isContentAlwaysEmpty(status)) {
+<a class="jxr_linenumber" name="L401" href="#L401">401</a>             <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L402" href="#L402">402</a>         }
+<a class="jxr_linenumber" name="L403" href="#L403">403</a> 
+<a class="jxr_linenumber" name="L404" href="#L404">404</a>         <strong class="jxr_keyword">if</strong> (!content.isEmpty()) {
+<a class="jxr_linenumber" name="L405" href="#L405">405</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalArgumentException(
+<a class="jxr_linenumber" name="L406" href="#L406">406</a>                     <span class="jxr_string">"A "</span> + status + <span class="jxr_string">" response must have empty content: "</span> + content.length() + <span class="jxr_string">" byte(s)"</span>);
+<a class="jxr_linenumber" name="L407" href="#L407">407</a>         }
+<a class="jxr_linenumber" name="L408" href="#L408">408</a>         <strong class="jxr_keyword">if</strong> (!trailers.isEmpty()) {
+<a class="jxr_linenumber" name="L409" href="#L409">409</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalArgumentException(
+<a class="jxr_linenumber" name="L410" href="#L410">410</a>                     <span class="jxr_string">"A "</span> + status + <span class="jxr_string">" response must not have trailers: "</span> + trailers);
+<a class="jxr_linenumber" name="L411" href="#L411">411</a>         }
+<a class="jxr_linenumber" name="L412" href="#L412">412</a> 
+<a class="jxr_linenumber" name="L413" href="#L413">413</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L414" href="#L414">414</a>     }
+<a class="jxr_linenumber" name="L415" href="#L415">415</a> 
+<a class="jxr_linenumber" name="L416" href="#L416">416</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L417" href="#L417">417</a> <em class="jxr_javadoccomment">     * Returns {@code true} if the specified {@code request} is a CORS preflight request.</em>
+<a class="jxr_linenumber" name="L418" href="#L418">418</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L419" href="#L419">419</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isCorsPreflightRequest(com.linecorp.armeria.common.HttpRequest request) {
+<a class="jxr_linenumber" name="L420" href="#L420">420</a>         requireNonNull(request, <span class="jxr_string">"request"</span>);
+<a class="jxr_linenumber" name="L421" href="#L421">421</a>         <strong class="jxr_keyword">return</strong> request.method() == HttpMethod.OPTIONS &amp;&amp;
+<a class="jxr_linenumber" name="L422" href="#L422">422</a>                request.headers().contains(HttpHeaderNames.ORIGIN) &amp;&amp;
+<a class="jxr_linenumber" name="L423" href="#L423">423</a>                request.headers().contains(HttpHeaderNames.ACCESS_CONTROL_REQUEST_METHOD);
+<a class="jxr_linenumber" name="L424" href="#L424">424</a>     }
+<a class="jxr_linenumber" name="L425" href="#L425">425</a> 
+<a class="jxr_linenumber" name="L426" href="#L426">426</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L427" href="#L427">427</a> <em class="jxr_javadoccomment">     * Parses the specified HTTP header directives and invokes the specified {@code callback}</em>
+<a class="jxr_linenumber" name="L428" href="#L428">428</a> <em class="jxr_javadoccomment">     * with the directive names and values.</em>
+<a class="jxr_linenumber" name="L429" href="#L429">429</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L430" href="#L430">430</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> parseDirectives(String directives, BiConsumer&lt;String, String&gt; callback) {
+<a class="jxr_linenumber" name="L431" href="#L431">431</a>         <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> len = directives.length();
+<a class="jxr_linenumber" name="L432" href="#L432">432</a>         <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 0; i &lt; len;) {
+<a class="jxr_linenumber" name="L433" href="#L433">433</a>             <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> nameStart = i;
+<a class="jxr_linenumber" name="L434" href="#L434">434</a>             <strong class="jxr_keyword">final</strong> String name;
+<a class="jxr_linenumber" name="L435" href="#L435">435</a>             <strong class="jxr_keyword">final</strong> String value;
+<a class="jxr_linenumber" name="L436" href="#L436">436</a> 
+<a class="jxr_linenumber" name="L437" href="#L437">437</a>             <em class="jxr_comment">// Find the name.</em>
+<a class="jxr_linenumber" name="L438" href="#L438">438</a>             <strong class="jxr_keyword">for</strong> (; i &lt; len; i++) {
+<a class="jxr_linenumber" name="L439" href="#L439">439</a>                 <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">char</strong> ch = directives.charAt(i);
+<a class="jxr_linenumber" name="L440" href="#L440">440</a>                 <strong class="jxr_keyword">if</strong> (ch == ',' || ch == '=') {
+<a class="jxr_linenumber" name="L441" href="#L441">441</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L442" href="#L442">442</a>                 }
+<a class="jxr_linenumber" name="L443" href="#L443">443</a>             }
+<a class="jxr_linenumber" name="L444" href="#L444">444</a>             name = directives.substring(nameStart, i).trim();
+<a class="jxr_linenumber" name="L445" href="#L445">445</a> 
+<a class="jxr_linenumber" name="L446" href="#L446">446</a>             <em class="jxr_comment">// Find the value.</em>
+<a class="jxr_linenumber" name="L447" href="#L447">447</a>             <strong class="jxr_keyword">if</strong> (i == len || directives.charAt(i) == ',') {
+<a class="jxr_linenumber" name="L448" href="#L448">448</a>                 <em class="jxr_comment">// Skip comma or go beyond 'len' to break the loop.</em>
+<a class="jxr_linenumber" name="L449" href="#L449">449</a>                 i++;
+<a class="jxr_linenumber" name="L450" href="#L450">450</a>                 value = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L451" href="#L451">451</a>             } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L452" href="#L452">452</a>                 <em class="jxr_comment">// Skip '='.</em>
+<a class="jxr_linenumber" name="L453" href="#L453">453</a>                 i++;
+<a class="jxr_linenumber" name="L454" href="#L454">454</a> 
+<a class="jxr_linenumber" name="L455" href="#L455">455</a>                 <em class="jxr_comment">// Skip whitespaces.</em>
+<a class="jxr_linenumber" name="L456" href="#L456">456</a>                 <strong class="jxr_keyword">for</strong> (; i &lt; len; i++) {
+<a class="jxr_linenumber" name="L457" href="#L457">457</a>                     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">char</strong> ch = directives.charAt(i);
+<a class="jxr_linenumber" name="L458" href="#L458">458</a>                     <strong class="jxr_keyword">if</strong> (ch != ' ' &amp;&amp; ch != '\t') {
+<a class="jxr_linenumber" name="L459" href="#L459">459</a>                         <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L460" href="#L460">460</a>                     }
+<a class="jxr_linenumber" name="L461" href="#L461">461</a>                 }
+<a class="jxr_linenumber" name="L462" href="#L462">462</a> 
+<a class="jxr_linenumber" name="L463" href="#L463">463</a>                 <strong class="jxr_keyword">if</strong> (i &lt; len &amp;&amp; directives.charAt(i) == '\&quot;') {
+<a class="jxr_linenumber" name="L464" href="#L464">464</a>                     <em class="jxr_comment">// Handle quoted string.</em>
+<a class="jxr_linenumber" name="L465" href="#L465">465</a>                     <em class="jxr_comment">// Skip the opening quote.</em>
+<a class="jxr_linenumber" name="L466" href="#L466">466</a>                     i++;
+<a class="jxr_linenumber" name="L467" href="#L467">467</a>                     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> valueStart = i;
+<a class="jxr_linenumber" name="L468" href="#L468">468</a> 
+<a class="jxr_linenumber" name="L469" href="#L469">469</a>                     <em class="jxr_comment">// Find the closing quote.</em>
+<a class="jxr_linenumber" name="L470" href="#L470">470</a>                     <strong class="jxr_keyword">for</strong> (; i &lt; len; i++) {
+<a class="jxr_linenumber" name="L471" href="#L471">471</a>                         <strong class="jxr_keyword">if</strong> (directives.charAt(i) == '\&quot;') {
+<a class="jxr_linenumber" name="L472" href="#L472">472</a>                             <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L473" href="#L473">473</a>                         }
+<a class="jxr_linenumber" name="L474" href="#L474">474</a>                     }
+<a class="jxr_linenumber" name="L475" href="#L475">475</a>                     value = directives.substring(valueStart, i);
+<a class="jxr_linenumber" name="L476" href="#L476">476</a> 
+<a class="jxr_linenumber" name="L477" href="#L477">477</a>                     <em class="jxr_comment">// Skip the closing quote.</em>
+<a class="jxr_linenumber" name="L478" href="#L478">478</a>                     i++;
+<a class="jxr_linenumber" name="L479" href="#L479">479</a> 
+<a class="jxr_linenumber" name="L480" href="#L480">480</a>                     <em class="jxr_comment">// Find the comma and skip it.</em>
+<a class="jxr_linenumber" name="L481" href="#L481">481</a>                     <strong class="jxr_keyword">for</strong> (; i &lt; len; i++) {
+<a class="jxr_linenumber" name="L482" href="#L482">482</a>                         <strong class="jxr_keyword">if</strong> (directives.charAt(i) == ',') {
+<a class="jxr_linenumber" name="L483" href="#L483">483</a>                             i++;
+<a class="jxr_linenumber" name="L484" href="#L484">484</a>                             <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L485" href="#L485">485</a>                         }
+<a class="jxr_linenumber" name="L486" href="#L486">486</a>                     }
+<a class="jxr_linenumber" name="L487" href="#L487">487</a>                 } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L488" href="#L488">488</a>                     <em class="jxr_comment">// Handle unquoted string.</em>
+<a class="jxr_linenumber" name="L489" href="#L489">489</a>                     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> valueStart = i;
+<a class="jxr_linenumber" name="L490" href="#L490">490</a> 
+<a class="jxr_linenumber" name="L491" href="#L491">491</a>                     <em class="jxr_comment">// Find the comma.</em>
+<a class="jxr_linenumber" name="L492" href="#L492">492</a>                     <strong class="jxr_keyword">for</strong> (; i &lt; len; i++) {
+<a class="jxr_linenumber" name="L493" href="#L493">493</a>                         <strong class="jxr_keyword">if</strong> (directives.charAt(i) == ',') {
+<a class="jxr_linenumber" name="L494" href="#L494">494</a>                             <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L495" href="#L495">495</a>                         }
+<a class="jxr_linenumber" name="L496" href="#L496">496</a>                     }
+<a class="jxr_linenumber" name="L497" href="#L497">497</a>                     value = directives.substring(valueStart, i).trim();
+<a class="jxr_linenumber" name="L498" href="#L498">498</a> 
+<a class="jxr_linenumber" name="L499" href="#L499">499</a>                     <em class="jxr_comment">// Skip the comma.</em>
+<a class="jxr_linenumber" name="L500" href="#L500">500</a>                     i++;
+<a class="jxr_linenumber" name="L501" href="#L501">501</a>                 }
+<a class="jxr_linenumber" name="L502" href="#L502">502</a>             }
+<a class="jxr_linenumber" name="L503" href="#L503">503</a> 
+<a class="jxr_linenumber" name="L504" href="#L504">504</a>             <strong class="jxr_keyword">if</strong> (!name.isEmpty()) {
+<a class="jxr_linenumber" name="L505" href="#L505">505</a>                 callback.accept(Ascii.toLowerCase(name), Strings.emptyToNull(value));
+<a class="jxr_linenumber" name="L506" href="#L506">506</a>             }
+<a class="jxr_linenumber" name="L507" href="#L507">507</a>         }
+<a class="jxr_linenumber" name="L508" href="#L508">508</a>     }
+<a class="jxr_linenumber" name="L509" href="#L509">509</a> 
+<a class="jxr_linenumber" name="L510" href="#L510">510</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L511" href="#L511">511</a> <em class="jxr_javadoccomment">     * Converts the specified HTTP header directive value into a long integer.</em>
+<a class="jxr_linenumber" name="L512" href="#L512">512</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L513" href="#L513">513</a> <em class="jxr_javadoccomment">     * @return the converted value if {@code value} is equal to or greater than {@code 0}.</em>
+<a class="jxr_linenumber" name="L514" href="#L514">514</a> <em class="jxr_javadoccomment">     *         {@code -1} otherwise, i.e. if a negative integer or not a number.</em>
+<a class="jxr_linenumber" name="L515" href="#L515">515</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L516" href="#L516">516</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">long</strong> parseDirectiveValueAsSeconds(@Nullable String value) {
+<a class="jxr_linenumber" name="L517" href="#L517">517</a>         <strong class="jxr_keyword">if</strong> (value == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L518" href="#L518">518</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L519" href="#L519">519</a>         }
+<a class="jxr_linenumber" name="L520" href="#L520">520</a> 
+<a class="jxr_linenumber" name="L521" href="#L521">521</a>         <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L522" href="#L522">522</a>             <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> converted = Long.parseLong(value);
+<a class="jxr_linenumber" name="L523" href="#L523">523</a>             <strong class="jxr_keyword">return</strong> converted &gt;= 0 ? converted : -1;
+<a class="jxr_linenumber" name="L524" href="#L524">524</a>         } <strong class="jxr_keyword">catch</strong> (NumberFormatException e) {
+<a class="jxr_linenumber" name="L525" href="#L525">525</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L526" href="#L526">526</a>         }
+<a class="jxr_linenumber" name="L527" href="#L527">527</a>     }
+<a class="jxr_linenumber" name="L528" href="#L528">528</a> 
+<a class="jxr_linenumber" name="L529" href="#L529">529</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L530" href="#L530">530</a> <em class="jxr_javadoccomment">     * Converts the specified Netty HTTP/2 into Armeria HTTP/2 {@link RequestHeaders}.</em>
+<a class="jxr_linenumber" name="L531" href="#L531">531</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L532" href="#L532">532</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../com/linecorp/armeria/common/RequestHeaders.html">RequestHeaders</a> toArmeriaRequestHeaders(ChannelHandlerContext ctx, Http2Headers headers,
+<a class="jxr_linenumber" name="L533" href="#L533">533</a>                                                          <strong class="jxr_keyword">boolean</strong> endOfStream, String scheme,
+<a class="jxr_linenumber" name="L534" href="#L534">534</a>                                                          <a href="../../../../com/linecorp/armeria/server/ServerConfig.html">ServerConfig</a> cfg) {
+<a class="jxr_linenumber" name="L535" href="#L535">535</a>         <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/common/RequestHeadersBuilder.html">RequestHeadersBuilder</a> builder = RequestHeaders.builder();
+<a class="jxr_linenumber" name="L536" href="#L536">536</a>         toArmeria(builder, headers, endOfStream);
+<a class="jxr_linenumber" name="L537" href="#L537">537</a>         <em class="jxr_comment">// A CONNECT request might not have ":scheme". See https://tools.ietf.org/html/rfc7540#section-8.1.2.3</em>
+<a class="jxr_linenumber" name="L538" href="#L538">538</a>         <strong class="jxr_keyword">if</strong> (!builder.contains(HttpHeaderNames.SCHEME)) {
+<a class="jxr_linenumber" name="L539" href="#L539">539</a>             builder.add(HttpHeaderNames.SCHEME, scheme);
+<a class="jxr_linenumber" name="L540" href="#L540">540</a>         }
+<a class="jxr_linenumber" name="L541" href="#L541">541</a>         <strong class="jxr_keyword">if</strong> (!builder.contains(HttpHeaderNames.AUTHORITY)) {
+<a class="jxr_linenumber" name="L542" href="#L542">542</a>             <strong class="jxr_keyword">final</strong> String defaultHostname = cfg.defaultVirtualHost().defaultHostname();
+<a class="jxr_linenumber" name="L543" href="#L543">543</a>             <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> port = ((InetSocketAddress) ctx.channel().localAddress()).getPort();
+<a class="jxr_linenumber" name="L544" href="#L544">544</a>             builder.add(HttpHeaderNames.AUTHORITY, defaultHostname + ':' + port);
+<a class="jxr_linenumber" name="L545" href="#L545">545</a>         }
+<a class="jxr_linenumber" name="L546" href="#L546">546</a>         <strong class="jxr_keyword">return</strong> builder.build();
+<a class="jxr_linenumber" name="L547" href="#L547">547</a>     }
+<a class="jxr_linenumber" name="L548" href="#L548">548</a> 
+<a class="jxr_linenumber" name="L549" href="#L549">549</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L550" href="#L550">550</a> <em class="jxr_javadoccomment">     * Converts the specified Netty HTTP/2 into Armeria HTTP/2 headers.</em>
+<a class="jxr_linenumber" name="L551" href="#L551">551</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L552" href="#L552">552</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../com/linecorp/armeria/common/HttpHeaders.html">HttpHeaders</a> toArmeria(Http2Headers headers, <strong class="jxr_keyword">boolean</strong> request, <strong class="jxr_keyword">boolean</strong> endOfStream) {
+<a class="jxr_linenumber" name="L553" href="#L553">553</a>         <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/common/HttpHeadersBuilder.html">HttpHeadersBuilder</a> builder;
+<a class="jxr_linenumber" name="L554" href="#L554">554</a>         <strong class="jxr_keyword">if</strong> (request) {
+<a class="jxr_linenumber" name="L555" href="#L555">555</a>             builder = headers.contains(HttpHeaderNames.METHOD) ? RequestHeaders.builder()
+<a class="jxr_linenumber" name="L556" href="#L556">556</a>                                                                : HttpHeaders.builder();
+<a class="jxr_linenumber" name="L557" href="#L557">557</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L558" href="#L558">558</a>             builder = headers.contains(HttpHeaderNames.STATUS) ? ResponseHeaders.builder()
+<a class="jxr_linenumber" name="L559" href="#L559">559</a>                                                                : HttpHeaders.builder();
+<a class="jxr_linenumber" name="L560" href="#L560">560</a>         }
+<a class="jxr_linenumber" name="L561" href="#L561">561</a> 
+<a class="jxr_linenumber" name="L562" href="#L562">562</a>         toArmeria(builder, headers, endOfStream);
+<a class="jxr_linenumber" name="L563" href="#L563">563</a>         <strong class="jxr_keyword">return</strong> builder.build();
+<a class="jxr_linenumber" name="L564" href="#L564">564</a>     }
+<a class="jxr_linenumber" name="L565" href="#L565">565</a> 
+<a class="jxr_linenumber" name="L566" href="#L566">566</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> toArmeria(<a href="../../../../com/linecorp/armeria/common/HttpHeadersBuilder.html">HttpHeadersBuilder</a> builder, Http2Headers headers, <strong class="jxr_keyword">boolean</strong> endOfStream) {
+<a class="jxr_linenumber" name="L567" href="#L567">567</a>         builder.sizeHint(headers.size());
+<a class="jxr_linenumber" name="L568" href="#L568">568</a>         builder.endOfStream(endOfStream);
+<a class="jxr_linenumber" name="L569" href="#L569">569</a> 
+<a class="jxr_linenumber" name="L570" href="#L570">570</a>         StringJoiner cookieJoiner = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L571" href="#L571">571</a>         <strong class="jxr_keyword">for</strong> (Entry&lt;CharSequence, CharSequence&gt; e : headers) {
+<a class="jxr_linenumber" name="L572" href="#L572">572</a>             <strong class="jxr_keyword">final</strong> AsciiString name = HttpHeaderNames.of(e.getKey());
+<a class="jxr_linenumber" name="L573" href="#L573">573</a>             <strong class="jxr_keyword">final</strong> CharSequence value = e.getValue();
+<a class="jxr_linenumber" name="L574" href="#L574">574</a> 
+<a class="jxr_linenumber" name="L575" href="#L575">575</a>             <em class="jxr_comment">// Cookies must be concatenated into a single octet string.</em>
+<a class="jxr_linenumber" name="L576" href="#L576">576</a>             <em class="jxr_comment">// https://tools.ietf.org/html/rfc7540#section-8.1.2.5</em>
+<a class="jxr_linenumber" name="L577" href="#L577">577</a>             <strong class="jxr_keyword">if</strong> (name.equals(HttpHeaderNames.COOKIE)) {
+<a class="jxr_linenumber" name="L578" href="#L578">578</a>                 <strong class="jxr_keyword">if</strong> (cookieJoiner == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L579" href="#L579">579</a>                     cookieJoiner = <strong class="jxr_keyword">new</strong> StringJoiner(COOKIE_SEPARATOR);
+<a class="jxr_linenumber" name="L580" href="#L580">580</a>                 }
+<a class="jxr_linenumber" name="L581" href="#L581">581</a>                 COOKIE_SPLITTER.split(value).forEach(cookieJoiner::add);
+<a class="jxr_linenumber" name="L582" href="#L582">582</a>             } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L583" href="#L583">583</a>                 builder.add(name, convertHeaderValue(name, value));
+<a class="jxr_linenumber" name="L584" href="#L584">584</a>             }
+<a class="jxr_linenumber" name="L585" href="#L585">585</a>         }
+<a class="jxr_linenumber" name="L586" href="#L586">586</a> 
+<a class="jxr_linenumber" name="L587" href="#L587">587</a>         <strong class="jxr_keyword">if</strong> (cookieJoiner != <strong class="jxr_keyword">null</strong> &amp;&amp; cookieJoiner.length() != 0) {
+<a class="jxr_linenumber" name="L588" href="#L588">588</a>             builder.add(HttpHeaderNames.COOKIE, cookieJoiner.toString());
+<a class="jxr_linenumber" name="L589" href="#L589">589</a>         }
+<a class="jxr_linenumber" name="L590" href="#L590">590</a>     }
+<a class="jxr_linenumber" name="L591" href="#L591">591</a> 
+<a class="jxr_linenumber" name="L592" href="#L592">592</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L593" href="#L593">593</a> <em class="jxr_javadoccomment">     * Converts the headers of the given Netty HTTP/1.x request into Armeria HTTP/2 headers.</em>
+<a class="jxr_linenumber" name="L594" href="#L594">594</a> <em class="jxr_javadoccomment">     * The following headers are only used if they can not be found in the {@code HOST} header or the</em>
+<a class="jxr_linenumber" name="L595" href="#L595">595</a> <em class="jxr_javadoccomment">     * {@code Request-Line} as defined by &lt;a href="https://tools.ietf.org/html/rfc7230"&gt;rfc7230&lt;/a&gt;</em>
+<a class="jxr_linenumber" name="L596" href="#L596">596</a> <em class="jxr_javadoccomment">     * &lt;ul&gt;</em>
+<a class="jxr_linenumber" name="L597" href="#L597">597</a> <em class="jxr_javadoccomment">     * &lt;li&gt;{@link ExtensionHeaderNames#SCHEME}&lt;/li&gt;</em>
+<a class="jxr_linenumber" name="L598" href="#L598">598</a> <em class="jxr_javadoccomment">     * &lt;/ul&gt;</em>
+<a class="jxr_linenumber" name="L599" href="#L599">599</a> <em class="jxr_javadoccomment">     * {@link ExtensionHeaderNames#PATH} is ignored and instead extracted from the {@code Request-Line}.</em>
+<a class="jxr_linenumber" name="L600" href="#L600">600</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L601" href="#L601">601</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../com/linecorp/armeria/common/RequestHeaders.html">RequestHeaders</a> toArmeria(ChannelHandlerContext ctx, <a href="../../../../com/linecorp/armeria/common/HttpRequest.html">HttpRequest</a> in,
+<a class="jxr_linenumber" name="L602" href="#L602">602</a>                                            <a href="../../../../com/linecorp/armeria/server/ServerConfig.html">ServerConfig</a> cfg) <strong class="jxr_keyword">throws</strong> URISyntaxException {
+<a class="jxr_linenumber" name="L603" href="#L603">603</a>         <strong class="jxr_keyword">final</strong> URI requestTargetUri = toUri(in);
+<a class="jxr_linenumber" name="L604" href="#L604">604</a> 
+<a class="jxr_linenumber" name="L605" href="#L605">605</a>         <strong class="jxr_keyword">final</strong> io.netty.handler.codec.http.HttpHeaders inHeaders = in.headers();
+<a class="jxr_linenumber" name="L606" href="#L606">606</a>         <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/common/RequestHeadersBuilder.html">RequestHeadersBuilder</a> out = RequestHeaders.builder();
+<a class="jxr_linenumber" name="L607" href="#L607">607</a>         out.sizeHint(inHeaders.size());
+<a class="jxr_linenumber" name="L608" href="#L608">608</a>         out.add(HttpHeaderNames.METHOD, in.method().name());
+<a class="jxr_linenumber" name="L609" href="#L609">609</a>         out.add(HttpHeaderNames.PATH, toHttp2Path(requestTargetUri));
+<a class="jxr_linenumber" name="L610" href="#L610">610</a> 
+<a class="jxr_linenumber" name="L611" href="#L611">611</a>         addHttp2Scheme(inHeaders, requestTargetUri, out);
+<a class="jxr_linenumber" name="L612" href="#L612">612</a> 
+<a class="jxr_linenumber" name="L613" href="#L613">613</a>         <strong class="jxr_keyword">if</strong> (!isOriginForm(requestTargetUri) &amp;&amp; !isAsteriskForm(requestTargetUri)) {
+<a class="jxr_linenumber" name="L614" href="#L614">614</a>             <em class="jxr_comment">// Attempt to take from HOST header before taking from the request-line</em>
+<a class="jxr_linenumber" name="L615" href="#L615">615</a>             <strong class="jxr_keyword">final</strong> String host = inHeaders.getAsString(HttpHeaderNames.HOST);
+<a class="jxr_linenumber" name="L616" href="#L616">616</a>             addHttp2Authority(host == <strong class="jxr_keyword">null</strong> || host.isEmpty() ? requestTargetUri.getAuthority() : host, out);
+<a class="jxr_linenumber" name="L617" href="#L617">617</a>         }
+<a class="jxr_linenumber" name="L618" href="#L618">618</a> 
+<a class="jxr_linenumber" name="L619" href="#L619">619</a>         <strong class="jxr_keyword">if</strong> (out.authority() == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L620" href="#L620">620</a>             <strong class="jxr_keyword">final</strong> String defaultHostname = cfg.defaultVirtualHost().defaultHostname();
+<a class="jxr_linenumber" name="L621" href="#L621">621</a>             <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> port = ((InetSocketAddress) ctx.channel().localAddress()).getPort();
+<a class="jxr_linenumber" name="L622" href="#L622">622</a>             out.add(HttpHeaderNames.AUTHORITY, defaultHostname + ':' + port);
+<a class="jxr_linenumber" name="L623" href="#L623">623</a>         }
+<a class="jxr_linenumber" name="L624" href="#L624">624</a> 
+<a class="jxr_linenumber" name="L625" href="#L625">625</a>         <em class="jxr_comment">// Add the HTTP headers which have not been consumed above</em>
+<a class="jxr_linenumber" name="L626" href="#L626">626</a>         toArmeria(inHeaders, out);
+<a class="jxr_linenumber" name="L627" href="#L627">627</a>         <strong class="jxr_keyword">return</strong> out.build();
+<a class="jxr_linenumber" name="L628" href="#L628">628</a>     }
+<a class="jxr_linenumber" name="L629" href="#L629">629</a> 
+<a class="jxr_linenumber" name="L630" href="#L630">630</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L631" href="#L631">631</a> <em class="jxr_javadoccomment">     * Converts the headers of the given Netty HTTP/1.x response into Armeria HTTP/2 headers.</em>
+<a class="jxr_linenumber" name="L632" href="#L632">632</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L633" href="#L633">633</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../com/linecorp/armeria/common/ResponseHeaders.html">ResponseHeaders</a> toArmeria(<a href="../../../../com/linecorp/armeria/common/HttpResponse.html">HttpResponse</a> in) {
+<a class="jxr_linenumber" name="L634" href="#L634">634</a>         <strong class="jxr_keyword">final</strong> io.netty.handler.codec.http.HttpHeaders inHeaders = in.headers();
+<a class="jxr_linenumber" name="L635" href="#L635">635</a>         <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/common/ResponseHeadersBuilder.html">ResponseHeadersBuilder</a> out = ResponseHeaders.builder();
+<a class="jxr_linenumber" name="L636" href="#L636">636</a>         out.sizeHint(inHeaders.size());
+<a class="jxr_linenumber" name="L637" href="#L637">637</a>         out.add(HttpHeaderNames.STATUS, HttpStatus.valueOf(in.status().code()).codeAsText());
+<a class="jxr_linenumber" name="L638" href="#L638">638</a>         <em class="jxr_comment">// Add the HTTP headers which have not been consumed above</em>
+<a class="jxr_linenumber" name="L639" href="#L639">639</a>         toArmeria(inHeaders, out);
+<a class="jxr_linenumber" name="L640" href="#L640">640</a>         <strong class="jxr_keyword">return</strong> out.build();
+<a class="jxr_linenumber" name="L641" href="#L641">641</a>     }
+<a class="jxr_linenumber" name="L642" href="#L642">642</a> 
+<a class="jxr_linenumber" name="L643" href="#L643">643</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L644" href="#L644">644</a> <em class="jxr_javadoccomment">     * Converts the specified Netty HTTP/1 headers into Armeria HTTP/2 headers.</em>
+<a class="jxr_linenumber" name="L645" href="#L645">645</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L646" href="#L646">646</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../com/linecorp/armeria/common/HttpHeaders.html">HttpHeaders</a> toArmeria(io.netty.handler.codec.http.HttpHeaders inHeaders) {
+<a class="jxr_linenumber" name="L647" href="#L647">647</a>         <strong class="jxr_keyword">if</strong> (inHeaders.isEmpty()) {
+<a class="jxr_linenumber" name="L648" href="#L648">648</a>             <strong class="jxr_keyword">return</strong> HttpHeaders.of();
+<a class="jxr_linenumber" name="L649" href="#L649">649</a>         }
+<a class="jxr_linenumber" name="L650" href="#L650">650</a> 
+<a class="jxr_linenumber" name="L651" href="#L651">651</a>         <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/common/HttpHeadersBuilder.html">HttpHeadersBuilder</a> out = HttpHeaders.builder();
+<a class="jxr_linenumber" name="L652" href="#L652">652</a>         out.sizeHint(inHeaders.size());
+<a class="jxr_linenumber" name="L653" href="#L653">653</a>         toArmeria(inHeaders, out);
+<a class="jxr_linenumber" name="L654" href="#L654">654</a>         <strong class="jxr_keyword">return</strong> out.build();
+<a class="jxr_linenumber" name="L655" href="#L655">655</a>     }
+<a class="jxr_linenumber" name="L656" href="#L656">656</a> 
+<a class="jxr_linenumber" name="L657" href="#L657">657</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L658" href="#L658">658</a> <em class="jxr_javadoccomment">     * Converts the specified Netty HTTP/1 headers into Armeria HTTP/2 headers.</em>
+<a class="jxr_linenumber" name="L659" href="#L659">659</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L660" href="#L660">660</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> toArmeria(io.netty.handler.codec.http.HttpHeaders inHeaders, <a href="../../../../com/linecorp/armeria/common/HttpHeadersBuilder.html">HttpHeadersBuilder</a> out) {
+<a class="jxr_linenumber" name="L661" href="#L661">661</a>         <strong class="jxr_keyword">final</strong> Iterator&lt;Entry&lt;CharSequence, CharSequence&gt;&gt; iter = inHeaders.iteratorCharSequence();
+<a class="jxr_linenumber" name="L662" href="#L662">662</a>         <em class="jxr_comment">// Choose 8 as a default size because it is unlikely we will see more than 4 Connection headers values,</em>
+<a class="jxr_linenumber" name="L663" href="#L663">663</a>         <em class="jxr_comment">// but still allowing for "enough" space in the map to reduce the chance of hash code collision.</em>
+<a class="jxr_linenumber" name="L664" href="#L664">664</a>         <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a> connectionBlacklist =
+<a class="jxr_linenumber" name="L665" href="#L665">665</a>                 toLowercaseMap(inHeaders.valueCharSequenceIterator(HttpHeaderNames.CONNECTION), 8);
+<a class="jxr_linenumber" name="L666" href="#L666">666</a>         StringJoiner cookieJoiner = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L667" href="#L667">667</a>         <strong class="jxr_keyword">while</strong> (iter.hasNext()) {
+<a class="jxr_linenumber" name="L668" href="#L668">668</a>             <strong class="jxr_keyword">final</strong> Entry&lt;CharSequence, CharSequence&gt; entry = iter.next();
+<a class="jxr_linenumber" name="L669" href="#L669">669</a>             <strong class="jxr_keyword">final</strong> AsciiString aName = HttpHeaderNames.of(entry.getKey()).toLowerCase();
+<a class="jxr_linenumber" name="L670" href="#L670">670</a>             <strong class="jxr_keyword">if</strong> (HTTP_TO_HTTP2_HEADER_BLACKLIST.contains(aName) || connectionBlacklist.contains(aName)) {
+<a class="jxr_linenumber" name="L671" href="#L671">671</a>                 <strong class="jxr_keyword">continue</strong>;
+<a class="jxr_linenumber" name="L672" href="#L672">672</a>             }
+<a class="jxr_linenumber" name="L673" href="#L673">673</a> 
+<a class="jxr_linenumber" name="L674" href="#L674">674</a>             <em class="jxr_comment">// https://tools.ietf.org/html/rfc7540#section-8.1.2.2 makes a special exception for TE</em>
+<a class="jxr_linenumber" name="L675" href="#L675">675</a>             <strong class="jxr_keyword">if</strong> (aName.equals(HttpHeaderNames.TE)) {
+<a class="jxr_linenumber" name="L676" href="#L676">676</a>                 toHttp2HeadersFilterTE(entry, out);
+<a class="jxr_linenumber" name="L677" href="#L677">677</a>                 <strong class="jxr_keyword">continue</strong>;
+<a class="jxr_linenumber" name="L678" href="#L678">678</a>             }
+<a class="jxr_linenumber" name="L679" href="#L679">679</a> 
+<a class="jxr_linenumber" name="L680" href="#L680">680</a>             <em class="jxr_comment">// Cookies must be concatenated into a single octet string.</em>
+<a class="jxr_linenumber" name="L681" href="#L681">681</a>             <em class="jxr_comment">// https://tools.ietf.org/html/rfc7540#section-8.1.2.5</em>
+<a class="jxr_linenumber" name="L682" href="#L682">682</a>             <strong class="jxr_keyword">final</strong> CharSequence value = entry.getValue();
+<a class="jxr_linenumber" name="L683" href="#L683">683</a>             <strong class="jxr_keyword">if</strong> (aName.equals(HttpHeaderNames.COOKIE)) {
+<a class="jxr_linenumber" name="L684" href="#L684">684</a>                 <strong class="jxr_keyword">if</strong> (cookieJoiner == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L685" href="#L685">685</a>                     cookieJoiner = <strong class="jxr_keyword">new</strong> StringJoiner(COOKIE_SEPARATOR);
+<a class="jxr_linenumber" name="L686" href="#L686">686</a>                 }
+<a class="jxr_linenumber" name="L687" href="#L687">687</a>                 COOKIE_SPLITTER.split(value).forEach(cookieJoiner::add);
+<a class="jxr_linenumber" name="L688" href="#L688">688</a>             } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L689" href="#L689">689</a>                 out.add(aName, convertHeaderValue(aName, value));
+<a class="jxr_linenumber" name="L690" href="#L690">690</a>             }
+<a class="jxr_linenumber" name="L691" href="#L691">691</a>         }
+<a class="jxr_linenumber" name="L692" href="#L692">692</a> 
+<a class="jxr_linenumber" name="L693" href="#L693">693</a>         <strong class="jxr_keyword">if</strong> (cookieJoiner != <strong class="jxr_keyword">null</strong> &amp;&amp; cookieJoiner.length() != 0) {
+<a class="jxr_linenumber" name="L694" href="#L694">694</a>             out.add(HttpHeaderNames.COOKIE, cookieJoiner.toString());
+<a class="jxr_linenumber" name="L695" href="#L695">695</a>         }
+<a class="jxr_linenumber" name="L696" href="#L696">696</a>     }
+<a class="jxr_linenumber" name="L697" href="#L697">697</a> 
+<a class="jxr_linenumber" name="L698" href="#L698">698</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a> toLowercaseMap(Iterator&lt;? <strong class="jxr_keyword">extends</strong> CharSequence&gt; valuesIter,
+<a class="jxr_linenumber" name="L699" href="#L699">699</a>                                                   <strong class="jxr_keyword">int</strong> arraySizeHint) {
+<a class="jxr_linenumber" name="L700" href="#L700">700</a>         <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a> result = <strong class="jxr_keyword">new</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a>(arraySizeHint);
+<a class="jxr_linenumber" name="L701" href="#L701">701</a> 
+<a class="jxr_linenumber" name="L702" href="#L702">702</a>         <strong class="jxr_keyword">while</strong> (valuesIter.hasNext()) {
+<a class="jxr_linenumber" name="L703" href="#L703">703</a>             <strong class="jxr_keyword">final</strong> AsciiString lowerCased = HttpHeaderNames.of(valuesIter.next()).toLowerCase();
+<a class="jxr_linenumber" name="L704" href="#L704">704</a>             <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L705" href="#L705">705</a>                 <strong class="jxr_keyword">int</strong> index = lowerCased.forEachByte(FIND_COMMA);
+<a class="jxr_linenumber" name="L706" href="#L706">706</a>                 <strong class="jxr_keyword">if</strong> (index != -1) {
+<a class="jxr_linenumber" name="L707" href="#L707">707</a>                     <strong class="jxr_keyword">int</strong> start = 0;
+<a class="jxr_linenumber" name="L708" href="#L708">708</a>                     <strong class="jxr_keyword">do</strong> {
+<a class="jxr_linenumber" name="L709" href="#L709">709</a>                         result.add(lowerCased.subSequence(start, index, false).trim(), EMPTY_STRING);
+<a class="jxr_linenumber" name="L710" href="#L710">710</a>                         start = index + 1;
+<a class="jxr_linenumber" name="L711" href="#L711">711</a>                     } <strong class="jxr_keyword">while</strong> (start &lt; lowerCased.length() &amp;&amp;
+<a class="jxr_linenumber" name="L712" href="#L712">712</a>                              (index = lowerCased.forEachByte(start,
+<a class="jxr_linenumber" name="L713" href="#L713">713</a>                                                              lowerCased.length() - start, FIND_COMMA)) != -1);
+<a class="jxr_linenumber" name="L714" href="#L714">714</a>                     result.add(lowerCased.subSequence(start, lowerCased.length(), false).trim(), EMPTY_STRING);
+<a class="jxr_linenumber" name="L715" href="#L715">715</a>                 } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L716" href="#L716">716</a>                     result.add(lowerCased.trim(), EMPTY_STRING);
+<a class="jxr_linenumber" name="L717" href="#L717">717</a>                 }
+<a class="jxr_linenumber" name="L718" href="#L718">718</a>             } <strong class="jxr_keyword">catch</strong> (Exception e) {
+<a class="jxr_linenumber" name="L719" href="#L719">719</a>                 <em class="jxr_comment">// This is not expect to happen because FIND_COMMA never throws but must be caught</em>
+<a class="jxr_linenumber" name="L720" href="#L720">720</a>                 <em class="jxr_comment">// because of the ByteProcessor interface.</em>
+<a class="jxr_linenumber" name="L721" href="#L721">721</a>                 <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(e);
+<a class="jxr_linenumber" name="L722" href="#L722">722</a>             }
+<a class="jxr_linenumber" name="L723" href="#L723">723</a>         }
+<a class="jxr_linenumber" name="L724" href="#L724">724</a>         <strong class="jxr_keyword">return</strong> result;
+<a class="jxr_linenumber" name="L725" href="#L725">725</a>     }
+<a class="jxr_linenumber" name="L726" href="#L726">726</a> 
+<a class="jxr_linenumber" name="L727" href="#L727">727</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L728" href="#L728">728</a> <em class="jxr_javadoccomment">     * Filter the {@link HttpHeaderNames#TE} header according to the</em>
+<a class="jxr_linenumber" name="L729" href="#L729">729</a> <em class="jxr_javadoccomment">     * &lt;a href="https://tools.ietf.org/html/rfc7540#section-8.1.2.2"&gt;special rules in the HTTP/2 RFC&lt;/a&gt;.</em>
+<a class="jxr_linenumber" name="L730" href="#L730">730</a> <em class="jxr_javadoccomment">     * @param entry An entry whose name is {@link HttpHeaderNames#TE}.</em>
+<a class="jxr_linenumber" name="L731" href="#L731">731</a> <em class="jxr_javadoccomment">     * @param out the resulting HTTP/2 headers.</em>
+<a class="jxr_linenumber" name="L732" href="#L732">732</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L733" href="#L733">733</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> toHttp2HeadersFilterTE(Entry&lt;CharSequence, CharSequence&gt; entry,
+<a class="jxr_linenumber" name="L734" href="#L734">734</a>                                                <a href="../../../../com/linecorp/armeria/common/HttpHeadersBuilder.html">HttpHeadersBuilder</a> out) {
+<a class="jxr_linenumber" name="L735" href="#L735">735</a>         <strong class="jxr_keyword">if</strong> (AsciiString.indexOf(entry.getValue(), ',', 0) == -1) {
+<a class="jxr_linenumber" name="L736" href="#L736">736</a>             <strong class="jxr_keyword">if</strong> (AsciiString.contentEqualsIgnoreCase(AsciiString.trim(entry.getValue()),
+<a class="jxr_linenumber" name="L737" href="#L737">737</a>                                                     HttpHeaderValues.TRAILERS)) {
+<a class="jxr_linenumber" name="L738" href="#L738">738</a>                 out.add(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS.toString());
+<a class="jxr_linenumber" name="L739" href="#L739">739</a>             }
+<a class="jxr_linenumber" name="L740" href="#L740">740</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L741" href="#L741">741</a>             <strong class="jxr_keyword">final</strong> List&lt;CharSequence&gt; teValues = StringUtil.unescapeCsvFields(entry.getValue());
+<a class="jxr_linenumber" name="L742" href="#L742">742</a>             <strong class="jxr_keyword">for</strong> (CharSequence teValue : teValues) {
+<a class="jxr_linenumber" name="L743" href="#L743">743</a>                 <strong class="jxr_keyword">if</strong> (AsciiString.contentEqualsIgnoreCase(AsciiString.trim(teValue),
+<a class="jxr_linenumber" name="L744" href="#L744">744</a>                                                         HttpHeaderValues.TRAILERS)) {
+<a class="jxr_linenumber" name="L745" href="#L745">745</a>                     out.add(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS.toString());
+<a class="jxr_linenumber" name="L746" href="#L746">746</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L747" href="#L747">747</a>                 }
+<a class="jxr_linenumber" name="L748" href="#L748">748</a>             }
+<a class="jxr_linenumber" name="L749" href="#L749">749</a>         }
+<a class="jxr_linenumber" name="L750" href="#L750">750</a>     }
+<a class="jxr_linenumber" name="L751" href="#L751">751</a> 
+<a class="jxr_linenumber" name="L752" href="#L752">752</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> URI toUri(<a href="../../../../com/linecorp/armeria/common/HttpRequest.html">HttpRequest</a> in) <strong class="jxr_keyword">throws</strong> URISyntaxException {
+<a class="jxr_linenumber" name="L753" href="#L753">753</a>         <strong class="jxr_keyword">final</strong> String uri = in.uri();
+<a class="jxr_linenumber" name="L754" href="#L754">754</a>         <strong class="jxr_keyword">if</strong> (uri.startsWith(<span class="jxr_string">"//"</span>)) {
+<a class="jxr_linenumber" name="L755" href="#L755">755</a>             <em class="jxr_comment">// Normalize the path that starts with more than one slash into the one with a single slash,</em>
+<a class="jxr_linenumber" name="L756" href="#L756">756</a>             <em class="jxr_comment">// so that java.net.URI does not raise a URISyntaxException.</em>
+<a class="jxr_linenumber" name="L757" href="#L757">757</a>             <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 0; i &lt; uri.length(); i++) {
+<a class="jxr_linenumber" name="L758" href="#L758">758</a>                 <strong class="jxr_keyword">if</strong> (uri.charAt(i) != '/') {
+<a class="jxr_linenumber" name="L759" href="#L759">759</a>                     <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> URI(uri.substring(i - 1));
+<a class="jxr_linenumber" name="L760" href="#L760">760</a>                 }
+<a class="jxr_linenumber" name="L761" href="#L761">761</a>             }
+<a class="jxr_linenumber" name="L762" href="#L762">762</a>             <strong class="jxr_keyword">return</strong> ROOT;
+<a class="jxr_linenumber" name="L763" href="#L763">763</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L764" href="#L764">764</a>             <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> URI(uri);
+<a class="jxr_linenumber" name="L765" href="#L765">765</a>         }
+<a class="jxr_linenumber" name="L766" href="#L766">766</a>     }
+<a class="jxr_linenumber" name="L767" href="#L767">767</a> 
+<a class="jxr_linenumber" name="L768" href="#L768">768</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L769" href="#L769">769</a> <em class="jxr_javadoccomment">     * Generate a HTTP/2 {code :path} from a URI in accordance with</em>
+<a class="jxr_linenumber" name="L770" href="#L770">770</a> <em class="jxr_javadoccomment">     * &lt;a href="https://tools.ietf.org/html/rfc7230#section-5.3"&gt;rfc7230, 5.3&lt;/a&gt;.</em>
+<a class="jxr_linenumber" name="L771" href="#L771">771</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L772" href="#L772">772</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> String toHttp2Path(URI uri) {
+<a class="jxr_linenumber" name="L773" href="#L773">773</a>         <strong class="jxr_keyword">final</strong> StringBuilder pathBuilder = <strong class="jxr_keyword">new</strong> StringBuilder(
+<a class="jxr_linenumber" name="L774" href="#L774">774</a>                 length(uri.getRawPath()) + length(uri.getRawQuery()) + length(uri.getRawFragment()) + 2);
+<a class="jxr_linenumber" name="L775" href="#L775">775</a> 
+<a class="jxr_linenumber" name="L776" href="#L776">776</a>         <strong class="jxr_keyword">if</strong> (!isNullOrEmpty(uri.getRawPath())) {
+<a class="jxr_linenumber" name="L777" href="#L777">777</a>             pathBuilder.append(uri.getRawPath());
+<a class="jxr_linenumber" name="L778" href="#L778">778</a>         }
+<a class="jxr_linenumber" name="L779" href="#L779">779</a>         <strong class="jxr_keyword">if</strong> (!isNullOrEmpty(uri.getRawQuery())) {
+<a class="jxr_linenumber" name="L780" href="#L780">780</a>             pathBuilder.append('?');
+<a class="jxr_linenumber" name="L781" href="#L781">781</a>             pathBuilder.append(uri.getRawQuery());
+<a class="jxr_linenumber" name="L782" href="#L782">782</a>         }
+<a class="jxr_linenumber" name="L783" href="#L783">783</a>         <strong class="jxr_keyword">if</strong> (!isNullOrEmpty(uri.getRawFragment())) {
+<a class="jxr_linenumber" name="L784" href="#L784">784</a>             pathBuilder.append('#');
+<a class="jxr_linenumber" name="L785" href="#L785">785</a>             pathBuilder.append(uri.getRawFragment());
+<a class="jxr_linenumber" name="L786" href="#L786">786</a>         }
+<a class="jxr_linenumber" name="L787" href="#L787">787</a> 
+<a class="jxr_linenumber" name="L788" href="#L788">788</a>         <strong class="jxr_keyword">return</strong> pathBuilder.length() != 0 ? pathBuilder.toString() : EMPTY_REQUEST_PATH;
+<a class="jxr_linenumber" name="L789" href="#L789">789</a>     }
+<a class="jxr_linenumber" name="L790" href="#L790">790</a> 
+<a class="jxr_linenumber" name="L791" href="#L791">791</a>     @VisibleForTesting
+<a class="jxr_linenumber" name="L792" href="#L792">792</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> addHttp2Authority(@Nullable String authority, <a href="../../../../com/linecorp/armeria/common/RequestHeadersBuilder.html">RequestHeadersBuilder</a> out) {
+<a class="jxr_linenumber" name="L793" href="#L793">793</a>         <em class="jxr_comment">// The authority MUST NOT include the deprecated "userinfo" subcomponent</em>
+<a class="jxr_linenumber" name="L794" href="#L794">794</a>         <strong class="jxr_keyword">if</strong> (authority != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L795" href="#L795">795</a>             <strong class="jxr_keyword">final</strong> String actualAuthority;
+<a class="jxr_linenumber" name="L796" href="#L796">796</a>             <strong class="jxr_keyword">if</strong> (authority.isEmpty()) {
+<a class="jxr_linenumber" name="L797" href="#L797">797</a>                 actualAuthority = <span class="jxr_string">""</span>;
+<a class="jxr_linenumber" name="L798" href="#L798">798</a>             } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L799" href="#L799">799</a>                 <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> start = authority.indexOf('@') + 1;
+<a class="jxr_linenumber" name="L800" href="#L800">800</a>                 <strong class="jxr_keyword">if</strong> (start == 0) {
+<a class="jxr_linenumber" name="L801" href="#L801">801</a>                     actualAuthority = authority;
+<a class="jxr_linenumber" name="L802" href="#L802">802</a>                 } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (authority.length() == start) {
+<a class="jxr_linenumber" name="L803" href="#L803">803</a>                     <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalArgumentException(<span class="jxr_string">"authority: "</span> + authority);
+<a class="jxr_linenumber" name="L804" href="#L804">804</a>                 } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L805" href="#L805">805</a>                     actualAuthority = authority.substring(start);
+<a class="jxr_linenumber" name="L806" href="#L806">806</a>                 }
+<a class="jxr_linenumber" name="L807" href="#L807">807</a>             }
+<a class="jxr_linenumber" name="L808" href="#L808">808</a>             out.add(HttpHeaderNames.AUTHORITY, actualAuthority);
+<a class="jxr_linenumber" name="L809" href="#L809">809</a>         }
+<a class="jxr_linenumber" name="L810" href="#L810">810</a>     }
+<a class="jxr_linenumber" name="L811" href="#L811">811</a> 
+<a class="jxr_linenumber" name="L812" href="#L812">812</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> addHttp2Scheme(io.netty.handler.codec.http.HttpHeaders in, URI uri,
+<a class="jxr_linenumber" name="L813" href="#L813">813</a>                                        <a href="../../../../com/linecorp/armeria/common/RequestHeadersBuilder.html">RequestHeadersBuilder</a> out) {
+<a class="jxr_linenumber" name="L814" href="#L814">814</a>         <strong class="jxr_keyword">final</strong> String value = uri.getScheme();
+<a class="jxr_linenumber" name="L815" href="#L815">815</a>         <strong class="jxr_keyword">if</strong> (value != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L816" href="#L816">816</a>             out.add(HttpHeaderNames.SCHEME, value);
+<a class="jxr_linenumber" name="L817" href="#L817">817</a>             <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L818" href="#L818">818</a>         }
+<a class="jxr_linenumber" name="L819" href="#L819">819</a> 
+<a class="jxr_linenumber" name="L820" href="#L820">820</a>         <em class="jxr_comment">// Consume the Scheme extension header if present</em>
+<a class="jxr_linenumber" name="L821" href="#L821">821</a>         <strong class="jxr_keyword">final</strong> CharSequence cValue = in.get(ExtensionHeaderNames.SCHEME.text());
+<a class="jxr_linenumber" name="L822" href="#L822">822</a>         <strong class="jxr_keyword">if</strong> (cValue != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L823" href="#L823">823</a>             out.add(HttpHeaderNames.SCHEME, cValue.toString());
+<a class="jxr_linenumber" name="L824" href="#L824">824</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L825" href="#L825">825</a>             out.add(HttpHeaderNames.SCHEME, <span class="jxr_string">"unknown"</span>);
+<a class="jxr_linenumber" name="L826" href="#L826">826</a>         }
+<a class="jxr_linenumber" name="L827" href="#L827">827</a>     }
+<a class="jxr_linenumber" name="L828" href="#L828">828</a> 
+<a class="jxr_linenumber" name="L829" href="#L829">829</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L830" href="#L830">830</a> <em class="jxr_javadoccomment">     * Converts the specified Armeria HTTP/2 headers into Netty HTTP/2 headers.</em>
+<a class="jxr_linenumber" name="L831" href="#L831">831</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L832" href="#L832">832</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> Http2Headers toNettyHttp2(<a href="../../../../com/linecorp/armeria/common/HttpHeaders.html">HttpHeaders</a> in, <strong class="jxr_keyword">boolean</strong> server) {
+<a class="jxr_linenumber" name="L833" href="#L833">833</a>         <strong class="jxr_keyword">final</strong> Http2Headers out = <strong class="jxr_keyword">new</strong> DefaultHttp2Headers(false, in.size());
+<a class="jxr_linenumber" name="L834" href="#L834">834</a> 
+<a class="jxr_linenumber" name="L835" href="#L835">835</a>         <em class="jxr_comment">// Trailers if it does not have :status.</em>
+<a class="jxr_linenumber" name="L836" href="#L836">836</a>         <strong class="jxr_keyword">if</strong> (server &amp;&amp; !in.contains(HttpHeaderNames.STATUS)) {
+<a class="jxr_linenumber" name="L837" href="#L837">837</a>             <strong class="jxr_keyword">for</strong> (Entry&lt;AsciiString, String&gt; entry : in) {
+<a class="jxr_linenumber" name="L838" href="#L838">838</a>                 <strong class="jxr_keyword">final</strong> AsciiString name = entry.getKey();
+<a class="jxr_linenumber" name="L839" href="#L839">839</a>                 <strong class="jxr_keyword">final</strong> String value = entry.getValue();
+<a class="jxr_linenumber" name="L840" href="#L840">840</a>                 <strong class="jxr_keyword">if</strong> (name.isEmpty() || HTTP_TRAILER_BLACKLIST.contains(name)) {
+<a class="jxr_linenumber" name="L841" href="#L841">841</a>                     <strong class="jxr_keyword">continue</strong>;
+<a class="jxr_linenumber" name="L842" href="#L842">842</a>                 }
+<a class="jxr_linenumber" name="L843" href="#L843">843</a>                 out.add(name, value);
+<a class="jxr_linenumber" name="L844" href="#L844">844</a>             }
+<a class="jxr_linenumber" name="L845" href="#L845">845</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L846" href="#L846">846</a>             in.forEach((BiConsumer&lt;AsciiString, String&gt;) out::add);
+<a class="jxr_linenumber" name="L847" href="#L847">847</a>             out.remove(HttpHeaderNames.CONNECTION);
+<a class="jxr_linenumber" name="L848" href="#L848">848</a>             out.remove(HttpHeaderNames.TRANSFER_ENCODING);
+<a class="jxr_linenumber" name="L849" href="#L849">849</a>         }
+<a class="jxr_linenumber" name="L850" href="#L850">850</a> 
+<a class="jxr_linenumber" name="L851" href="#L851">851</a>         <strong class="jxr_keyword">if</strong> (!out.contains(HttpHeaderNames.COOKIE)) {
+<a class="jxr_linenumber" name="L852" href="#L852">852</a>             <strong class="jxr_keyword">return</strong> out;
+<a class="jxr_linenumber" name="L853" href="#L853">853</a>         }
+<a class="jxr_linenumber" name="L854" href="#L854">854</a> 
+<a class="jxr_linenumber" name="L855" href="#L855">855</a>         <em class="jxr_comment">// Split up cookies to allow for better compression.</em>
+<a class="jxr_linenumber" name="L856" href="#L856">856</a>         <em class="jxr_comment">// https://tools.ietf.org/html/rfc7540#section-8.1.2.5</em>
+<a class="jxr_linenumber" name="L857" href="#L857">857</a>         <strong class="jxr_keyword">final</strong> List&lt;CharSequence&gt; cookies = out.getAllAndRemove(HttpHeaderNames.COOKIE);
+<a class="jxr_linenumber" name="L858" href="#L858">858</a>         <strong class="jxr_keyword">for</strong> (CharSequence c : cookies) {
+<a class="jxr_linenumber" name="L859" href="#L859">859</a>             out.add(HttpHeaderNames.COOKIE, COOKIE_SPLITTER.split(c));
+<a class="jxr_linenumber" name="L860" href="#L860">860</a>         }
+<a class="jxr_linenumber" name="L861" href="#L861">861</a> 
+<a class="jxr_linenumber" name="L862" href="#L862">862</a>         <strong class="jxr_keyword">return</strong> out;
+<a class="jxr_linenumber" name="L863" href="#L863">863</a>     }
+<a class="jxr_linenumber" name="L864" href="#L864">864</a> 
+<a class="jxr_linenumber" name="L865" href="#L865">865</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L866" href="#L866">866</a> <em class="jxr_javadoccomment">     * Translate and add HTTP/2 headers to HTTP/1.x headers.</em>
+<a class="jxr_linenumber" name="L867" href="#L867">867</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L868" href="#L868">868</a> <em class="jxr_javadoccomment">     * @param streamId The stream associated with {@code sourceHeaders}.</em>
+<a class="jxr_linenumber" name="L869" href="#L869">869</a> <em class="jxr_javadoccomment">     * @param inputHeaders The HTTP/2 headers to convert.</em>
+<a class="jxr_linenumber" name="L870" href="#L870">870</a> <em class="jxr_javadoccomment">     * @param outputHeaders The object which will contain the resulting HTTP/1.x headers..</em>
+<a class="jxr_linenumber" name="L871" href="#L871">871</a> <em class="jxr_javadoccomment">     * @param httpVersion What HTTP/1.x version {@code outputHeaders} should be treated as</em>
+<a class="jxr_linenumber" name="L872" href="#L872">872</a> <em class="jxr_javadoccomment">     *                    when doing the conversion.</em>
+<a class="jxr_linenumber" name="L873" href="#L873">873</a> <em class="jxr_javadoccomment">     * @param isTrailer {@code true} if {@code outputHeaders} should be treated as trailers.</em>
+<a class="jxr_linenumber" name="L874" href="#L874">874</a> <em class="jxr_javadoccomment">     *                  {@code false} otherwise.</em>
+<a class="jxr_linenumber" name="L875" href="#L875">875</a> <em class="jxr_javadoccomment">     * @param isRequest {@code true} if the {@code outputHeaders} will be used in a request message.</em>
+<a class="jxr_linenumber" name="L876" href="#L876">876</a> <em class="jxr_javadoccomment">     *                  {@code false} for response message.</em>
+<a class="jxr_linenumber" name="L877" href="#L877">877</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L878" href="#L878">878</a> <em class="jxr_javadoccomment">     * @throws Http2Exception If not all HTTP/2 headers can be translated to HTTP/1.x.</em>
+<a class="jxr_linenumber" name="L879" href="#L879">879</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L880" href="#L880">880</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> toNettyHttp1(
+<a class="jxr_linenumber" name="L881" href="#L881">881</a>             <strong class="jxr_keyword">int</strong> streamId, <a href="../../../../com/linecorp/armeria/common/HttpHeaders.html">HttpHeaders</a> inputHeaders, io.netty.handler.codec.http.HttpHeaders outputHeaders,
+<a class="jxr_linenumber" name="L882" href="#L882">882</a>             HttpVersion httpVersion, <strong class="jxr_keyword">boolean</strong> isTrailer, <strong class="jxr_keyword">boolean</strong> isRequest) <strong class="jxr_keyword">throws</strong> Http2Exception {
+<a class="jxr_linenumber" name="L883" href="#L883">883</a> 
+<a class="jxr_linenumber" name="L884" href="#L884">884</a>         <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a> translations = isRequest ? REQUEST_HEADER_TRANSLATIONS
+<a class="jxr_linenumber" name="L885" href="#L885">885</a>                                                        : RESPONSE_HEADER_TRANSLATIONS;
+<a class="jxr_linenumber" name="L886" href="#L886">886</a>         StringJoiner cookieJoiner = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L887" href="#L887">887</a>         <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L888" href="#L888">888</a>             <strong class="jxr_keyword">for</strong> (Entry&lt;AsciiString, String&gt; entry : inputHeaders) {
+<a class="jxr_linenumber" name="L889" href="#L889">889</a>                 <strong class="jxr_keyword">final</strong> AsciiString name = entry.getKey();
+<a class="jxr_linenumber" name="L890" href="#L890">890</a>                 <strong class="jxr_keyword">final</strong> String value = entry.getValue();
+<a class="jxr_linenumber" name="L891" href="#L891">891</a>                 <strong class="jxr_keyword">final</strong> AsciiString translatedName = translations.get(name);
+<a class="jxr_linenumber" name="L892" href="#L892">892</a>                 <strong class="jxr_keyword">if</strong> (translatedName != <strong class="jxr_keyword">null</strong> &amp;&amp; !inputHeaders.contains(translatedName)) {
+<a class="jxr_linenumber" name="L893" href="#L893">893</a>                     outputHeaders.add(translatedName, value);
+<a class="jxr_linenumber" name="L894" href="#L894">894</a>                     <strong class="jxr_keyword">continue</strong>;
+<a class="jxr_linenumber" name="L895" href="#L895">895</a>                 }
+<a class="jxr_linenumber" name="L896" href="#L896">896</a> 
+<a class="jxr_linenumber" name="L897" href="#L897">897</a>                 <strong class="jxr_keyword">if</strong> (name.isEmpty() || HTTP2_TO_HTTP_HEADER_BLACKLIST.contains(name)) {
+<a class="jxr_linenumber" name="L898" href="#L898">898</a>                     <strong class="jxr_keyword">continue</strong>;
+<a class="jxr_linenumber" name="L899" href="#L899">899</a>                 }
+<a class="jxr_linenumber" name="L900" href="#L900">900</a> 
+<a class="jxr_linenumber" name="L901" href="#L901">901</a>                 <strong class="jxr_keyword">if</strong> (isTrailer &amp;&amp; HTTP_TRAILER_BLACKLIST.contains(name)) {
+<a class="jxr_linenumber" name="L902" href="#L902">902</a>                     <strong class="jxr_keyword">continue</strong>;
+<a class="jxr_linenumber" name="L903" href="#L903">903</a>                 }
+<a class="jxr_linenumber" name="L904" href="#L904">904</a> 
+<a class="jxr_linenumber" name="L905" href="#L905">905</a>                 <strong class="jxr_keyword">if</strong> (HttpHeaderNames.COOKIE.equals(name)) {
+<a class="jxr_linenumber" name="L906" href="#L906">906</a>                     <em class="jxr_comment">// combine the cookie values into 1 header entry.</em>
+<a class="jxr_linenumber" name="L907" href="#L907">907</a>                     <em class="jxr_comment">// https://tools.ietf.org/html/rfc7540#section-8.1.2.5</em>
+<a class="jxr_linenumber" name="L908" href="#L908">908</a>                     <strong class="jxr_keyword">if</strong> (cookieJoiner == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L909" href="#L909">909</a>                         cookieJoiner = <strong class="jxr_keyword">new</strong> StringJoiner(COOKIE_SEPARATOR);
+<a class="jxr_linenumber" name="L910" href="#L910">910</a>                     }
+<a class="jxr_linenumber" name="L911" href="#L911">911</a>                     COOKIE_SPLITTER.split(value).forEach(cookieJoiner::add);
+<a class="jxr_linenumber" name="L912" href="#L912">912</a>                 } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L913" href="#L913">913</a>                     outputHeaders.add(name, value);
+<a class="jxr_linenumber" name="L914" href="#L914">914</a>                 }
+<a class="jxr_linenumber" name="L915" href="#L915">915</a>             }
+<a class="jxr_linenumber" name="L916" href="#L916">916</a> 
+<a class="jxr_linenumber" name="L917" href="#L917">917</a>             <strong class="jxr_keyword">if</strong> (cookieJoiner != <strong class="jxr_keyword">null</strong> &amp;&amp; cookieJoiner.length() != 0) {
+<a class="jxr_linenumber" name="L918" href="#L918">918</a>                 outputHeaders.add(HttpHeaderNames.COOKIE, cookieJoiner.toString());
+<a class="jxr_linenumber" name="L919" href="#L919">919</a>             }
+<a class="jxr_linenumber" name="L920" href="#L920">920</a>         } <strong class="jxr_keyword">catch</strong> (Throwable t) {
+<a class="jxr_linenumber" name="L921" href="#L921">921</a>             <strong class="jxr_keyword">throw</strong> streamError(streamId, PROTOCOL_ERROR, t, <span class="jxr_string">"HTTP/2 to HTTP/1.x headers conversion error"</span>);
+<a class="jxr_linenumber" name="L922" href="#L922">922</a>         }
+<a class="jxr_linenumber" name="L923" href="#L923">923</a> 
+<a class="jxr_linenumber" name="L924" href="#L924">924</a>         <strong class="jxr_keyword">if</strong> (!isTrailer) {
+<a class="jxr_linenumber" name="L925" href="#L925">925</a>             HttpUtil.setKeepAlive(outputHeaders, httpVersion, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L926" href="#L926">926</a>         }
+<a class="jxr_linenumber" name="L927" href="#L927">927</a>     }
+<a class="jxr_linenumber" name="L928" href="#L928">928</a> 
+<a class="jxr_linenumber" name="L929" href="#L929">929</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L930" href="#L930">930</a> <em class="jxr_javadoccomment">     * Returns a {@link ResponseHeaders} whose {@link HttpHeaderNames#CONTENT_LENGTH} is added or removed</em>
+<a class="jxr_linenumber" name="L931" href="#L931">931</a> <em class="jxr_javadoccomment">     * according to the status of the specified {@code headers}, {@code content} and {@code trailers}.</em>
+<a class="jxr_linenumber" name="L932" href="#L932">932</a> <em class="jxr_javadoccomment">     * The {@link HttpHeaderNames#CONTENT_LENGTH} is removed when:</em>
+<a class="jxr_linenumber" name="L933" href="#L933">933</a> <em class="jxr_javadoccomment">     * &lt;ul&gt;</em>
+<a class="jxr_linenumber" name="L934" href="#L934">934</a> <em class="jxr_javadoccomment">     *   &lt;li&gt;the status of the specified {@code headers} is one of informational headers,</em>
+<a class="jxr_linenumber" name="L935" href="#L935">935</a> <em class="jxr_javadoccomment">     *   {@link HttpStatus#NO_CONTENT} or {@link HttpStatus#RESET_CONTENT}&lt;/li&gt;</em>
+<a class="jxr_linenumber" name="L936" href="#L936">936</a> <em class="jxr_javadoccomment">     *   &lt;li&gt;the trailers exists&lt;/li&gt;</em>
+<a class="jxr_linenumber" name="L937" href="#L937">937</a> <em class="jxr_javadoccomment">     * &lt;/ul&gt;</em>
+<a class="jxr_linenumber" name="L938" href="#L938">938</a> <em class="jxr_javadoccomment">     * The {@link HttpHeaderNames#CONTENT_LENGTH} is added when the state of the specified {@code headers}</em>
+<a class="jxr_linenumber" name="L939" href="#L939">939</a> <em class="jxr_javadoccomment">     * does not meet the conditions above and {@link HttpHeaderNames#CONTENT_LENGTH} is not present</em>
+<a class="jxr_linenumber" name="L940" href="#L940">940</a> <em class="jxr_javadoccomment">     * regardless of the fact that the content is empty or not.</em>
+<a class="jxr_linenumber" name="L941" href="#L941">941</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L942" href="#L942">942</a> <em class="jxr_javadoccomment">     * @throws IllegalArgumentException if the specified {@code content} or {@code trailers} are</em>
+<a class="jxr_linenumber" name="L943" href="#L943">943</a> <em class="jxr_javadoccomment">     *                                  non-empty when the content is always empty</em>
+<a class="jxr_linenumber" name="L944" href="#L944">944</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L945" href="#L945">945</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../com/linecorp/armeria/common/ResponseHeaders.html">ResponseHeaders</a> setOrRemoveContentLength(<a href="../../../../com/linecorp/armeria/common/ResponseHeaders.html">ResponseHeaders</a> headers, <a href="../../../../com/linecorp/armeria/common/HttpData.html">HttpData</a> content,
+<a class="jxr_linenumber" name="L946" href="#L946">946</a>                                                            <a href="../../../../com/linecorp/armeria/common/HttpHeaders.html">HttpHeaders</a> trailers) {
+<a class="jxr_linenumber" name="L947" href="#L947">947</a>         requireNonNull(headers, <span class="jxr_string">"headers"</span>);
+<a class="jxr_linenumber" name="L948" href="#L948">948</a>         requireNonNull(content, <span class="jxr_string">"content"</span>);
+<a class="jxr_linenumber" name="L949" href="#L949">949</a>         requireNonNull(trailers, <span class="jxr_string">"trailers"</span>);
+<a class="jxr_linenumber" name="L950" href="#L950">950</a> 
+<a class="jxr_linenumber" name="L951" href="#L951">951</a>         <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/common/HttpStatus.html">HttpStatus</a> status = headers.status();
+<a class="jxr_linenumber" name="L952" href="#L952">952</a> 
+<a class="jxr_linenumber" name="L953" href="#L953">953</a>         <strong class="jxr_keyword">if</strong> (isContentAlwaysEmptyWithValidation(status, content, trailers)) {
+<a class="jxr_linenumber" name="L954" href="#L954">954</a>             <strong class="jxr_keyword">if</strong> (status != HttpStatus.NOT_MODIFIED) {
+<a class="jxr_linenumber" name="L955" href="#L955">955</a>                 <strong class="jxr_keyword">if</strong> (headers.contains(HttpHeaderNames.CONTENT_LENGTH)) {
+<a class="jxr_linenumber" name="L956" href="#L956">956</a>                     <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/common/ResponseHeadersBuilder.html">ResponseHeadersBuilder</a> builder = headers.toBuilder();
+<a class="jxr_linenumber" name="L957" href="#L957">957</a>                     builder.remove(HttpHeaderNames.CONTENT_LENGTH);
+<a class="jxr_linenumber" name="L958" href="#L958">958</a>                     <strong class="jxr_keyword">return</strong> builder.build();
+<a class="jxr_linenumber" name="L959" href="#L959">959</a>                 }
+<a class="jxr_linenumber" name="L960" href="#L960">960</a>             } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L961" href="#L961">961</a>                 <em class="jxr_comment">// 304 response can have the "content-length" header when it is a response to a conditional</em>
+<a class="jxr_linenumber" name="L962" href="#L962">962</a>                 <em class="jxr_comment">// GET request. See https://tools.ietf.org/html/rfc7230#section-3.3.2</em>
+<a class="jxr_linenumber" name="L963" href="#L963">963</a>             }
+<a class="jxr_linenumber" name="L964" href="#L964">964</a> 
+<a class="jxr_linenumber" name="L965" href="#L965">965</a>             <strong class="jxr_keyword">return</strong> headers;
+<a class="jxr_linenumber" name="L966" href="#L966">966</a>         }
+<a class="jxr_linenumber" name="L967" href="#L967">967</a> 
+<a class="jxr_linenumber" name="L968" href="#L968">968</a>         <strong class="jxr_keyword">if</strong> (!trailers.isEmpty()) {
+<a class="jxr_linenumber" name="L969" href="#L969">969</a>             <em class="jxr_comment">// Some of the client implementations such as "curl" ignores trailers if</em>
+<a class="jxr_linenumber" name="L970" href="#L970">970</a>             <em class="jxr_comment">// the "content-length" header is present. We should not set "content-length" header when</em>
+<a class="jxr_linenumber" name="L971" href="#L971">971</a>             <em class="jxr_comment">// trailers exists so that those clients can receive the trailers.</em>
+<a class="jxr_linenumber" name="L972" href="#L972">972</a>             <em class="jxr_comment">// The response is sent using chunked transfer encoding in HTTP/1 or a DATA frame payload</em>
+<a class="jxr_linenumber" name="L973" href="#L973">973</a>             <em class="jxr_comment">// in HTTP/2, so it's no worry.</em>
+<a class="jxr_linenumber" name="L974" href="#L974">974</a>             <strong class="jxr_keyword">if</strong> (headers.contains(HttpHeaderNames.CONTENT_LENGTH)) {
+<a class="jxr_linenumber" name="L975" href="#L975">975</a>                 <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/common/ResponseHeadersBuilder.html">ResponseHeadersBuilder</a> builder = headers.toBuilder();
+<a class="jxr_linenumber" name="L976" href="#L976">976</a>                 builder.remove(HttpHeaderNames.CONTENT_LENGTH);
+<a class="jxr_linenumber" name="L977" href="#L977">977</a>                 <strong class="jxr_keyword">return</strong> builder.build();
+<a class="jxr_linenumber" name="L978" href="#L978">978</a>             }
+<a class="jxr_linenumber" name="L979" href="#L979">979</a> 
+<a class="jxr_linenumber" name="L980" href="#L980">980</a>             <strong class="jxr_keyword">return</strong> headers;
+<a class="jxr_linenumber" name="L981" href="#L981">981</a>         }
+<a class="jxr_linenumber" name="L982" href="#L982">982</a> 
+<a class="jxr_linenumber" name="L983" href="#L983">983</a>         <strong class="jxr_keyword">if</strong> (!headers.contains(HttpHeaderNames.CONTENT_LENGTH) || !content.isEmpty()) {
+<a class="jxr_linenumber" name="L984" href="#L984">984</a>             <strong class="jxr_keyword">return</strong> headers.toBuilder()
+<a class="jxr_linenumber" name="L985" href="#L985">985</a>                           .setInt(HttpHeaderNames.CONTENT_LENGTH, content.length())
+<a class="jxr_linenumber" name="L986" href="#L986">986</a>                           .build();
+<a class="jxr_linenumber" name="L987" href="#L987">987</a>         }
+<a class="jxr_linenumber" name="L988" href="#L988">988</a> 
+<a class="jxr_linenumber" name="L989" href="#L989">989</a>         <em class="jxr_comment">// The header contains "content-length" header and the content is empty.</em>
+<a class="jxr_linenumber" name="L990" href="#L990">990</a>         <em class="jxr_comment">// Do not overwrite the header because a response to a HEAD request</em>
+<a class="jxr_linenumber" name="L991" href="#L991">991</a>         <em class="jxr_comment">// will have no content even if it has non-zero content-length header.</em>
+<a class="jxr_linenumber" name="L992" href="#L992">992</a>         <strong class="jxr_keyword">return</strong> headers;
+<a class="jxr_linenumber" name="L993" href="#L993">993</a>     }
+<a class="jxr_linenumber" name="L994" href="#L994">994</a> 
+<a class="jxr_linenumber" name="L995" href="#L995">995</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> String convertHeaderValue(AsciiString name, CharSequence value) {
+<a class="jxr_linenumber" name="L996" href="#L996">996</a>         <strong class="jxr_keyword">if</strong> (!(value instanceof AsciiString)) {
+<a class="jxr_linenumber" name="L997" href="#L997">997</a>             <strong class="jxr_keyword">return</strong> value.toString();
+<a class="jxr_linenumber" name="L998" href="#L998">998</a>         }
+<a class="jxr_linenumber" name="L999" href="#L999">999</a>         <strong class="jxr_keyword">if</strong> (HEADER_VALUE_CACHE != <strong class="jxr_keyword">null</strong> &amp;&amp; CACHED_HEADERS.contains(name)) {
+<a class="jxr_linenumber" name="L1000" href="#L1000">1000</a>             <strong class="jxr_keyword">final</strong> String converted = HEADER_VALUE_CACHE.get((AsciiString) value);
+<a class="jxr_linenumber" name="L1001" href="#L1001">1001</a>             assert converted != <strong class="jxr_keyword">null</strong>; <em class="jxr_comment">// loader does not return null.</em>
+<a class="jxr_linenumber" name="L1002" href="#L1002">1002</a>             <strong class="jxr_keyword">return</strong> converted;
+<a class="jxr_linenumber" name="L1003" href="#L1003">1003</a>         }
+<a class="jxr_linenumber" name="L1004" href="#L1004">1004</a>         <strong class="jxr_keyword">return</strong> value.toString();
+<a class="jxr_linenumber" name="L1005" href="#L1005">1005</a>     }
+<a class="jxr_linenumber" name="L1006" href="#L1006">1006</a> 
+<a class="jxr_linenumber" name="L1007" href="#L1007">1007</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a>
+<a class="jxr_linenumber" name="L1008" href="#L1008">1008</a>             <strong class="jxr_keyword">extends</strong> DefaultHeaders&lt;AsciiString, AsciiString, CharSequenceMap&gt; {
+<a class="jxr_linenumber" name="L1009" href="#L1009">1009</a> 
+<a class="jxr_linenumber" name="L1010" href="#L1010">1010</a>         <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a>() {
+<a class="jxr_linenumber" name="L1011" href="#L1011">1011</a>             <strong class="jxr_keyword">super</strong>(HTTP2_HEADER_NAME_HASHER, UnsupportedValueConverter.instance());
+<a class="jxr_linenumber" name="L1012" href="#L1012">1012</a>         }
+<a class="jxr_linenumber" name="L1013" href="#L1013">1013</a> 
+<a class="jxr_linenumber" name="L1014" href="#L1014">1014</a>         @SuppressWarnings(<span class="jxr_string">"unchecked"</span>)
+<a class="jxr_linenumber" name="L1015" href="#L1015">1015</a>         <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">CharSequenceMap</a>(<strong class="jxr_keyword">int</strong> size) {
+<a class="jxr_linenumber" name="L1016" href="#L1016">1016</a>             <strong class="jxr_keyword">super</strong>(HTTP2_HEADER_NAME_HASHER, UnsupportedValueConverter.instance(), NameValidator.NOT_NULL, size);
+<a class="jxr_linenumber" name="L1017" href="#L1017">1017</a>         }
+<a class="jxr_linenumber" name="L1018" href="#L1018">1018</a>     }
+<a class="jxr_linenumber" name="L1019" href="#L1019">1019</a> 
+<a class="jxr_linenumber" name="L1020" href="#L1020">1020</a>     <strong class="jxr_keyword">private</strong> <a href="../../../../com/linecorp/armeria/internal/ArmeriaHttpUtil.html">ArmeriaHttpUtil</a>() {}
+<a class="jxr_linenumber" name="L1021" href="#L1021">1021</a> }
+</pre>
+<hr/>
+<div id="footer">&copy; Copyright 2015&ndash;2019 <a href="https://engineering.linecorp.com/en/">LINE Corporation</a>. All rights reserved.</div>
+</body>
+</html>

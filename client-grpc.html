@@ -1,0 +1,490 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Calling a gRPC service &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Decorating a client" href="client-decorator.html" />
+    <link rel="prev" title="Calling a Thrift service" href="client-thrift.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Writing a server</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="client.html">Writing a client</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="client-http.html">Calling an HTTP service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-thrift.html">Calling a Thrift service</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Calling a gRPC service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#exception-propagation">Exception propagation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="client-decorator.html">Decorating a client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-retrofit.html">Retrofit integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-custom-http-headers.html">Sending custom HTTP headers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-timeouts.html">Overriding client timeouts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-retry.html">Automatic retry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-circuit-breaker.html">Circuit breaker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client-service-discovery.html">Client-side load balancing and service discovery</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="client.html">Writing a client</a> &raquo;</li>
+        
+      <li>Calling a gRPC service</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/client-grpc.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="calling-a-grpc-service">
+<span id="client-grpc"></span><h1>Calling a gRPC service<a class="headerlink" href="#calling-a-grpc-service" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Visit <a class="reference external" href="https://github.com/line/armeria-examples">armeria-examples</a> to find a fully working example.</p>
+</div>
+<p>Let’s assume we have the following <a class="reference external" href="https://grpc.io/">gRPC</a> service definition, served at <code class="docutils literal notranslate"><span class="pre">http://127.0.0.1:8080/</span></code>, just like
+what we used in <a class="reference internal" href="server-grpc.html#server-grpc"><span class="std std-ref">Running a gRPC service</span></a>:</p>
+<div class="highlight-protobuf notranslate"><div class="highlight hljs"><pre class="protobuf">syntax = &quot;proto3&quot;;
+
+package grpc.hello;
+
+option java_package = &quot;com.example.grpc.hello&quot;;
+
+service HelloService {
+  rpc Hello (HelloRequest) returns (HelloReply) {}
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloReply {
+  string message = 1;
+}</pre></div>
+</div>
+<p>Making a call starts from creating a client:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.Clients;
+
+HelloServiceBlockingStub helloService = Clients.newClient(
+        &quot;gproto+http://127.0.0.1:8080/&quot;,
+        HelloServiceBlockingStub.class); // or HelloServiceFutureStub.class or HelloServiceStub.class
+
+HelloRequest request = HelloRequest.newBuilder().setName(&quot;Armerian World&quot;).build();
+HelloReply reply = helloService.hello(request);
+assert reply.getMessage().equals(&quot;Hello, Armerian World!&quot;);</pre></div>
+</div>
+<p>Note that we added the serialization format of the call using the <code class="docutils literal notranslate"><span class="pre">+</span></code> operator in the scheme part of the URI.
+Because we are calling a <a class="reference external" href="https://grpc.io/">gRPC</a> server, we should choose: <code class="docutils literal notranslate"><span class="pre">gproto</span></code> or <code class="docutils literal notranslate"><span class="pre">gjson</span></code>.</p>
+<p>Since we specified <code class="docutils literal notranslate"><span class="pre">HelloServiceBlockingStub.class</span></code> as the client type, <code class="docutils literal notranslate"><span class="pre">Clients.newClient()</span></code> will return a
+synchronous client implementation.  If we specified <code class="docutils literal notranslate"><span class="pre">HelloServiceFutureStub</span></code>, the calling code would have
+looked like the following:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.linecorp.armeria.client.Clients;
+import java.util.concurrent.ForkJoinPool;
+
+HelloServiceFutureStub helloService = Clients.newClient(
+        &quot;gproto+http://127.0.0.1:8080/&quot;,
+        HelloServiceFutureStub.class);
+
+HelloRequest request = HelloRequest.newBuilder().setName(&quot;Armerian World&quot;).build();
+ListenableFuture&lt;HelloReply&gt; future = helloService.hello(request);
+
+Futures.addCallback(future, new FutureCallback&lt;HelloReply&gt;() {
+    @Override
+    public void onSuccess(HelloReply result) {
+        assert result.getMessage().equals(&quot;Hello, Armerian World!&quot;);
+    }
+
+    @Override
+    public void onFailure(Throwable t) {
+        t.printStackTrace();
+    }
+}, MoreExecutors.directExecutor());
+
+// You can also wait until the call is finished.
+HelloReply reply = future.get();</pre></div>
+</div>
+<p>The asynchronous stub uses Guava’s <a class="reference external" href="https://google.github.io/guava/releases/21.0/api/docs/com/google/common/util/concurrent/ListenableFuture.html">ListenableFuture</a> and can be operated on using methods on <a class="reference external" href="https://google.github.io/guava/releases/21.0/api/docs/com/google/common/util/concurrent/Futures.html">Futures</a>. The
+<a class="reference external" href="https://github.com/spotify/futures-extra">futures-extra</a> library is very convenient for working with <a class="reference external" href="https://google.github.io/guava/releases/21.0/api/docs/com/google/common/util/concurrent/ListenableFuture.html">ListenableFuture</a> in Java 8, including the ability
+to convert it to <a class="reference external" href="https://docs.oracle.com/javase/10/docs/api/java/util/concurrent/CompletableFuture.html">CompletableFuture</a>.</p>
+<p><a class="reference external" href="https://grpc.io/">gRPC</a> also natively supports streaming RPC. If our service definition included this method:</p>
+<div class="highlight-protobuf notranslate"><div class="highlight hljs"><pre class="protobuf">service HelloService {
+  rpc ManyHellos (stream HelloRequest) returns (stream HelloReply) {}
+}</pre></div>
+</div>
+<p>you can use the streaming stub to send and receive multiple responses, in a fully-duplex fashion as necessary.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.Clients;
+import java.util.concurrent.CountDownLatch;
+
+HelloServiceStub helloService = Clients.newClient(
+        &quot;gproto+http://127.0.0.1:8080/&quot;,
+        HelloServiceStub.class);
+
+// Prepare the observer that will receive the request stream.
+CountDownLatch latch = new CountDownLatch(1);
+StreamObserver&lt;HelloReply&gt; replyStream = new StreamObserver&lt;HelloReply&gt;() {
+    @Override
+    public void onNext(HelloReply reply) {
+        assert reply.getMessage().equals(&quot;Hello, Armerian World!&quot;);
+    }
+
+    @Override
+    public void onError(Throwable t) {
+        t.printStackTrace();
+        latch.countDown();
+    }
+
+    @Override
+    public void onCompleted() {
+        System.out.println(&quot;We&#x27;re done!&quot;);
+        latch.countDown();
+    }
+};
+
+// Send the request stream.
+StreamObserver&lt;HelloRequest&gt; requestStream = helloService.manyHellos(replyStream);
+HelloRequest request = HelloRequest.newBuilder().setName(&quot;Armerian World&quot;).build();
+requestStream.onNext(request);
+requestStream.onNext(request);
+requestStream.onCompleted();
+
+// You may want to wait until the call is finished.
+latch.await();</pre></div>
+</div>
+<p>You can also use the builder pattern for client construction:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpRequest;
+import com.linecorp.armeria.common.HttpResponse;
+
+HelloServiceBlockingStub helloService = new ClientBuilder(&quot;gproto+http://127.0.0.1:8080/&quot;)
+        .responseTimeoutMillis(10000)
+        .decorator(LoggingClient.newDecorator())
+        .build(HelloServiceBlockingStub.class); // or HelloServiceFutureStub.class or HelloServiceStub.class
+
+HelloRequest request = HelloRequest.newBuilder().setName(&quot;Armerian World&quot;).build();
+HelloReply reply = helloService.hello(request);
+assert reply.getMessage().equals(&quot;Hello, Armerian World!&quot;);</pre></div>
+</div>
+<p>As you might have noticed already, we decorated the client using <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/logging/LoggingClient.html">LoggingClient</a></code>, which logs all
+requests and responses. You might be interested in decorating a client using other decorators, for example
+to gather metrics. Please also refer to <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/client/ClientBuilder.html">ClientBuilder</a></code> for more configuration options.</p>
+<div class="section" id="exception-propagation">
+<h2>Exception propagation<a class="headerlink" href="#exception-propagation" title="Permalink to this headline">¶</a></h2>
+<p>If you have enabled <code class="docutils literal notranslate"><span class="pre">Flags.verboseResponses()</span></code> in the server being accessed by specifying
+<code class="docutils literal notranslate"><span class="pre">-Dcom.linecorp.armeria.verboseResponses=true</span></code> system property, then any exception during processing
+in the server will be returned to the client as a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/grpc/StatusCauseException.html">StatusCauseException</a></code> attached to the normal gRPC
+<code class="docutils literal notranslate"><span class="pre">Status</span></code>. This can be used for programmatic access to the exception that happened in the server. In this
+example, the server always fails with <code class="docutils literal notranslate"><span class="pre">throw</span> <span class="pre">new</span> <span class="pre">IllegalStateException(&quot;Failed!&quot;);</span></code></p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.client.Clients;
+import com.linecorp.armeria.common.grpc.StatusCauseException;
+
+import io.grpc.StatusRuntimeException;
+
+HelloServiceBlockingStub helloService = Clients.newClient(
+        &quot;gproto+http://127.0.0.1:8080/&quot;,
+        HelloServiceBlockingStub.class); // or HelloServiceFutureStub.class or HelloServiceStub.class
+
+HelloRequest request = HelloRequest.newBuilder().setName(&quot;Armerian World&quot;).build();
+try {
+    HelloReply reply = helloService.hello(request);
+} catch (StatusRuntimeException e) {
+    if (e.getCause() instanceof StatusCauseException) {
+        StatusCauseException cause = (StatusCauseException) e.getCause();
+        // The name of the class of the exception and its message in the server can be accessed.
+        assert cause.getOriginalClassName().equals(&quot;java.lang.IllegalStateException&quot;);
+        assert cause.getOriginalMessage().equals(&quot;Failed!&quot;);
+
+        // The exception&#x27;s message is a combination of both the class name and original message.
+        assert cause.getMessage().equals(&quot;java.lang.IllegalStateException: Failed!&quot;);
+
+        // The exception&#x27;s stack trace is that which occurred when the server threw the exception.
+        cause.printStackTrace();
+
+        // Logging frameworks, as used by e.g., LoggingClient, will print the stack trace if configured
+        // to do so.
+
+        // Now you know exactly where to look in the server to figure out what may have gone wrong.
+    }
+}</pre></div>
+</div>
+</div>
+<div class="section" id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="server-grpc.html#server-grpc"><span class="std std-ref">Running a gRPC service</span></a></p></li>
+<li><p><a class="reference internal" href="client-decorator.html#client-decorator"><span class="std std-ref">Decorating a client</span></a></p></li>
+<li><p><a class="reference internal" href="client-custom-http-headers.html#client-custom-http-headers"><span class="std std-ref">Sending custom HTTP headers</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="client-decorator.html" class="btn btn-neutral float-right" title="Decorating a client" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="client-thrift.html" class="btn btn-neutral float-left" title="Calling a Thrift service" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

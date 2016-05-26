@@ -1,0 +1,458 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="null" lang="null">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>ClientFactoryBuilder xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../stylesheet.css" />
+</head>
+<body>
+<pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   <em class="jxr_comment"> *  Copyright 2017 LINE Corporation</em>
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <em class="jxr_comment"> *  LINE Corporation licenses this file to you under the Apache License,</em>
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <em class="jxr_comment"> *  version 2.0 (the "License"); you may not use this file except in compliance</em>
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <em class="jxr_comment"> *  with the License. You may obtain a copy of the License at:</em>
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <em class="jxr_comment"> *    https://www.apache.org/licenses/LICENSE-2.0</em>
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <em class="jxr_comment"> *</em>
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <em class="jxr_comment"> *  Unless required by applicable law or agreed to in writing, software</em>
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <em class="jxr_comment"> *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT</em>
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <em class="jxr_comment"> *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</em>
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <em class="jxr_comment"> *  License for the specific language governing permissions and limitations</em>
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <em class="jxr_comment"> *  under the License.</em>
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <em class="jxr_comment"> */</em>
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">package</strong> com.linecorp.armeria.client;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> com.google.common.base.MoreObjects.firstNonNull;
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> com.google.common.base.Preconditions.checkArgument;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> com.google.common.base.Preconditions.checkState;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.handler.codec.http2.Http2CodecUtil.DEFAULT_WINDOW_SIZE;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.handler.codec.http2.Http2CodecUtil.MAX_FRAME_SIZE_LOWER_BOUND;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.handler.codec.http2.Http2CodecUtil.MAX_FRAME_SIZE_UPPER_BOUND;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> io.netty.handler.codec.http2.Http2CodecUtil.MAX_INITIAL_WINDOW_SIZE;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> java.util.Objects.requireNonNull;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> java.net.InetSocketAddress;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> java.time.Duration;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> java.util.ArrayList;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> java.util.Map;
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> java.util.Set;
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <strong class="jxr_keyword">import</strong> java.util.function.Consumer;
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">import</strong> java.util.function.Function;
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">import</strong> javax.annotation.Nullable;
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <strong class="jxr_keyword">import</strong> com.google.common.base.MoreObjects;
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <strong class="jxr_keyword">import</strong> com.google.common.base.MoreObjects.ToStringHelper;
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  <strong class="jxr_keyword">import</strong> com.google.common.collect.ImmutableList;
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <strong class="jxr_keyword">import</strong> com.google.common.collect.ImmutableSet;
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.CommonPools;
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.Flags;
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>  <strong class="jxr_keyword">import</strong> com.linecorp.armeria.common.Request;
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>  <strong class="jxr_keyword">import</strong> io.micrometer.core.instrument.MeterRegistry;
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  <strong class="jxr_keyword">import</strong> io.micrometer.core.instrument.Metrics;
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>  <strong class="jxr_keyword">import</strong> io.netty.channel.ChannelOption;
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>  <strong class="jxr_keyword">import</strong> io.netty.channel.EventLoopGroup;
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  <strong class="jxr_keyword">import</strong> io.netty.channel.epoll.EpollChannelOption;
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.codec.http2.Http2CodecUtil;
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.ssl.SslContextBuilder;
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  <strong class="jxr_keyword">import</strong> io.netty.resolver.AddressResolverGroup;
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>  <strong class="jxr_keyword">import</strong> io.netty.resolver.dns.DnsNameResolverBuilder;
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>  <strong class="jxr_keyword">import</strong> it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>  
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  <em class="jxr_javadoccomment"> * Builds a new {@link ClientFactory}.</em>
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  <em class="jxr_javadoccomment"> * &lt;h2&gt;Example&lt;/h2&gt;</em>
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  <em class="jxr_javadoccomment"> * &lt;pre&gt;{@code</em>
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  <em class="jxr_javadoccomment"> * final ClientFactory factory = new ClientFactoryBuilder();</em>
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>  <em class="jxr_javadoccomment"> *     // Set the connection timeout to 5 seconds.</em>
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  <em class="jxr_javadoccomment"> *     .connectTimeoutMillis(5000)</em>
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>  <em class="jxr_javadoccomment"> *     // Set the socket send buffer to 1 MiB.</em>
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>  <em class="jxr_javadoccomment"> *     .socketOption(ChannelOption.SO_SNDBUF, 1048576)</em>
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>  <em class="jxr_javadoccomment"> *     // Disable certificate verification; never do this in production!</em>
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>  <em class="jxr_javadoccomment"> *     .sslContextCustomizer(b -&gt; b.trustManager(InsecureTrustManagerFactory.INSTANCE))</em>
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>  <em class="jxr_javadoccomment"> *     .build();</em>
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>  <em class="jxr_javadoccomment"> * }&lt;/pre&gt;</em>
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> {
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../com/linecorp/armeria/client/ConnectionPoolListener.html">ConnectionPoolListener</a> DEFAULT_CONNECTION_POOL_LISTENER =
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>              ConnectionPoolListener.noop();
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>  
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Consumer&lt;SslContextBuilder&gt; DEFAULT_SSL_CONTEXT_CUSTOMIZER = b -&gt; { <em class="jxr_comment">/* no-op */</em> };
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>  
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>      <em class="jxr_comment">// Do not accept 1) the options that may break Armeria and 2) the deprecated options.</em>
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>      @SuppressWarnings(<span class="jxr_string">"deprecation"</span>)
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Set&lt;ChannelOption&lt;?&gt;&gt; PROHIBITED_SOCKET_OPTIONS = ImmutableSet.of(
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>              ChannelOption.ALLOW_HALF_CLOSURE, ChannelOption.AUTO_READ,
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>              ChannelOption.AUTO_CLOSE, ChannelOption.MAX_MESSAGES_PER_READ,
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>              ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, ChannelOption.WRITE_BUFFER_LOW_WATER_MARK,
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>              EpollChannelOption.EPOLL_MODE);
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>      <em class="jxr_comment">// Netty-related properties:</em>
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>      <strong class="jxr_keyword">private</strong> EventLoopGroup workerGroup = CommonPools.workerGroup();
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> shutdownWorkerGroupOnClose;
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Map&lt;ChannelOption&lt;?&gt;, Object&gt; channelOptions = <strong class="jxr_keyword">new</strong> Object2ObjectArrayMap&lt;&gt;();
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>      <strong class="jxr_keyword">private</strong> Consumer&lt;? <strong class="jxr_keyword">super</strong> SslContextBuilder&gt; sslContextCustomizer = DEFAULT_SSL_CONTEXT_CUSTOMIZER;
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>      @Nullable
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>      <strong class="jxr_keyword">private</strong> Function&lt;? <strong class="jxr_keyword">super</strong> EventLoopGroup,
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>              ? <strong class="jxr_keyword">extends</strong> AddressResolverGroup&lt;? <strong class="jxr_keyword">extends</strong> InetSocketAddress&gt;&gt; addressResolverGroupFactory;
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>      @Nullable
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>      <strong class="jxr_keyword">private</strong> List&lt;Consumer&lt;? <strong class="jxr_keyword">super</strong> DnsNameResolverBuilder&gt;&gt; domainNameResolverCustomizers;
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> http2InitialConnectionWindowSize = Flags.defaultHttp2InitialConnectionWindowSize();
+<a class="jxr_linenumber" name="L100" href="#L100">100</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> http2InitialStreamWindowSize = Flags.defaultHttp2InitialStreamWindowSize();
+<a class="jxr_linenumber" name="L101" href="#L101">101</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> http2MaxFrameSize = Flags.defaultHttp2MaxFrameSize();
+<a class="jxr_linenumber" name="L102" href="#L102">102</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">long</strong> http2MaxHeaderListSize = Flags.defaultHttp2MaxHeaderListSize();
+<a class="jxr_linenumber" name="L103" href="#L103">103</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> http1MaxInitialLineLength = Flags.defaultHttp1MaxInitialLineLength();
+<a class="jxr_linenumber" name="L104" href="#L104">104</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> http1MaxHeaderSize = Flags.defaultHttp1MaxHeaderSize();
+<a class="jxr_linenumber" name="L105" href="#L105">105</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> http1MaxChunkSize = Flags.defaultHttp1MaxChunkSize();
+<a class="jxr_linenumber" name="L106" href="#L106">106</a> 
+<a class="jxr_linenumber" name="L107" href="#L107">107</a>     <em class="jxr_comment">// Armeria-related properties:</em>
+<a class="jxr_linenumber" name="L108" href="#L108">108</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">long</strong> idleTimeoutMillis = Flags.defaultClientIdleTimeoutMillis();
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> useHttp2Preface = Flags.defaultUseHttp2Preface();
+<a class="jxr_linenumber" name="L110" href="#L110">110</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> useHttp1Pipelining = Flags.defaultUseHttp1Pipelining();
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>     <strong class="jxr_keyword">private</strong> <a href="../../../../com/linecorp/armeria/client/ConnectionPoolListener.html">ConnectionPoolListener</a> connectionPoolListener = DEFAULT_CONNECTION_POOL_LISTENER;
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>     <strong class="jxr_keyword">private</strong> MeterRegistry meterRegistry = Metrics.globalRegistry;
+<a class="jxr_linenumber" name="L113" href="#L113">113</a> 
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L115" href="#L115">115</a> <em class="jxr_javadoccomment">     * Creates a new instance.</em>
+<a class="jxr_linenumber" name="L116" href="#L116">116</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a>() {
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>         connectTimeoutMillis(Flags.defaultConnectTimeoutMillis());
+<a class="jxr_linenumber" name="L119" href="#L119">119</a>     }
+<a class="jxr_linenumber" name="L120" href="#L120">120</a> 
+<a class="jxr_linenumber" name="L121" href="#L121">121</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L122" href="#L122">122</a> <em class="jxr_javadoccomment">     * Sets the worker {@link EventLoopGroup} which is responsible for performing socket I/O and running</em>
+<a class="jxr_linenumber" name="L123" href="#L123">123</a> <em class="jxr_javadoccomment">     * {@link Client#execute(ClientRequestContext, Request)}.</em>
+<a class="jxr_linenumber" name="L124" href="#L124">124</a> <em class="jxr_javadoccomment">     * If not set, {@linkplain CommonPools#workerGroup() the common worker group} is used.</em>
+<a class="jxr_linenumber" name="L125" href="#L125">125</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L126" href="#L126">126</a> <em class="jxr_javadoccomment">     * @param shutdownOnClose whether to shut down the worker {@link EventLoopGroup}</em>
+<a class="jxr_linenumber" name="L127" href="#L127">127</a> <em class="jxr_javadoccomment">     *                        when the {@link ClientFactory} is closed</em>
+<a class="jxr_linenumber" name="L128" href="#L128">128</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> workerGroup(EventLoopGroup workerGroup, <strong class="jxr_keyword">boolean</strong> shutdownOnClose) {
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>         <strong class="jxr_keyword">this</strong>.workerGroup = requireNonNull(workerGroup, <span class="jxr_string">"workerGroup"</span>);
+<a class="jxr_linenumber" name="L131" href="#L131">131</a>         shutdownWorkerGroupOnClose = shutdownOnClose;
+<a class="jxr_linenumber" name="L132" href="#L132">132</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L133" href="#L133">133</a>     }
+<a class="jxr_linenumber" name="L134" href="#L134">134</a> 
+<a class="jxr_linenumber" name="L135" href="#L135">135</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L136" href="#L136">136</a> <em class="jxr_javadoccomment">     * Sets the timeout of a socket connection attempt.</em>
+<a class="jxr_linenumber" name="L137" href="#L137">137</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> connectTimeout(Duration connectTimeout) {
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>         requireNonNull(connectTimeout, <span class="jxr_string">"connectTimeout"</span>);
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>         checkArgument(!connectTimeout.isZero() &amp;&amp; !connectTimeout.isNegative(),
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>                       <span class="jxr_string">"connectTimeout: %s (expected: &gt; 0)"</span>, connectTimeout);
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>         <strong class="jxr_keyword">return</strong> connectTimeoutMillis(connectTimeout.toMillis());
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>     }
+<a class="jxr_linenumber" name="L144" href="#L144">144</a> 
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L146" href="#L146">146</a> <em class="jxr_javadoccomment">     * Sets the timeout of a socket connection attempt in milliseconds.</em>
+<a class="jxr_linenumber" name="L147" href="#L147">147</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L148" href="#L148">148</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> connectTimeoutMillis(<strong class="jxr_keyword">long</strong> connectTimeoutMillis) {
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>         checkArgument(connectTimeoutMillis &gt; 0,
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>                       <span class="jxr_string">"connectTimeoutMillis: %s (expected: &gt; 0)"</span>, connectTimeoutMillis);
+<a class="jxr_linenumber" name="L151" href="#L151">151</a>         <strong class="jxr_keyword">return</strong> channelOption(ChannelOption.CONNECT_TIMEOUT_MILLIS,
+<a class="jxr_linenumber" name="L152" href="#L152">152</a>                              ConvertUtils.safeLongToInt(connectTimeoutMillis));
+<a class="jxr_linenumber" name="L153" href="#L153">153</a>     }
+<a class="jxr_linenumber" name="L154" href="#L154">154</a> 
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L156" href="#L156">156</a> <em class="jxr_javadoccomment">     * Sets the options of sockets created by the {@link ClientFactory}.</em>
+<a class="jxr_linenumber" name="L157" href="#L157">157</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L158" href="#L158">158</a> <em class="jxr_javadoccomment">     * @deprecated Use {@link #channelOption(ChannelOption, Object)}.</em>
+<a class="jxr_linenumber" name="L159" href="#L159">159</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>     @Deprecated
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>     <strong class="jxr_keyword">public</strong> &lt;T&gt; <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> socketOption(ChannelOption&lt;T&gt; option, T value) {
+<a class="jxr_linenumber" name="L162" href="#L162">162</a>         <strong class="jxr_keyword">return</strong> channelOption(option, value);
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>     }
+<a class="jxr_linenumber" name="L164" href="#L164">164</a> 
+<a class="jxr_linenumber" name="L165" href="#L165">165</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L166" href="#L166">166</a> <em class="jxr_javadoccomment">     * Sets the options of sockets created by the {@link ClientFactory}.</em>
+<a class="jxr_linenumber" name="L167" href="#L167">167</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>     <strong class="jxr_keyword">public</strong> &lt;T&gt; <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> channelOption(ChannelOption&lt;T&gt; option, T value) {
+<a class="jxr_linenumber" name="L169" href="#L169">169</a>         requireNonNull(option, <span class="jxr_string">"option"</span>);
+<a class="jxr_linenumber" name="L170" href="#L170">170</a>         checkArgument(!PROHIBITED_SOCKET_OPTIONS.contains(option),
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>                       <span class="jxr_string">"prohibited socket option: %s"</span>, option);
+<a class="jxr_linenumber" name="L172" href="#L172">172</a> 
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>         channelOptions.put(option, requireNonNull(value, <span class="jxr_string">"value"</span>));
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>     }
+<a class="jxr_linenumber" name="L176" href="#L176">176</a> 
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L178" href="#L178">178</a> <em class="jxr_javadoccomment">     * Sets the {@link Consumer} which can arbitrarily configure the {@link SslContextBuilder} that will be</em>
+<a class="jxr_linenumber" name="L179" href="#L179">179</a> <em class="jxr_javadoccomment">     * applied to the SSL session. For example, use {@link SslContextBuilder#trustManager} to configure a</em>
+<a class="jxr_linenumber" name="L180" href="#L180">180</a> <em class="jxr_javadoccomment">     * custom server CA or {@link SslContextBuilder#keyManager} to configure a client certificate for SSL</em>
+<a class="jxr_linenumber" name="L181" href="#L181">181</a> <em class="jxr_javadoccomment">     * authorization.</em>
+<a class="jxr_linenumber" name="L182" href="#L182">182</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> sslContextCustomizer(Consumer&lt;? <strong class="jxr_keyword">super</strong> SslContextBuilder&gt; sslContextCustomizer) {
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>         <strong class="jxr_keyword">this</strong>.sslContextCustomizer = requireNonNull(sslContextCustomizer, <span class="jxr_string">"sslContextCustomizer"</span>);
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>     }
+<a class="jxr_linenumber" name="L187" href="#L187">187</a> 
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L189" href="#L189">189</a> <em class="jxr_javadoccomment">     * Sets the factory that creates a {@link AddressResolverGroup} which resolves remote addresses into</em>
+<a class="jxr_linenumber" name="L190" href="#L190">190</a> <em class="jxr_javadoccomment">     * {@link InetSocketAddress}es.</em>
+<a class="jxr_linenumber" name="L191" href="#L191">191</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L192" href="#L192">192</a> <em class="jxr_javadoccomment">     * @throws IllegalStateException if {@link #domainNameResolverCustomizer(Consumer)} was called already.</em>
+<a class="jxr_linenumber" name="L193" href="#L193">193</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> addressResolverGroupFactory(
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>             Function&lt;? <strong class="jxr_keyword">super</strong> EventLoopGroup,
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>                      ? <strong class="jxr_keyword">extends</strong> AddressResolverGroup&lt;? <strong class="jxr_keyword">extends</strong> InetSocketAddress&gt;&gt; addressResolverGroupFactory) {
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>         requireNonNull(addressResolverGroupFactory, <span class="jxr_string">"addressResolverGroupFactory"</span>);
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>         checkState(domainNameResolverCustomizers == <strong class="jxr_keyword">null</strong>,
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>                    <span class="jxr_string">"addressResolverGroupFactory() and domainNameResolverCustomizer() are mutually exclusive."</span>);
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>         <strong class="jxr_keyword">this</strong>.addressResolverGroupFactory = addressResolverGroupFactory;
+<a class="jxr_linenumber" name="L201" href="#L201">201</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L202" href="#L202">202</a>     }
+<a class="jxr_linenumber" name="L203" href="#L203">203</a> 
+<a class="jxr_linenumber" name="L204" href="#L204">204</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L205" href="#L205">205</a> <em class="jxr_javadoccomment">     * Adds the specified {@link Consumer} which customizes the given {@link DnsNameResolverBuilder}.</em>
+<a class="jxr_linenumber" name="L206" href="#L206">206</a> <em class="jxr_javadoccomment">     * This method is useful when you want to change the behavior of the default domain name resolver, such as</em>
+<a class="jxr_linenumber" name="L207" href="#L207">207</a> <em class="jxr_javadoccomment">     * changing the DNS server list.</em>
+<a class="jxr_linenumber" name="L208" href="#L208">208</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L209" href="#L209">209</a> <em class="jxr_javadoccomment">     * @throws IllegalStateException if {@link #addressResolverGroupFactory(Function)} was called already.</em>
+<a class="jxr_linenumber" name="L210" href="#L210">210</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L211" href="#L211">211</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> domainNameResolverCustomizer(
+<a class="jxr_linenumber" name="L212" href="#L212">212</a>             Consumer&lt;? <strong class="jxr_keyword">super</strong> DnsNameResolverBuilder&gt; domainNameResolverCustomizer) {
+<a class="jxr_linenumber" name="L213" href="#L213">213</a>         requireNonNull(domainNameResolverCustomizer, <span class="jxr_string">"domainNameResolverCustomizer"</span>);
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>         checkState(addressResolverGroupFactory == <strong class="jxr_keyword">null</strong>,
+<a class="jxr_linenumber" name="L215" href="#L215">215</a>                    <span class="jxr_string">"addressResolverGroupFactory() and domainNameResolverCustomizer() are mutually exclusive."</span>);
+<a class="jxr_linenumber" name="L216" href="#L216">216</a>         <strong class="jxr_keyword">if</strong> (domainNameResolverCustomizers == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L217" href="#L217">217</a>             domainNameResolverCustomizers = <strong class="jxr_keyword">new</strong> ArrayList&lt;&gt;();
+<a class="jxr_linenumber" name="L218" href="#L218">218</a>         }
+<a class="jxr_linenumber" name="L219" href="#L219">219</a>         domainNameResolverCustomizers.add(domainNameResolverCustomizer);
+<a class="jxr_linenumber" name="L220" href="#L220">220</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L221" href="#L221">221</a>     }
+<a class="jxr_linenumber" name="L222" href="#L222">222</a> 
+<a class="jxr_linenumber" name="L223" href="#L223">223</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L224" href="#L224">224</a> <em class="jxr_javadoccomment">     * Sets the &lt;a href="https://tools.ietf.org/html/rfc7540#section-6.9.2"&gt;initial connection flow-control</em>
+<a class="jxr_linenumber" name="L225" href="#L225">225</a> <em class="jxr_javadoccomment">     * window size&lt;/a&gt;. The HTTP/2 connection is first established with</em>
+<a class="jxr_linenumber" name="L226" href="#L226">226</a> <em class="jxr_javadoccomment">     * {@value Http2CodecUtil#DEFAULT_WINDOW_SIZE} bytes of connection flow-control window size,</em>
+<a class="jxr_linenumber" name="L227" href="#L227">227</a> <em class="jxr_javadoccomment">     * and it is changed if and only if {@code http2InitialConnectionWindowSize} is set.</em>
+<a class="jxr_linenumber" name="L228" href="#L228">228</a> <em class="jxr_javadoccomment">     * Note that this setting affects the connection-level window size, not the window size of streams.</em>
+<a class="jxr_linenumber" name="L229" href="#L229">229</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L230" href="#L230">230</a> <em class="jxr_javadoccomment">     * @see #http2InitialStreamWindowSize(int)</em>
+<a class="jxr_linenumber" name="L231" href="#L231">231</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L232" href="#L232">232</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> http2InitialConnectionWindowSize(<strong class="jxr_keyword">int</strong> http2InitialConnectionWindowSize) {
+<a class="jxr_linenumber" name="L233" href="#L233">233</a>         checkArgument(http2InitialConnectionWindowSize &gt;= DEFAULT_WINDOW_SIZE,
+<a class="jxr_linenumber" name="L234" href="#L234">234</a>                       <span class="jxr_string">"http2InitialConnectionWindowSize: %s (expected: &gt;= %s and &lt;= %s)"</span>,
+<a class="jxr_linenumber" name="L235" href="#L235">235</a>                       http2InitialConnectionWindowSize, DEFAULT_WINDOW_SIZE, MAX_INITIAL_WINDOW_SIZE);
+<a class="jxr_linenumber" name="L236" href="#L236">236</a>         <strong class="jxr_keyword">this</strong>.http2InitialConnectionWindowSize = http2InitialConnectionWindowSize;
+<a class="jxr_linenumber" name="L237" href="#L237">237</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L238" href="#L238">238</a>     }
+<a class="jxr_linenumber" name="L239" href="#L239">239</a> 
+<a class="jxr_linenumber" name="L240" href="#L240">240</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L241" href="#L241">241</a> <em class="jxr_javadoccomment">     * Sets the &lt;a href="https://tools.ietf.org/html/rfc7540#section-6.5.2"&gt;SETTINGS_INITIAL_WINDOW_SIZE&lt;/a&gt;</em>
+<a class="jxr_linenumber" name="L242" href="#L242">242</a> <em class="jxr_javadoccomment">     * for HTTP/2 stream-level flow control. Note that this setting affects the window size of all streams,</em>
+<a class="jxr_linenumber" name="L243" href="#L243">243</a> <em class="jxr_javadoccomment">     * not the connection-level window size.</em>
+<a class="jxr_linenumber" name="L244" href="#L244">244</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L245" href="#L245">245</a> <em class="jxr_javadoccomment">     * @see #http2InitialConnectionWindowSize(int)</em>
+<a class="jxr_linenumber" name="L246" href="#L246">246</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L247" href="#L247">247</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> http2InitialStreamWindowSize(<strong class="jxr_keyword">int</strong> http2InitialStreamWindowSize) {
+<a class="jxr_linenumber" name="L248" href="#L248">248</a>         checkArgument(http2InitialStreamWindowSize &gt; 0,
+<a class="jxr_linenumber" name="L249" href="#L249">249</a>                       <span class="jxr_string">"http2InitialStreamWindowSize: %s (expected: &gt; 0 and &lt;= %s)"</span>,
+<a class="jxr_linenumber" name="L250" href="#L250">250</a>                       http2InitialStreamWindowSize, MAX_INITIAL_WINDOW_SIZE);
+<a class="jxr_linenumber" name="L251" href="#L251">251</a>         <strong class="jxr_keyword">this</strong>.http2InitialStreamWindowSize = http2InitialStreamWindowSize;
+<a class="jxr_linenumber" name="L252" href="#L252">252</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L253" href="#L253">253</a>     }
+<a class="jxr_linenumber" name="L254" href="#L254">254</a> 
+<a class="jxr_linenumber" name="L255" href="#L255">255</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L256" href="#L256">256</a> <em class="jxr_javadoccomment">     * Sets the &lt;a href="https://tools.ietf.org/html/rfc7540#section-6.5.2"&gt;SETTINGS_MAX_FRAME_SIZE&lt;/a&gt;</em>
+<a class="jxr_linenumber" name="L257" href="#L257">257</a> <em class="jxr_javadoccomment">     * that indicates the size of the largest frame payload that this client is willing to receive.</em>
+<a class="jxr_linenumber" name="L258" href="#L258">258</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L259" href="#L259">259</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> http2MaxFrameSize(<strong class="jxr_keyword">int</strong> http2MaxFrameSize) {
+<a class="jxr_linenumber" name="L260" href="#L260">260</a>         checkArgument(http2MaxFrameSize &gt;= MAX_FRAME_SIZE_LOWER_BOUND &amp;&amp;
+<a class="jxr_linenumber" name="L261" href="#L261">261</a>                       http2MaxFrameSize &lt;= MAX_FRAME_SIZE_UPPER_BOUND,
+<a class="jxr_linenumber" name="L262" href="#L262">262</a>                       <span class="jxr_string">"http2MaxFramSize: %s (expected: &gt;= %s and &lt;= %s)"</span>,
+<a class="jxr_linenumber" name="L263" href="#L263">263</a>                       http2MaxFrameSize, MAX_FRAME_SIZE_LOWER_BOUND, MAX_FRAME_SIZE_UPPER_BOUND);
+<a class="jxr_linenumber" name="L264" href="#L264">264</a>         <strong class="jxr_keyword">this</strong>.http2MaxFrameSize = http2MaxFrameSize;
+<a class="jxr_linenumber" name="L265" href="#L265">265</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L266" href="#L266">266</a>     }
+<a class="jxr_linenumber" name="L267" href="#L267">267</a> 
+<a class="jxr_linenumber" name="L268" href="#L268">268</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L269" href="#L269">269</a> <em class="jxr_javadoccomment">     * Sets the &lt;a href="https://tools.ietf.org/html/rfc7540#section-6.5.2"&gt;SETTINGS_MAX_HEADER_LIST_SIZE&lt;/a&gt;</em>
+<a class="jxr_linenumber" name="L270" href="#L270">270</a> <em class="jxr_javadoccomment">     * that indicates the maximum size of header list that the client is prepared to accept, in octets.</em>
+<a class="jxr_linenumber" name="L271" href="#L271">271</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L272" href="#L272">272</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> http2MaxHeaderListSize(<strong class="jxr_keyword">long</strong> http2MaxHeaderListSize) {
+<a class="jxr_linenumber" name="L273" href="#L273">273</a>         checkArgument(http2MaxHeaderListSize &gt; 0 &amp;&amp;
+<a class="jxr_linenumber" name="L274" href="#L274">274</a>                       http2MaxHeaderListSize &lt;= 0xFFFFFFFFL,
+<a class="jxr_linenumber" name="L275" href="#L275">275</a>                       <span class="jxr_string">"http2MaxHeaderListSize: %s (expected: a positive 32-bit unsigned integer)"</span>,
+<a class="jxr_linenumber" name="L276" href="#L276">276</a>                       http2MaxHeaderListSize);
+<a class="jxr_linenumber" name="L277" href="#L277">277</a>         <strong class="jxr_keyword">this</strong>.http2MaxHeaderListSize = http2MaxHeaderListSize;
+<a class="jxr_linenumber" name="L278" href="#L278">278</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L279" href="#L279">279</a>     }
+<a class="jxr_linenumber" name="L280" href="#L280">280</a> 
+<a class="jxr_linenumber" name="L281" href="#L281">281</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L282" href="#L282">282</a> <em class="jxr_javadoccomment">     * Sets the maximum length of an HTTP/1 response initial line.</em>
+<a class="jxr_linenumber" name="L283" href="#L283">283</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L284" href="#L284">284</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> http1MaxInitialLineLength(<strong class="jxr_keyword">int</strong> http1MaxInitialLineLength) {
+<a class="jxr_linenumber" name="L285" href="#L285">285</a>         checkArgument(http1MaxInitialLineLength &gt;= 0,
+<a class="jxr_linenumber" name="L286" href="#L286">286</a>                       <span class="jxr_string">"http1MaxInitialLineLength: %s (expected: &gt;= 0)"</span>,
+<a class="jxr_linenumber" name="L287" href="#L287">287</a>                       http1MaxInitialLineLength);
+<a class="jxr_linenumber" name="L288" href="#L288">288</a>         <strong class="jxr_keyword">this</strong>.http1MaxInitialLineLength = http1MaxInitialLineLength;
+<a class="jxr_linenumber" name="L289" href="#L289">289</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L290" href="#L290">290</a>     }
+<a class="jxr_linenumber" name="L291" href="#L291">291</a> 
+<a class="jxr_linenumber" name="L292" href="#L292">292</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L293" href="#L293">293</a> <em class="jxr_javadoccomment">     * Sets the maximum length of all headers in an HTTP/1 response.</em>
+<a class="jxr_linenumber" name="L294" href="#L294">294</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L295" href="#L295">295</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> http1MaxHeaderSize(<strong class="jxr_keyword">int</strong> http1MaxHeaderSize) {
+<a class="jxr_linenumber" name="L296" href="#L296">296</a>         checkArgument(http1MaxHeaderSize &gt;= 0,
+<a class="jxr_linenumber" name="L297" href="#L297">297</a>                       <span class="jxr_string">"http1MaxHeaderSize: %s (expected: &gt;= 0)"</span>,
+<a class="jxr_linenumber" name="L298" href="#L298">298</a>                       http1MaxHeaderSize);
+<a class="jxr_linenumber" name="L299" href="#L299">299</a>         <strong class="jxr_keyword">this</strong>.http1MaxHeaderSize = http1MaxHeaderSize;
+<a class="jxr_linenumber" name="L300" href="#L300">300</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L301" href="#L301">301</a>     }
+<a class="jxr_linenumber" name="L302" href="#L302">302</a> 
+<a class="jxr_linenumber" name="L303" href="#L303">303</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L304" href="#L304">304</a> <em class="jxr_javadoccomment">     * Sets the maximum length of each chunk in an HTTP/1 response content.</em>
+<a class="jxr_linenumber" name="L305" href="#L305">305</a> <em class="jxr_javadoccomment">     * The content or a chunk longer than this value will be split into smaller chunks</em>
+<a class="jxr_linenumber" name="L306" href="#L306">306</a> <em class="jxr_javadoccomment">     * so that their lengths never exceed it.</em>
+<a class="jxr_linenumber" name="L307" href="#L307">307</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L308" href="#L308">308</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> http1MaxChunkSize(<strong class="jxr_keyword">int</strong> http1MaxChunkSize) {
+<a class="jxr_linenumber" name="L309" href="#L309">309</a>         checkArgument(http1MaxChunkSize &gt;= 0,
+<a class="jxr_linenumber" name="L310" href="#L310">310</a>                       <span class="jxr_string">"http1MaxChunkSize: %s (expected: &gt;= 0)"</span>,
+<a class="jxr_linenumber" name="L311" href="#L311">311</a>                       http1MaxChunkSize);
+<a class="jxr_linenumber" name="L312" href="#L312">312</a>         <strong class="jxr_keyword">this</strong>.http1MaxChunkSize = http1MaxChunkSize;
+<a class="jxr_linenumber" name="L313" href="#L313">313</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L314" href="#L314">314</a>     }
+<a class="jxr_linenumber" name="L315" href="#L315">315</a> 
+<a class="jxr_linenumber" name="L316" href="#L316">316</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L317" href="#L317">317</a> <em class="jxr_javadoccomment">     * Sets the idle timeout of a socket connection. The connection is closed if there is no request in</em>
+<a class="jxr_linenumber" name="L318" href="#L318">318</a> <em class="jxr_javadoccomment">     * progress for this amount of time.</em>
+<a class="jxr_linenumber" name="L319" href="#L319">319</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L320" href="#L320">320</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> idleTimeout(Duration idleTimeout) {
+<a class="jxr_linenumber" name="L321" href="#L321">321</a>         requireNonNull(idleTimeout, <span class="jxr_string">"idleTimeout"</span>);
+<a class="jxr_linenumber" name="L322" href="#L322">322</a>         checkArgument(!idleTimeout.isNegative(), <span class="jxr_string">"idleTimeout: %s (expected: &gt;= 0)"</span>, idleTimeout);
+<a class="jxr_linenumber" name="L323" href="#L323">323</a>         <strong class="jxr_keyword">return</strong> idleTimeoutMillis(idleTimeout.toMillis());
+<a class="jxr_linenumber" name="L324" href="#L324">324</a>     }
+<a class="jxr_linenumber" name="L325" href="#L325">325</a> 
+<a class="jxr_linenumber" name="L326" href="#L326">326</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L327" href="#L327">327</a> <em class="jxr_javadoccomment">     * Sets the idle timeout of a socket connection in milliseconds. The connection is closed if there is no</em>
+<a class="jxr_linenumber" name="L328" href="#L328">328</a> <em class="jxr_javadoccomment">     * request in progress for this amount of time.</em>
+<a class="jxr_linenumber" name="L329" href="#L329">329</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L330" href="#L330">330</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> idleTimeoutMillis(<strong class="jxr_keyword">long</strong> idleTimeoutMillis) {
+<a class="jxr_linenumber" name="L331" href="#L331">331</a>         checkArgument(idleTimeoutMillis &gt;= 0, <span class="jxr_string">"idleTimeoutMillis: %s (expected: &gt;= 0)"</span>, idleTimeoutMillis);
+<a class="jxr_linenumber" name="L332" href="#L332">332</a>         <strong class="jxr_keyword">this</strong>.idleTimeoutMillis = idleTimeoutMillis;
+<a class="jxr_linenumber" name="L333" href="#L333">333</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L334" href="#L334">334</a>     }
+<a class="jxr_linenumber" name="L335" href="#L335">335</a> 
+<a class="jxr_linenumber" name="L336" href="#L336">336</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L337" href="#L337">337</a> <em class="jxr_javadoccomment">     * Sets whether to send an HTTP/2 preface string instead of an HTTP/1 upgrade request to negotiate</em>
+<a class="jxr_linenumber" name="L338" href="#L338">338</a> <em class="jxr_javadoccomment">     * the protocol version of a cleartext HTTP connection.</em>
+<a class="jxr_linenumber" name="L339" href="#L339">339</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L340" href="#L340">340</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> useHttp2Preface(<strong class="jxr_keyword">boolean</strong> useHttp2Preface) {
+<a class="jxr_linenumber" name="L341" href="#L341">341</a>         <strong class="jxr_keyword">this</strong>.useHttp2Preface = useHttp2Preface;
+<a class="jxr_linenumber" name="L342" href="#L342">342</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L343" href="#L343">343</a>     }
+<a class="jxr_linenumber" name="L344" href="#L344">344</a> 
+<a class="jxr_linenumber" name="L345" href="#L345">345</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L346" href="#L346">346</a> <em class="jxr_javadoccomment">     * Sets whether to use &lt;a href="https://en.wikipedia.org/wiki/HTTP_pipelining"&gt;HTTP pipelining&lt;/a&gt; for</em>
+<a class="jxr_linenumber" name="L347" href="#L347">347</a> <em class="jxr_javadoccomment">     * HTTP/1 connections. This does not affect HTTP/2 connections. This option is disabled by default.</em>
+<a class="jxr_linenumber" name="L348" href="#L348">348</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L349" href="#L349">349</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> useHttp1Pipelining(<strong class="jxr_keyword">boolean</strong> useHttp1Pipelining) {
+<a class="jxr_linenumber" name="L350" href="#L350">350</a>         <strong class="jxr_keyword">this</strong>.useHttp1Pipelining = useHttp1Pipelining;
+<a class="jxr_linenumber" name="L351" href="#L351">351</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L352" href="#L352">352</a>     }
+<a class="jxr_linenumber" name="L353" href="#L353">353</a> 
+<a class="jxr_linenumber" name="L354" href="#L354">354</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L355" href="#L355">355</a> <em class="jxr_javadoccomment">     * Sets the listener which is notified on a connection pool event.</em>
+<a class="jxr_linenumber" name="L356" href="#L356">356</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L357" href="#L357">357</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> connectionPoolListener(
+<a class="jxr_linenumber" name="L358" href="#L358">358</a>             <a href="../../../../com/linecorp/armeria/client/ConnectionPoolListener.html">ConnectionPoolListener</a> connectionPoolListener) {
+<a class="jxr_linenumber" name="L359" href="#L359">359</a>         <strong class="jxr_keyword">this</strong>.connectionPoolListener = requireNonNull(connectionPoolListener, <span class="jxr_string">"connectionPoolListener"</span>);
+<a class="jxr_linenumber" name="L360" href="#L360">360</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L361" href="#L361">361</a>     }
+<a class="jxr_linenumber" name="L362" href="#L362">362</a> 
+<a class="jxr_linenumber" name="L363" href="#L363">363</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L364" href="#L364">364</a> <em class="jxr_javadoccomment">     * Sets the {@link MeterRegistry} which collects various stats.</em>
+<a class="jxr_linenumber" name="L365" href="#L365">365</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L366" href="#L366">366</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> meterRegistry(MeterRegistry meterRegistry) {
+<a class="jxr_linenumber" name="L367" href="#L367">367</a>         <strong class="jxr_keyword">this</strong>.meterRegistry = requireNonNull(meterRegistry, <span class="jxr_string">"meterRegistry"</span>);
+<a class="jxr_linenumber" name="L368" href="#L368">368</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L369" href="#L369">369</a>     }
+<a class="jxr_linenumber" name="L370" href="#L370">370</a> 
+<a class="jxr_linenumber" name="L371" href="#L371">371</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L372" href="#L372">372</a> <em class="jxr_javadoccomment">     * Returns a newly-created {@link ClientFactory} based on the properties of this builder.</em>
+<a class="jxr_linenumber" name="L373" href="#L373">373</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L374" href="#L374">374</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../com/linecorp/armeria/client/ClientFactory.html">ClientFactory</a> build() {
+<a class="jxr_linenumber" name="L375" href="#L375">375</a>         <strong class="jxr_keyword">final</strong> Function&lt;? <strong class="jxr_keyword">super</strong> EventLoopGroup,
+<a class="jxr_linenumber" name="L376" href="#L376">376</a>                        ? <strong class="jxr_keyword">extends</strong> AddressResolverGroup&lt;? <strong class="jxr_keyword">extends</strong> InetSocketAddress&gt;&gt; addressResolverGroupFactory;
+<a class="jxr_linenumber" name="L377" href="#L377">377</a>         <strong class="jxr_keyword">if</strong> (<strong class="jxr_keyword">this</strong>.addressResolverGroupFactory != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L378" href="#L378">378</a>             addressResolverGroupFactory = <strong class="jxr_keyword">this</strong>.addressResolverGroupFactory;
+<a class="jxr_linenumber" name="L379" href="#L379">379</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L380" href="#L380">380</a>             addressResolverGroupFactory = <strong class="jxr_keyword">new</strong> <a href="../../../../com/linecorp/armeria/client/DefaultAddressResolverGroupFactory.html">DefaultAddressResolverGroupFactory</a>(
+<a class="jxr_linenumber" name="L381" href="#L381">381</a>                     firstNonNull(domainNameResolverCustomizers, ImmutableList.of()));
+<a class="jxr_linenumber" name="L382" href="#L382">382</a>         }
+<a class="jxr_linenumber" name="L383" href="#L383">383</a> 
+<a class="jxr_linenumber" name="L384" href="#L384">384</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../com/linecorp/armeria/client/DefaultClientFactory.html">DefaultClientFactory</a>(<strong class="jxr_keyword">new</strong> <a href="../../../../com/linecorp/armeria/client/HttpClientFactory.html">HttpClientFactory</a>(
+<a class="jxr_linenumber" name="L385" href="#L385">385</a>                 workerGroup, shutdownWorkerGroupOnClose, channelOptions, sslContextCustomizer,
+<a class="jxr_linenumber" name="L386" href="#L386">386</a>                 addressResolverGroupFactory, http2InitialConnectionWindowSize, http2InitialStreamWindowSize,
+<a class="jxr_linenumber" name="L387" href="#L387">387</a>                 http2MaxFrameSize, http2MaxHeaderListSize, http1MaxInitialLineLength, http1MaxHeaderSize,
+<a class="jxr_linenumber" name="L388" href="#L388">388</a>                 http1MaxChunkSize, idleTimeoutMillis, useHttp2Preface,
+<a class="jxr_linenumber" name="L389" href="#L389">389</a>                 useHttp1Pipelining, connectionPoolListener, meterRegistry));
+<a class="jxr_linenumber" name="L390" href="#L390">390</a>     }
+<a class="jxr_linenumber" name="L391" href="#L391">391</a> 
+<a class="jxr_linenumber" name="L392" href="#L392">392</a>     @Override
+<a class="jxr_linenumber" name="L393" href="#L393">393</a>     <strong class="jxr_keyword">public</strong> String toString() {
+<a class="jxr_linenumber" name="L394" href="#L394">394</a>         <strong class="jxr_keyword">return</strong> toString(<strong class="jxr_keyword">this</strong>, workerGroup, shutdownWorkerGroupOnClose, channelOptions,
+<a class="jxr_linenumber" name="L395" href="#L395">395</a>                         sslContextCustomizer, addressResolverGroupFactory, http2InitialConnectionWindowSize,
+<a class="jxr_linenumber" name="L396" href="#L396">396</a>                         http2InitialStreamWindowSize, http2MaxFrameSize, http2MaxHeaderListSize,
+<a class="jxr_linenumber" name="L397" href="#L397">397</a>                         http1MaxInitialLineLength, http1MaxHeaderSize, http1MaxChunkSize, idleTimeoutMillis,
+<a class="jxr_linenumber" name="L398" href="#L398">398</a>                         useHttp2Preface, useHttp1Pipelining, connectionPoolListener, meterRegistry);
+<a class="jxr_linenumber" name="L399" href="#L399">399</a>     }
+<a class="jxr_linenumber" name="L400" href="#L400">400</a> 
+<a class="jxr_linenumber" name="L401" href="#L401">401</a>     <strong class="jxr_keyword">static</strong> String toString(
+<a class="jxr_linenumber" name="L402" href="#L402">402</a>             <a href="../../../../com/linecorp/armeria/client/ClientFactoryBuilder.html">ClientFactoryBuilder</a> self,
+<a class="jxr_linenumber" name="L403" href="#L403">403</a>             EventLoopGroup workerGroup, <strong class="jxr_keyword">boolean</strong> shutdownWorkerGroupOnClose,
+<a class="jxr_linenumber" name="L404" href="#L404">404</a>             Map&lt;ChannelOption&lt;?&gt;, Object&gt; socketOptions,
+<a class="jxr_linenumber" name="L405" href="#L405">405</a>             Consumer&lt;? <strong class="jxr_keyword">super</strong> SslContextBuilder&gt; sslContextCustomizer,
+<a class="jxr_linenumber" name="L406" href="#L406">406</a>             @Nullable
+<a class="jxr_linenumber" name="L407" href="#L407">407</a>             Function&lt;? <strong class="jxr_keyword">super</strong> EventLoopGroup,
+<a class="jxr_linenumber" name="L408" href="#L408">408</a>                      ? <strong class="jxr_keyword">extends</strong> AddressResolverGroup&lt;? <strong class="jxr_keyword">extends</strong> InetSocketAddress&gt;&gt; addressResolverGroupFactory,
+<a class="jxr_linenumber" name="L409" href="#L409">409</a>             <strong class="jxr_keyword">int</strong> http2InitialConnectionWindowSize, <strong class="jxr_keyword">int</strong> http2InitialStreamWindowSize, <strong class="jxr_keyword">int</strong> http2MaxFrameSize,
+<a class="jxr_linenumber" name="L410" href="#L410">410</a>             <strong class="jxr_keyword">long</strong> http2MaxHeaderListSize, <strong class="jxr_keyword">int</strong> http1MaxInitialLineLength, <strong class="jxr_keyword">int</strong> http1MaxHeaderSize,
+<a class="jxr_linenumber" name="L411" href="#L411">411</a>             <strong class="jxr_keyword">int</strong> http1MaxChunkSize, <strong class="jxr_keyword">long</strong> idleTimeoutMillis, <strong class="jxr_keyword">boolean</strong> useHttp2Preface, <strong class="jxr_keyword">boolean</strong> useHttp1Pipelining,
+<a class="jxr_linenumber" name="L412" href="#L412">412</a>             <a href="../../../../com/linecorp/armeria/client/ConnectionPoolListener.html">ConnectionPoolListener</a> connectionPoolListener,
+<a class="jxr_linenumber" name="L413" href="#L413">413</a>             MeterRegistry meterRegistry) {
+<a class="jxr_linenumber" name="L414" href="#L414">414</a> 
+<a class="jxr_linenumber" name="L415" href="#L415">415</a>         <strong class="jxr_keyword">final</strong> ToStringHelper helper = MoreObjects.toStringHelper(self).omitNullValues();
+<a class="jxr_linenumber" name="L416" href="#L416">416</a>         helper.add(<span class="jxr_string">"workerGroup"</span>, workerGroup + <span class="jxr_string">" (shutdownOnClose="</span> + shutdownWorkerGroupOnClose + ')')
+<a class="jxr_linenumber" name="L417" href="#L417">417</a>               .add(<span class="jxr_string">"socketOptions"</span>, socketOptions)
+<a class="jxr_linenumber" name="L418" href="#L418">418</a>               .add(<span class="jxr_string">"http2InitialConnectionWindowSize"</span>, http2InitialConnectionWindowSize)
+<a class="jxr_linenumber" name="L419" href="#L419">419</a>               .add(<span class="jxr_string">"http2InitialStreamWindowSize"</span>, http2InitialStreamWindowSize)
+<a class="jxr_linenumber" name="L420" href="#L420">420</a>               .add(<span class="jxr_string">"http2MaxFrameSize"</span>, http2MaxFrameSize)
+<a class="jxr_linenumber" name="L421" href="#L421">421</a>               .add(<span class="jxr_string">"http2MaxHeaderListSize"</span>, http2MaxHeaderListSize)
+<a class="jxr_linenumber" name="L422" href="#L422">422</a>               .add(<span class="jxr_string">"http1MaxInitialLineLength"</span>, http1MaxInitialLineLength)
+<a class="jxr_linenumber" name="L423" href="#L423">423</a>               .add(<span class="jxr_string">"http1MaxHeaderSize"</span>, http1MaxHeaderSize)
+<a class="jxr_linenumber" name="L424" href="#L424">424</a>               .add(<span class="jxr_string">"http1MaxChunkSize"</span>, http1MaxChunkSize)
+<a class="jxr_linenumber" name="L425" href="#L425">425</a>               .add(<span class="jxr_string">"idleTimeoutMillis"</span>, idleTimeoutMillis)
+<a class="jxr_linenumber" name="L426" href="#L426">426</a>               .add(<span class="jxr_string">"useHttp2Preface"</span>, useHttp2Preface)
+<a class="jxr_linenumber" name="L427" href="#L427">427</a>               .add(<span class="jxr_string">"useHttp1Pipelining"</span>, useHttp1Pipelining);
+<a class="jxr_linenumber" name="L428" href="#L428">428</a> 
+<a class="jxr_linenumber" name="L429" href="#L429">429</a>         <strong class="jxr_keyword">if</strong> (connectionPoolListener != DEFAULT_CONNECTION_POOL_LISTENER) {
+<a class="jxr_linenumber" name="L430" href="#L430">430</a>             helper.add(<span class="jxr_string">"connectionPoolListener"</span>, connectionPoolListener);
+<a class="jxr_linenumber" name="L431" href="#L431">431</a>         }
+<a class="jxr_linenumber" name="L432" href="#L432">432</a> 
+<a class="jxr_linenumber" name="L433" href="#L433">433</a>         <strong class="jxr_keyword">if</strong> (sslContextCustomizer != DEFAULT_SSL_CONTEXT_CUSTOMIZER) {
+<a class="jxr_linenumber" name="L434" href="#L434">434</a>             helper.add(<span class="jxr_string">"sslContextCustomizer"</span>, sslContextCustomizer);
+<a class="jxr_linenumber" name="L435" href="#L435">435</a>         }
+<a class="jxr_linenumber" name="L436" href="#L436">436</a> 
+<a class="jxr_linenumber" name="L437" href="#L437">437</a>         <strong class="jxr_keyword">if</strong> (!(addressResolverGroupFactory instanceof DefaultAddressResolverGroupFactory)) {
+<a class="jxr_linenumber" name="L438" href="#L438">438</a>             helper.add(<span class="jxr_string">"addressResolverGroupFactory"</span>, addressResolverGroupFactory);
+<a class="jxr_linenumber" name="L439" href="#L439">439</a>         }
+<a class="jxr_linenumber" name="L440" href="#L440">440</a> 
+<a class="jxr_linenumber" name="L441" href="#L441">441</a>         helper.add(<span class="jxr_string">"meterRegistry"</span>, meterRegistry);
+<a class="jxr_linenumber" name="L442" href="#L442">442</a> 
+<a class="jxr_linenumber" name="L443" href="#L443">443</a>         <strong class="jxr_keyword">return</strong> helper.toString();
+<a class="jxr_linenumber" name="L444" href="#L444">444</a>     }
+<a class="jxr_linenumber" name="L445" href="#L445">445</a> }
+</pre>
+<hr/>
+<div id="footer">&copy; Copyright 2015&ndash;2019 <a href="https://engineering.linecorp.com/en/">LINE Corporation</a>. All rights reserved.</div>
+</body>
+</html>

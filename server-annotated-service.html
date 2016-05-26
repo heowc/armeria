@@ -1,0 +1,1489 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Annotated services &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Serving static files" href="server-http-file.html" />
+    <link rel="prev" title="Browsing and invoking services with DocService" href="server-docservice.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="server.html">Writing a server</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="server-basics.html">Server basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-decorator.html">Decorating a service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-grpc.html">Running a gRPC service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-thrift.html">Running a Thrift service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-docservice.html">Browsing and invoking services with <code class="docutils literal notranslate"><span class="pre">DocService</span></code></a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Annotated services</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mapping-http-service-methods">Mapping HTTP service methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parameter-injection">Parameter injection</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#injecting-a-parameter-as-an-enum-type">Injecting a parameter as an <code class="docutils literal notranslate"><span class="pre">Enum</span></code> type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#getting-an-http-parameter">Getting an HTTP parameter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#getting-an-http-header">Getting an HTTP header</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#other-classes-automatically-injected">Other classes automatically injected</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#handling-exceptions">Handling exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conversion-between-an-http-message-and-a-java-object">Conversion between an HTTP message and a Java object</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#converting-an-http-request-to-a-java-object">Converting an HTTP request to a Java object</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#converting-a-java-object-to-an-http-response">Converting a Java object to an HTTP response</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#using-serverbuilder-to-configure-converters-and-exception-handlers">Using <code class="docutils literal notranslate"><span class="pre">ServerBuilder</span></code> to configure converters and exception handlers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#returning-a-response">Returning a response</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#decorating-an-annotated-service">Decorating an annotated service</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#decorating-an-annotated-service-with-a-custom-decorator-annotation">Decorating an annotated service with a custom decorator annotation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evaluation-order-of-decorators">Evaluation order of decorators</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#media-type-negotiation">Media type negotiation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#creating-user-defined-media-type-annotations">Creating user-defined media type annotations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#specifying-additional-response-headers-trailers">Specifying additional response headers/trailers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-a-composite-annotation">Using a composite annotation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="server-http-file.html">Serving static files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-servlet.html">Embedding a servlet container</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-access-log.html">Writing an access log</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-cors.html">Configuring CORS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-sse.html">Serving Server-Sent Events</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="server.html">Writing a server</a> &raquo;</li>
+        
+      <li>Annotated services</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/server-annotated-service.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="annotated-services">
+<span id="server-annotated-service"></span><h1>Annotated services<a class="headerlink" href="#annotated-services" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Visit <a class="reference external" href="https://github.com/line/armeria-examples">armeria-examples</a> to find a fully working example.</p>
+</div>
+<p>Armeria provides a way to write an HTTP service using annotations. It helps a user make his or her code
+simple and easy to understand. A user is able to run an HTTP service by fewer lines of code using
+annotations as follows. <code class="docutils literal notranslate"><span class="pre">hello()</span></code> method in the example would be mapped to the path of <code class="docutils literal notranslate"><span class="pre">/hello/{name}</span></code>
+with an HTTP <code class="docutils literal notranslate"><span class="pre">GET</span></code> method.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">ServerBuilder sb = new ServerBuilder();
+sb.annotatedService(new Object() {
+    @Get(&quot;/hello/{name}&quot;)
+    public HttpResponse hello(@Param(&quot;name&quot;) String name) {
+        return HttpResponse.of(HttpStatus.OK,
+                               MediaType.PLAIN_TEXT_UTF_8,
+                               &quot;Hello, %s!&quot;, name);
+    }
+});</pre></div>
+</div>
+<div class="section" id="mapping-http-service-methods">
+<h2>Mapping HTTP service methods<a class="headerlink" href="#mapping-http-service-methods" title="Permalink to this headline">¶</a></h2>
+<p>To map a service method in an annotated HTTP service class to an HTTP path, it has to be annotated with one of
+HTTP method annotations. The following is the list of HTTP method annotations where each of them is mapped
+to an HTTP method.</p>
+<ul class="simple">
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Get.html">@Get</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Head.html">@Head</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Post.html">@Post</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Put.html">@Put</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Delete.html">@Delete</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Options.html">@Options</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Patch.html">@Patch</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Trace.html">@Trace</a></code></p></li>
+</ul>
+<p>To handle an HTTP request with a service method, you can annotate your service method simply as follows.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+    @Get(&quot;/hello&quot;)
+    public HttpResponse hello() { ... }
+}</pre></div>
+</div>
+<p>There are 5 different path types that you can define:</p>
+<ul class="simple">
+<li><p>Exact path, e.g. <code class="docutils literal notranslate"><span class="pre">/hello</span></code> or <code class="docutils literal notranslate"><span class="pre">exact:/hello</span></code></p>
+<ul>
+<li><p>a service method will handle the path exactly matched with the specified path.</p></li>
+</ul>
+</li>
+<li><p>Prefix path, e.g. <code class="docutils literal notranslate"><span class="pre">prefix:/hello</span></code></p>
+<ul>
+<li><p>a service method will handle every path which starts with the specified prefix.</p></li>
+</ul>
+</li>
+<li><p>Path containing path variables, e.g <code class="docutils literal notranslate"><span class="pre">/hello/{name}</span></code> or <code class="docutils literal notranslate"><span class="pre">/hello/:name</span></code></p>
+<ul>
+<li><p>a service method will handle the path matched with the specified path pattern. A path variable in the
+specified pattern may be mapped to a parameter of the service method.</p></li>
+</ul>
+</li>
+<li><p>Regular expression path, e.g. <code class="docutils literal notranslate"><span class="pre">regex:^/hello/(?&lt;name&gt;.*)$</span></code></p>
+<ul>
+<li><p>a service method will handle the path matched with the specified regular expression. If a named capturing
+group exists in the regular expression, it may be mapped to a parameter of the service method.</p></li>
+</ul>
+</li>
+<li><p>Glob pattern path, e.g. <code class="docutils literal notranslate"><span class="pre">glob:/*/hello/**</span></code></p>
+<ul>
+<li><p>a service method will handle the path matched with the specified glob pattern. Each wildcard is mapped to
+an index which starts with <code class="docutils literal notranslate"><span class="pre">0</span></code>, so it may be mapped to a parameter of the service method.</p></li>
+</ul>
+</li>
+</ul>
+<p>You can get the value of a path variable, a named capturing group of the regular expression or wildcards of
+the glob pattern in your service method by annotating a parameter with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Param.html">@Param</a></code> as follows.
+Please refer to <a class="reference internal" href="#parameter-injection"><span class="std std-ref">Parameter injection</span></a> for more information about <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Param.html">@Param</a></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Get(&quot;/hello/{name}&quot;)
+    public HttpResponse pathVar(@Param(&quot;name&quot;) String name) { ... }
+
+    @Get(&quot;regex:^/hello/(?&lt;name&gt;.*)$&quot;)
+    public HttpResponse regex(@Param(&quot;name&quot;) String name) { ... }
+
+    @Get(&quot;glob:/*/hello/**&quot;)
+    public HttpResponse glob(@Param(&quot;0&quot;) String prefix, @Param(&quot;1&quot;) String name) { ... }
+}</pre></div>
+</div>
+<p>Every service method in the examples so far had a single HTTP method annotation with it. What if you want
+to map more than one HTTP method to your service method? You can use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Path.html">@Path</a></code> annotation to specify
+a path and use the HTTP method annotations without a path to map multiple HTTP methods, e.g.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+    @Get
+    @Post
+    @Put
+    @Delete
+    @Path(&quot;/hello&quot;)
+    public HttpResponse hello() { ... }
+}</pre></div>
+</div>
+<p>Every service method assumes that it returns an HTTP response with <code class="docutils literal notranslate"><span class="pre">200</span> <span class="pre">OK</span></code> or <code class="docutils literal notranslate"><span class="pre">204</span> <span class="pre">No</span> <span class="pre">Content</span></code> status
+according to its return type. If the return type is <code class="docutils literal notranslate"><span class="pre">void</span></code> or <code class="docutils literal notranslate"><span class="pre">Void</span></code>, <code class="docutils literal notranslate"><span class="pre">204</span> <span class="pre">No</span> <span class="pre">Content</span></code> would be applied.
+<code class="docutils literal notranslate"><span class="pre">200</span> <span class="pre">OK</span></code> would be applied for the other types. If you want to return an alternative status code for a method,
+you can use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/StatusCode.html">@StatusCode</a></code> annotation as follows.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @StatusCode(201)
+    @Post(&quot;/users/{name}&quot;)
+    public User createUser(@Param(&quot;name&quot;) String name) { ... }
+
+    // @StatusCode(200) would be applied by default.
+    @Get(&quot;/users/{name}&quot;)
+    public User getUser(@Param(&quot;name&quot;) String name) { ... }
+
+    // @StatusCode(204) would be applied by default.
+    @Delete(&quot;/users/{name}&quot;)
+    public void deleteUser(@Param(&quot;name&quot;) String name) { ... }
+}</pre></div>
+</div>
+</div>
+<div class="section" id="parameter-injection">
+<span id="id1"></span><h2>Parameter injection<a class="headerlink" href="#parameter-injection" title="Permalink to this headline">¶</a></h2>
+<p>Let’s see the example in the above section again.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Get(&quot;/hello/{name}&quot;)
+    public HttpResponse pathvar(@Param(&quot;name&quot;) String name) { ... }
+
+    @Get(&quot;regex:^/hello/(?&lt;name&gt;.*)$&quot;)
+    public HttpResponse regex(@Param(&quot;name&quot;) String name) { ... }
+
+    @Get(&quot;glob:/*/hello/**&quot;)
+    public HttpResponse glob(@Param(&quot;0&quot;) String prefix, @Param(&quot;1&quot;) String name) { ... }
+}</pre></div>
+</div>
+<p>A value of a parameter <code class="docutils literal notranslate"><span class="pre">name</span></code> is automatically injected as a <code class="docutils literal notranslate"><span class="pre">String</span></code> by Armeria.
+Armeria will try to convert the value appropriately if the parameter type is not <code class="docutils literal notranslate"><span class="pre">String</span></code>.
+<code class="docutils literal notranslate"><span class="pre">IllegalArgumentException</span></code> will be raised if the conversion fails or the parameter type is not
+one of the following supported types:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">boolean</span></code> or <code class="docutils literal notranslate"><span class="pre">Boolean</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">byte</span></code> or <code class="docutils literal notranslate"><span class="pre">Byte</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">short</span></code> or <code class="docutils literal notranslate"><span class="pre">Short</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">integer</span></code> or <code class="docutils literal notranslate"><span class="pre">Integer</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">long</span></code> or <code class="docutils literal notranslate"><span class="pre">Long</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">float</span></code> or <code class="docutils literal notranslate"><span class="pre">Float</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">double</span></code> or <code class="docutils literal notranslate"><span class="pre">Double</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">String</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Enum</span></code></p></li>
+</ul>
+<p>Note that you can omit the value of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Param.html">@Param</a></code> if you compiled your code with <code class="docutils literal notranslate"><span class="pre">-parameters</span></code> javac
+option. In this case the variable name is used as the value.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+    @Get(&quot;/hello/{name}&quot;)
+    public HttpResponse hello1(@Param String name) { ... }
+}</pre></div>
+</div>
+<p>Please refer to <a class="reference internal" href="setup.html#configure-parameters"><span class="std std-ref">Configure -parameters javac option</span></a> for more information.</p>
+<div class="section" id="injecting-a-parameter-as-an-enum-type">
+<h3>Injecting a parameter as an <code class="docutils literal notranslate"><span class="pre">Enum</span></code> type<a class="headerlink" href="#injecting-a-parameter-as-an-enum-type" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Enum</span></code> type is also automatically converted if you annotate a parameter of your service method with
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Param.html">@Param</a></code> annotation. If your <code class="docutils literal notranslate"><span class="pre">Enum</span></code> type can be handled in a case-insensitive way, Armeria
+automatically converts the string value of a parameter to a value of <code class="docutils literal notranslate"><span class="pre">Enum</span></code> in a case-insensitive way.
+Otherwise, case-sensitive exact match will be performed.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public enum CaseInsensitive {
+    ALPHA, BRAVO, CHARLIE
+}</pre></div>
+</div>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public enum CaseSensitive {
+    ALPHA, alpha
+}</pre></div>
+</div>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Get(&quot;/hello1/{there}&quot;)
+    public HttpResponse hello1(@Param(&quot;there&quot;) CaseInsensitive there) {
+        // &#x27;there&#x27; is converted in a case-insensitive way.
+    }
+
+    @Get(&quot;/hello2/{there}&quot;)
+    public HttpResponse hello2(@Param(&quot;there&quot;) CaseSensitive there) {
+        // &#x27;there&#x27; must be converted in a case-sensitive way.
+        // So &#x27;ALPHA&#x27; and &#x27;alpha&#x27; are only acceptable.
+    }
+}</pre></div>
+</div>
+</div>
+<div class="section" id="getting-an-http-parameter">
+<h3>Getting an HTTP parameter<a class="headerlink" href="#getting-an-http-parameter" title="Permalink to this headline">¶</a></h3>
+<p>When the value of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Param.html">@Param</a></code> annotation is not shown in the path pattern, it will be handled as a
+parameter name of the query string of the request. If you have a service class like the example below and
+a user sends an HTTP <code class="docutils literal notranslate"><span class="pre">GET</span></code> request with URI of <code class="docutils literal notranslate"><span class="pre">/hello1?name=armeria</span></code>, the service method will get <code class="docutils literal notranslate"><span class="pre">armeria</span></code>
+as the value of parameter <code class="docutils literal notranslate"><span class="pre">name</span></code>. If there is no parameter named <code class="docutils literal notranslate"><span class="pre">name</span></code> in the query string, the parameter
+<code class="docutils literal notranslate"><span class="pre">name</span></code> of the method would be <code class="docutils literal notranslate"><span class="pre">null</span></code>. If you want to avoid <code class="docutils literal notranslate"><span class="pre">null</span></code> in this case, you can use
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Default.html">@Default</a></code> annotation or <code class="docutils literal notranslate"><span class="pre">Optional&lt;?&gt;</span></code> class, e.g. <code class="docutils literal notranslate"><span class="pre">hello2</span></code> and <code class="docutils literal notranslate"><span class="pre">hello3</span></code> methods below, respectively.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Get(&quot;/hello1&quot;)
+    public HttpResponse hello1(@Param(&quot;name&quot;) String name) { ... }
+
+    @Get(&quot;/hello2&quot;)
+    public HttpResponse hello2(@Param(&quot;name&quot;) @Default(&quot;armeria&quot;) String name) { ... }
+
+    @Get(&quot;/hello3&quot;)
+    public HttpResponse hello3(@Param(&quot;name&quot;) Optional&lt;String&gt; name) {
+        String clientName = name.orElse(&quot;armeria&quot;);
+        // ...
+    }
+}</pre></div>
+</div>
+<p>If multiple parameters exist with the same name in a query string, they can be injected as a <code class="docutils literal notranslate"><span class="pre">List&lt;?&gt;</span></code>
+or <code class="docutils literal notranslate"><span class="pre">Set&lt;?&gt;</span></code>, e.g. <code class="docutils literal notranslate"><span class="pre">/hello1?number=1&amp;number=2&amp;number=3</span></code>. You can use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Default.html">@Default</a></code> annotation
+or <code class="docutils literal notranslate"><span class="pre">Optional&lt;?&gt;</span></code> class here, too.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+    @Get(&quot;/hello1&quot;)
+    public HttpResponse hello1(@Param(&quot;number&quot;) List&lt;Integer&gt; numbers) { ... }
+
+    // If there is no &#x27;number&#x27; parameter, the default value &quot;1&quot; will be converted to Integer 1,
+    // then it will be added to the &#x27;numbers&#x27; list.
+    @Get(&quot;/hello2&quot;)
+    public HttpResponse hello2(@Param(&quot;number&quot;) @Default(&quot;1&quot;) List&lt;Integer&gt; numbers) { ... }
+
+    @Get(&quot;/hello3&quot;)
+    public HttpResponse hello3(@Param(&quot;number&quot;) Optional&lt;List&lt;Integer&gt;&gt; numbers) { ... }
+}</pre></div>
+</div>
+<p>If an HTTP <code class="docutils literal notranslate"><span class="pre">POST</span></code> request with a <code class="docutils literal notranslate"><span class="pre">Content-Type:</span> <span class="pre">x-www-form-urlencoded</span></code> is received and no <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Param.html">@Param</a></code>
+value appears in the path pattern, Armeria will aggregate the received request and decode its body as
+a URL-encoded form. After that, Armeria will inject the decoded value into the parameter.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+    @Post(&quot;/hello4&quot;)
+    public HttpResponse hello4(@Param(&quot;name&quot;) String name) {
+        // &#x27;x-www-form-urlencoded&#x27; request will be aggregated. The other requests may get
+        // a &#x27;400 Bad Request&#x27; because there is no way to inject a mandatory parameter &#x27;name&#x27;.
+    }
+}</pre></div>
+</div>
+</div>
+<div class="section" id="getting-an-http-header">
+<span id="header-injection"></span><h3>Getting an HTTP header<a class="headerlink" href="#getting-an-http-header" title="Permalink to this headline">¶</a></h3>
+<p>Armeria also provides <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Header.html">@Header</a></code> annotation to inject an HTTP header value into a parameter.
+The parameter annotated with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Header.html">@Header</a></code> can also be specified as one of the built-in types as follows.
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Default.html">@Default</a></code> and <code class="docutils literal notranslate"><span class="pre">Optional&lt;?&gt;</span></code> are also supported. <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Header.html">@Header</a></code> annotation also supports
+<code class="docutils literal notranslate"><span class="pre">List&lt;?&gt;</span></code> or <code class="docutils literal notranslate"><span class="pre">Set&lt;?&gt;</span></code> because HTTP headers can be added several times with the same name.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Get(&quot;/hello1&quot;)
+    public HttpResponse hello1(@Header(&quot;Authorization&quot;) String auth) { ... }
+
+    @Post(&quot;/hello2&quot;)
+    public HttpResponse hello2(@Header(&quot;Content-Length&quot;) long contentLength) { ... }
+
+    @Post(&quot;/hello3&quot;)
+    public HttpResponse hello3(@Header(&quot;Forwarded&quot;) List&lt;String&gt; forwarded) { ... }
+
+    @Post(&quot;/hello4&quot;)
+    public HttpResponse hello4(@Header(&quot;Forwarded&quot;) Optional&lt;Set&lt;String&gt;&gt; forwarded) { ... }
+}</pre></div>
+</div>
+<p>Note that you can omit the value of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Header.html">@Header</a></code> if you compiled your code with <code class="docutils literal notranslate"><span class="pre">-parameters</span></code> javac
+option. Read <a class="reference internal" href="#parameter-injection"><span class="std std-ref">Parameter injection</span></a> for more information.
+In this case, the variable name is used as the value, but it will be converted to hyphen-separated lowercase
+string to be suitable for general HTTP header names. e.g. a variable name <code class="docutils literal notranslate"><span class="pre">contentLength</span></code> or
+<code class="docutils literal notranslate"><span class="pre">content_length</span></code> will be converted to <code class="docutils literal notranslate"><span class="pre">content-length</span></code> as the value of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Header.html">@Header</a></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+    @Post(&quot;/hello2&quot;)
+    public HttpResponse hello2(@Header long contentLength) { ... }
+}</pre></div>
+</div>
+</div>
+<div class="section" id="other-classes-automatically-injected">
+<h3>Other classes automatically injected<a class="headerlink" href="#other-classes-automatically-injected" title="Permalink to this headline">¶</a></h3>
+<p>The following classes are automatically injected when you specify them on the parameter list of your method.</p>
+<ul class="simple">
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServiceRequestContext.html">ServiceRequestContext</a></code> (or <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/RequestContext.html">RequestContext</a></code>)</p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/RequestHeaders.html">RequestHeaders</a></code> (or <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpHeaders.html">HttpHeaders</a></code>)</p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpRequest.html">HttpRequest</a></code> (or <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/Request.html">Request</a></code>)</p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/AggregatedHttpRequest.html">AggregatedHttpRequest</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpParameters.html">HttpParameters</a></code></p></li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Cookies.html">Cookies</a></code></p></li>
+</ul>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Get(&quot;/hello1&quot;)
+    public HttpResponse hello1(ServiceRequestContext ctx, HttpRequest req) {
+        // Use the context and request inside a method.
+    }
+
+    @Post(&quot;/hello2&quot;)
+    public HttpResponse hello2(AggregatedHttpRequest aggregatedRequest) {
+        // Armeria aggregates the received HttpRequest and calls this method with the aggregated request.
+    }
+
+    @Get(&quot;/hello3&quot;)
+    public HttpResponse hello3(HttpParameters httpParameters) {
+        // &#x27;httpParameters&#x27; holds the parameters parsed from a query string of a request.
+    }
+
+    @Post(&quot;/hello4&quot;)
+    public HttpResponse hello4(HttpParameters httpParameters) {
+        // If a request has a url-encoded form as its body, it can be accessed via &#x27;httpParameters&#x27;.
+    }
+
+    @Post(&quot;/hello5&quot;)
+    public HttpResponse hello5(Cookies cookies) {
+        // If &#x27;Cookie&#x27; header exists, it will be injected into the specified &#x27;cookies&#x27; parameter.
+    }
+}</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="handling-exceptions">
+<h2>Handling exceptions<a class="headerlink" href="#handling-exceptions" title="Permalink to this headline">¶</a></h2>
+<p>It is often useful to extract exception handling logic from service methods into a separate common class.
+Armeria provides <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ExceptionHandler.html">@ExceptionHandler</a></code> annotation to transform an exception into a response.
+You can write your own exception handler by implementing <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ExceptionHandlerFunction.html">ExceptionHandlerFunction</a></code> interface and
+annotate your service object or method with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ExceptionHandler.html">@ExceptionHandler</a></code> annotation. Here is an example of
+an exception handler. If your exception handler is not able to handle a given exception, you can call
+<code class="docutils literal notranslate"><span class="pre">ExceptionHandlerFunction.fallthrough()</span></code> to pass the exception to the next exception handler.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyExceptionHandler implements ExceptionHandlerFunction {
+    @Override
+    public HttpResponse handleException(RequestContext ctx, HttpRequest req, Throwable cause) {
+        if (cause instanceof MyServiceException) {
+            return HttpResponse.of(HttpStatus.CONFLICT);
+        }
+
+        // To the next exception handler.
+        return ExceptionHandlerFunction.fallthrough();
+    }
+}</pre></div>
+</div>
+<p>You can annotate at class level to catch an exception from every method in your service class.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">@ExceptionHandler(MyExceptionHandler.class)
+public class MyAnnotatedService {
+    @Get(&quot;/hello&quot;)
+    public HttpResponse hello() { ... }
+}</pre></div>
+</div>
+<p>You can also annotate at method level to catch an exception from a single method in your service class.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+    @Get(&quot;/hello&quot;)
+    @ExceptionHandler(MyExceptionHandler.class)
+    public HttpResponse hello() { ... }
+}</pre></div>
+</div>
+<p>If there is no exception handler which is able to handle an exception, the exception would be passed to
+the default exception handler. It handles <code class="docutils literal notranslate"><span class="pre">IllegalArgumentException</span></code>, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/HttpStatusException.html">HttpStatusException</a></code> and
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/HttpResponseException.html">HttpResponseException</a></code> by default. <code class="docutils literal notranslate"><span class="pre">IllegalArgumentException</span></code> would be converted into
+<code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code> response, and the other two exceptions would be converted into a response with
+the status code which they are holding. For another exceptions, <code class="docutils literal notranslate"><span class="pre">500</span> <span class="pre">Internal</span> <span class="pre">Server</span> <span class="pre">Error</span></code> would be
+sent to the client.</p>
+</div>
+<div class="section" id="conversion-between-an-http-message-and-a-java-object">
+<h2>Conversion between an HTTP message and a Java object<a class="headerlink" href="#conversion-between-an-http-message-and-a-java-object" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="converting-an-http-request-to-a-java-object">
+<h3>Converting an HTTP request to a Java object<a class="headerlink" href="#converting-an-http-request-to-a-java-object" title="Permalink to this headline">¶</a></h3>
+<p>In some cases like receiving a JSON document from a client, it may be useful to convert the document to
+a Java object automatically. Armeria provides <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/RequestConverter.html">@RequestConverter</a></code> and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/RequestObject.html">@RequestObject</a></code>
+annotations so that such conversion can be done conveniently.
+You can write your own request converter by implementing <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/RequestConverterFunction.html">RequestConverterFunction</a></code> as follows.
+Similar to the exception handler, you can call <code class="docutils literal notranslate"><span class="pre">RequestConverterFunction.fallthrough()</span></code> when your request
+converter is not able to convert the request.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class ToEnglishConverter implements RequestConverterFunction {
+    @Override
+    public Object convertRequest(ServiceRequestContext ctx, AggregatedHttpRequest request,
+                                 Class&lt;?&gt; expectedResultType) {
+        if (expectedResultType == Greeting.class) {
+            // Convert the request to a Java object.
+            return new Greeting(translateToEnglish(request.contentUtf8()));
+        }
+
+        // To the next request converter.
+        return RequestConverterFunction.fallthrough();
+    }
+
+    private String translateToEnglish(String greetingInAnyLanguage) { ... }
+}</pre></div>
+</div>
+<p>Then, you can write your service method as follows. Custom request objects will be converted automatically
+by the converters you registered with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/RequestConverter.html">@RequestConverter</a></code> annotation. Note that <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/RequestConverter.html">@RequestConverter</a></code>
+annotation can be specified on a class, a method or a parameter in an annotated service, and its scope
+is determined depending on where it is specified.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">@RequestConverter(ToEnglishConverter.class)
+public class MyAnnotatedService {
+
+    @Post(&quot;/hello&quot;)
+    public HttpResponse hello(Greeting greeting) {
+        // ToEnglishConverter will be used to convert a request.
+        // ...
+    }
+
+    @Post(&quot;/hola&quot;)
+    @RequestConverter(ToSpanishConverter.class)
+    public HttpResponse hola(Greeting greeting) {
+        // ToSpanishConverter will be tried to convert a request first.
+        // ToEnglishConverter will be used if ToSpanishConverter fell through.
+        // ...
+    }
+
+    @Post(&quot;/greet&quot;)
+    public HttpResponse greet(RequestConverter(ToGermanConverter.class) Greeting greetingInGerman,
+                              Greeting greetingInEnglish) {
+        // For the 1st parameter &#x27;greetingInGerman&#x27;:
+        // ToGermanConverter will be tried to convert a request first.
+        // ToEnglishConverter will be used if ToGermanConverter fell through.
+        //
+        // For the 2nd parameter &#x27;greetingInEnglish&#x27;:
+        // ToEnglishConverter will be used to convert a request.
+        // ...
+    }
+}</pre></div>
+</div>
+<p>Armeria also provides built-in request converters such as, a request converter for a Java Bean,
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/JacksonRequestConverterFunction.html">JacksonRequestConverterFunction</a></code> for a JSON document, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/StringRequestConverterFunction.html">StringRequestConverterFunction</a></code>
+for a string and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ByteArrayRequestConverterFunction.html">ByteArrayRequestConverterFunction</a></code> for binary data. They will be applied
+after your request converters, so you don’t have to specify any <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/RequestConverter.html">@RequestConverter</a></code> annotations:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    // JacksonRequestConverterFunction will work for the content type of &#x27;application/json&#x27; or
+    // one of &#x27;+json&#x27; types.
+    @Post(&quot;/hello1&quot;)
+    public HttpResponse hello1(JsonNode body) { ... }
+
+    @Post(&quot;/hello2&quot;)
+    public HttpResponse hello2(MyJsonRequest body) { ... }
+
+    // StringRequestConverterFunction will work regardless of the content type.
+    @Post(&quot;/hello3&quot;)
+    public HttpResponse hello3(String body) { ... }
+
+    @Post(&quot;/hello4&quot;)
+    public HttpResponse hello4(CharSequence body) { ... }
+
+    // ByteArrayRequestConverterFunction will work regardless of the content type.
+    @Post(&quot;/hello5&quot;)
+    public HttpResponse hello5(byte[] body) { ... }
+
+    @Post(&quot;/hello6&quot;)
+    public HttpResponse hello6(HttpData body) { ... }
+}</pre></div>
+</div>
+<div class="section" id="injecting-value-of-parameters-and-http-headers-into-a-java-object">
+<h4>Injecting value of parameters and HTTP headers into a Java object<a class="headerlink" href="#injecting-value-of-parameters-and-http-headers-into-a-java-object" title="Permalink to this headline">¶</a></h4>
+<p>Armeria provides a generic built-in request converter that converts a request into a Java object.
+Just define a plain old Java class and specify it as a parameter of your service method.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+    @Post(&quot;/hello&quot;)
+    public HttpResponse hello(MyRequestObject myRequestObject) { ... }
+}</pre></div>
+</div>
+<p>We also need to define the <code class="docutils literal notranslate"><span class="pre">MyRequestObject</span></code> class which was used in the method <code class="docutils literal notranslate"><span class="pre">hello()</span></code> above.
+To tell Armeria which constructor parameter, setter method or field has to be injected with what value,
+we should put <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Param.html">@Param</a></code>, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Header.html">@Header</a></code>, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/RequestObject.html">@RequestObject</a></code> annotations on any of the following elements:</p>
+<ul class="simple">
+<li><p>Fields</p></li>
+<li><p>Constructors with only one parameter</p></li>
+<li><p>Methods with only one parameter</p></li>
+<li><p>Constructor parameters</p></li>
+<li><p>Method parameters</p></li>
+</ul>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyRequestObject {
+    @Param(&quot;name&quot;) // This field will be injected by the value of parameter &quot;name&quot;.
+    private String name;
+
+    @Header(&quot;age&quot;) // This field will be injected by the value of HTTP header &quot;age&quot;.
+    private int age;
+
+    @RequestObject // This field will be injected by another request converter.
+    private MyAnotherRequestObject obj;
+
+    // You can omit the value of @Param or @Header if you compiled your code with ``-parameters`` javac option.
+    @Param         // This field will be injected by the value of parameter &quot;gender&quot;.
+    private String gender;
+
+    @Header        // This field will be injected by the value of HTTP header &quot;accept-language&quot;.
+    private String acceptLanguage;
+
+    @Param(&quot;address&quot;) // You can annotate a single parameter method with @Param or @Header.
+    public void setAddress(String address) { ... }
+
+    @Header(&quot;id&quot;) // You can annotate a single parameter constructor with @Param or @Header.
+    @Default(&quot;0&quot;)
+    public MyRequestObject(long id) { ... }
+
+    // You can annotate all parameters of method or constructor with @Param or @Header.
+    public void init(@Header(&quot;permissions&quot;) String permissions,
+                     @Param(&quot;client-id&quot;) @Default(&quot;0&quot;) int clientId)
+}</pre></div>
+</div>
+<p>The usage of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Param.html">@Param</a></code> or <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Header.html">@Header</a></code> annotations on Java object elements is much like
+using them on the parameters of a service method because even you can use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Default.html">@Default</a></code> and
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/RequestObject.html">@RequestObject</a></code> annotations defined there.
+Please refer to <a class="reference internal" href="#parameter-injection"><span class="std std-ref">Parameter injection</span></a>, and <a class="reference internal" href="#header-injection"><span class="std std-ref">Getting an HTTP header</span></a> for more information.</p>
+</div>
+</div>
+<div class="section" id="converting-a-java-object-to-an-http-response">
+<span id="response-converter"></span><h3>Converting a Java object to an HTTP response<a class="headerlink" href="#converting-a-java-object-to-an-http-response" title="Permalink to this headline">¶</a></h3>
+<p>Every object returned by an annotated service method can be converted to an HTTP response message by
+response converters, except for <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpResponse.html">HttpResponse</a></code> and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/AggregatedHttpResponse.html">AggregatedHttpResponse</a></code> which are already
+in a form of response message. You can also write your own response converter by implementing
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ResponseConverterFunction.html">ResponseConverterFunction</a></code> as follows. Also similar to <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/RequestConverterFunction.html">RequestConverterFunction</a></code>,
+you can call <code class="docutils literal notranslate"><span class="pre">ResponseConverterFunction.fallthrough()</span></code> when your response converter is not able to
+convert the result to an <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpResponse.html">HttpResponse</a></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyResponseConverter implements ResponseConverterFunction {
+    @Override
+    HttpResponse convertResponse(ServiceRequestContext ctx,
+                                 ResponseHeaders headers,
+                                 @Nullable Object result,
+                                 HttpHeaders trailers) throws Exception {
+        if (result instanceof MyObject) {
+            return HttpResponse.of(HttpStatus.OK,
+                                   MediaType.PLAIN_TEXT_UTF_8,
+                                   &quot;Hello, %s!&quot;, ((MyObject) result).processedName(),
+                                   trailers);
+        }
+
+        // To the next response converter.
+        return ResponseConverterFunction.fallthrough();
+    }
+}</pre></div>
+</div>
+<p>You can annotate your service method and class as follows.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">@ResponseConverter(MyResponseConverter.class)
+public class MyAnnotatedService {
+
+    @Post(&quot;/hello&quot;)
+    public MyObject hello() {
+        // MyResponseConverter will be used to make a response.
+        // ...
+    }
+
+    @Post(&quot;/hola&quot;)
+    @ResponseConverter(MySpanishResponseConverter.class)
+    public MyObject hola() {
+        // MySpanishResponseConverter will be tried to convert MyObject to a response first.
+        // MyResponseConverter will be used if MySpanishResponseConverter fell through.
+        // ...
+    }
+}</pre></div>
+</div>
+<p>Armeria supports <a class="reference internal" href="#media-type-nego"><span class="std std-ref">Media type negotiation</span></a>. So you may want to get a negotiated media type in order to set
+a <code class="docutils literal notranslate"><span class="pre">Content-Type</span></code> header on your response. In this case, you can access it in your response converter
+as follows.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyResponseConverter implements ResponseConverterFunction {
+    @Override
+    HttpResponse convertResponse(ServiceRequestContext ctx,
+                                 ResponseHeaders headers,
+                                 @Nullable Object result,
+                                 HttpHeaders trailers) throws Exception {
+        MediaType mediaType = ctx.negotiatedResponseMediaType();
+        if (mediaType != null) {
+            // Do something based on the media type.
+            // ...
+        }
+    }
+}</pre></div>
+</div>
+<p>Even if you do not specify any <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ResponseConverter.html">ResponseConverter</a></code> annotation, the response object can be converted into
+an <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpResponse.html">HttpResponse</a></code> by one of the following response converters which performs the conversion based on
+the negotiated media type and the type of the object.</p>
+<ul class="simple">
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/JacksonResponseConverterFunction.html">JacksonResponseConverterFunction</a></code></p>
+<ul>
+<li><p>converts an object to a JSON document if the negotiated media type is <code class="docutils literal notranslate"><span class="pre">application/json</span></code>.
+<code class="docutils literal notranslate"><span class="pre">JsonNode</span></code> object can be converted to a JSON document even if there is no media type negotiated.</p></li>
+</ul>
+</li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/StringResponseConverterFunction.html">StringResponseConverterFunction</a></code></p>
+<ul>
+<li><p>converts an object to a string if the negotiated main media type is one of <code class="docutils literal notranslate"><span class="pre">text</span></code> types.
+If there is no media type negotiated, <code class="docutils literal notranslate"><span class="pre">String</span></code> and <code class="docutils literal notranslate"><span class="pre">CharSequence</span></code> object will be written as a text
+with <code class="docutils literal notranslate"><span class="pre">Content-Type:</span> <span class="pre">text/plain;</span> <span class="pre">charset=utf-8</span></code> header.</p></li>
+</ul>
+</li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ByteArrayResponseConverterFunction.html">ByteArrayResponseConverterFunction</a></code></p>
+<ul>
+<li><p>converts an object to a byte array. Only <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpData.html">HttpData</a></code> and <code class="docutils literal notranslate"><span class="pre">byte[]</span></code> will be handled
+even if the negotiated media type is <code class="docutils literal notranslate"><span class="pre">application/binary</span></code> or <code class="docutils literal notranslate"><span class="pre">application/octet-stream</span></code>.
+If there is no media type negotiated, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpData.html">HttpData</a></code> and <code class="docutils literal notranslate"><span class="pre">byte[]</span></code> object will be written as a binary
+with <code class="docutils literal notranslate"><span class="pre">Content-Type:</span> <span class="pre">application/binary</span></code> header.</p></li>
+</ul>
+</li>
+</ul>
+<p>Let’s see the following example about the default response conversion.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    // JacksonResponseConverterFunction will convert the return values to JSON documents:
+    @Get(&quot;/json1&quot;)
+    @ProducesJson    // the same as @Produces(&quot;application/json; charset=utf-8&quot;)
+    public MyObject json1() { ... }
+
+    @Get(&quot;/json2&quot;)
+    public JsonNode json2() { ... }
+
+    // StringResponseConverterFunction will convert the return values to strings:
+    @Get(&quot;/string1&quot;)
+    @ProducesText    // the same as @Produces(&quot;text/plain; charset=utf-8&quot;)
+    public int string1() { ... }
+
+    @Get(&quot;/string2&quot;)
+    public CharSequence string2() { ... }
+
+    // ByteArrayResponseConverterFunction will convert the return values to byte arrays:
+    @Get(&quot;/byte1&quot;)
+    @ProducesBinary  // the same as @Produces(&quot;application/binary&quot;)
+    public HttpData byte1() { ... }
+
+    @Get(&quot;/byte2&quot;)
+    public byte[] byte2() { ... }
+}</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="using-serverbuilder-to-configure-converters-and-exception-handlers">
+<span id="configure-using-serverbuilder"></span><h2>Using <code class="docutils literal notranslate"><span class="pre">ServerBuilder</span></code> to configure converters and exception handlers<a class="headerlink" href="#using-serverbuilder-to-configure-converters-and-exception-handlers" title="Permalink to this headline">¶</a></h2>
+<p>You can specify converters and exception handlers using <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServerBuilder.html">ServerBuilder</a></code>, without using the annotations
+explained in the previous sections:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">sb.annotatedService(new MyAnnotatedService(),
+                    new MyExceptionHandler(), new MyRequestConverter(), new MyResponseConverter());</pre></div>
+</div>
+<p>Also, they have a different method signature for conversion and exception handling so you can even write them
+in a single class and add it to your <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServerBuilder.html">ServerBuilder</a></code> at once, e.g.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAllInOneHandler implements RequestConverterFunction,
+                                          ResponseConverterFunction,
+                                          ExceptionHandlerFunction {
+    @Override
+    public Object convertRequest(ServiceRequestContext ctx, AggregatedHttpRequest request,
+                                 Class&lt;?&gt; expectedResultType) { ... }
+
+    @Override
+    HttpResponse convertResponse(ServiceRequestContext ctx,
+                                 ResponseHeaders headers,
+                                 @Nullable Object result,
+                                 HttpHeaders trailers) throws Exception { ... }
+
+    @Override
+    public HttpResponse handleException(RequestContext ctx, HttpRequest req,
+                                        Throwable cause) { ... }
+}
+
+// ...
+
+sb.annotatedService(new MyAnnotatedService(), new MyAllInOneHandler());</pre></div>
+</div>
+<p>When you specify exception handlers in a mixed manner like below, they will be evaluated in the following
+order commented. It is also the same as the evaluation order of the converters.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">@ExceptionHandler(MyClassExceptionHandler3.class)           // order 3
+@ExceptionHandler(MyClassExceptionHandler4.class)           // order 4
+public class MyAnnotatedService {
+    @Get(&quot;/hello&quot;)
+    @ExceptionHandler(MyMethodExceptionHandler1.class)      // order 1
+    @ExceptionHandler(MyMethodExceptionHandler2.class)      // order 2
+    public HttpResponse hello() { ... }
+}
+
+// ...
+
+sb.annotatedService(new MyAnnotatedService(),
+                    new MyGlobalExceptionHandler5(),        // order 5
+                    new MyGlobalExceptionHandler6());       // order 6</pre></div>
+</div>
+</div>
+<div class="section" id="returning-a-response">
+<h2>Returning a response<a class="headerlink" href="#returning-a-response" title="Permalink to this headline">¶</a></h2>
+<p>In the earlier examples, the annotated service methods only return <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpResponse.html">HttpResponse</a></code>, however there are
+more response types which can be used in the annotated service.</p>
+<ul>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpResponse.html">HttpResponse</a></code> and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/AggregatedHttpResponse.html">AggregatedHttpResponse</a></code></p>
+<ul class="simple">
+<li><p>It will be sent to the client without any modification. If an exception is raised while the response is
+being sent, exception handlers will handle it. If no message has been sent to the client yet,
+the exception handler can send an <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpResponse.html">HttpResponse</a></code> instead.</p></li>
+</ul>
+</li>
+<li><p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/HttpResult.html">HttpResult</a></code></p>
+<ul class="simple">
+<li><p>It contains the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpHeaders.html">HttpHeaders</a></code> and the object which can be converted into HTTP response body by
+response converters. A user can customize the HTTP status and headers including the trailers, with this type.</p></li>
+</ul>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+    @Get(&quot;/users&quot;)
+    public HttpResult&lt;User&gt; getUsers(@Param int start) {
+        List&lt;User&gt; users = ...;
+        ResponseHeaders headers = ResponseHeaders.builder()
+            .status(HttpStatus.OK)
+            .add(HttpHeaderNames.LINK,
+                 String.format(&quot;&lt;https://example.com/users?start=%s&gt;; rel=\&quot;next\&quot;&quot;, start + 10))
+            .build();
+        return HttpResult.of(headers, users);
+    }</pre></div>
+</div>
+</li>
+<li><p>Reactive Streams <a class="reference external" href="https://www.reactive-streams.org/reactive-streams-1.0.2-javadoc/org/reactivestreams/Publisher.html">Publisher</a></p>
+<ul class="simple">
+<li><p>All objects which are produced by the publisher will be collected, then the collected ones will be
+converted to an <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpResponse.html">HttpResponse</a></code> by response converters. If a single object is produced, it will be
+passed into the response converters as it is. But if multiple objects are produced, they will be passed
+into the response converters as a list. If the producer produces an error, exception handlers will handle it.
+Note that RxJava <a class="reference external" href="http://reactivex.io/RxJava/javadoc/io/reactivex/ObservableSource.html">ObservableSource</a>
+will be treated in the same way as <a class="reference external" href="https://www.reactive-streams.org/reactive-streams-1.0.2-javadoc/org/reactivestreams/Publisher.html">Publisher</a> if you add <code class="docutils literal notranslate"><span class="pre">armeria-rxjava</span></code> to the dependencies.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CompletionStage</span></code> and <code class="docutils literal notranslate"><span class="pre">CompletableFuture</span></code></p>
+<ul class="simple">
+<li><p>An object which is generated by the <code class="docutils literal notranslate"><span class="pre">CompletionStage</span></code> will be converted to an <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/common/HttpResponse.html">HttpResponse</a></code>
+by response converters. If the <code class="docutils literal notranslate"><span class="pre">CompletionStage</span></code> completes exceptionally, exception handlers will
+handle the cause.</p></li>
+</ul>
+</li>
+<li><p>Other types</p>
+<ul class="simple">
+<li><p>As described in <a class="reference internal" href="#response-converter"><span class="std std-ref">Converting a Java object to an HTTP response</span></a>, you can use any response types with response converters
+that convert them. If a service method raises an exception, exception handlers will handle it.</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="decorating-an-annotated-service">
+<h2>Decorating an annotated service<a class="headerlink" href="#decorating-an-annotated-service" title="Permalink to this headline">¶</a></h2>
+<p>Every <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code> can be wrapped by another <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Service.html">Service</a></code> in Armeria (Refer to <a class="reference internal" href="server-decorator.html#server-decorator"><span class="std std-ref">Decorating a service</span></a>
+for more information). Simply, you can write your own decorator by implementing <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/DecoratingServiceFunction.html">DecoratingServiceFunction</a></code>
+interface as follows.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyDecorator implements DecoratingServiceFunction&lt;HttpRequest, HttpResponse&gt; {
+    @Override
+    public HttpResponse serve(Service&lt;HttpRequest, HttpResponse&gt; delegate,
+                              ServiceRequestContext ctx, HttpRequest req) {
+        // ... Do something ...
+        return delegate.serve(ctx, req);
+    }
+}</pre></div>
+</div>
+<p>Then, annotate your class or method with a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Decorator.html">@Decorator</a></code> annotation. In the following example,
+<code class="docutils literal notranslate"><span class="pre">MyDecorator</span></code> will handle a request first, then <code class="docutils literal notranslate"><span class="pre">AnotherDecorator</span></code> will handle the request next,
+and finally <code class="docutils literal notranslate"><span class="pre">hello()</span></code> method will handle the request.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">@Decorator(MyDecorator.class)
+public class MyAnnotatedService {
+    @Decorator(AnotherDecorator.class)
+    @Get(&quot;/hello&quot;)
+    public HttpResponse hello() { ... }
+}</pre></div>
+</div>
+<div class="section" id="decorating-an-annotated-service-with-a-custom-decorator-annotation">
+<h3>Decorating an annotated service with a custom decorator annotation<a class="headerlink" href="#decorating-an-annotated-service-with-a-custom-decorator-annotation" title="Permalink to this headline">¶</a></h3>
+<p>As you read earlier, you can write your own decorator with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/DecoratingServiceFunction.html">DecoratingServiceFunction</a></code> interface.
+If your decorator does not require any parameter, that is fine. However, what if your decorator requires
+a parameter? In this case, you can create your own decorator annotation. Let’s see the following custom
+decorator annotation which applies <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/logging/LoggingService.html">LoggingService</a></code> to an annotated service.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This example is actually just a copy of what Armeria provides out of the box. In reality,
+you could just use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/decorator/LoggingDecorator.html">@LoggingDecorator</a></code>, without writing your own one.</p>
+</div>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">@DecoratorFactory(LoggingDecoratorFactoryFunction.class)
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE, ElementType.METHOD })
+public @interface LoggingDecorator {
+
+    // Specify parameters for your decorator like below.
+    LogLevel requestLogLevel() default LogLevel.TRACE;
+
+    LogLevel successfulResponseLogLevel() default LogLevel.TRACE;
+
+    LogLevel failureResponseLogLevel() default LogLevel.WARN;
+
+    float samplingRate() default 1.0f;
+
+    // A special parameter in order to specify the order of a decorator.
+    int order() default 0;
+}
+
+public final class LoggingDecoratorFactoryFunction implements DecoratorFactoryFunction&lt;LoggingDecorator&gt; {
+    @Override
+    public Function&lt;Service&lt;HttpRequest, HttpResponse&gt;,
+            ? extends Service&lt;HttpRequest, HttpResponse&gt;&gt; newDecorator(LoggingDecorator parameter) {
+        return new LoggingServiceBuilder()
+                .requestLogLevel(parameter.requestLogLevel())
+                .successfulResponseLogLevel(parameter.successfulResponseLogLevel())
+                .failureResponseLogLevel(parameter.failureResponseLogLevel())
+                .samplingRate(parameter.samplingRate())
+                .newDecorator();
+    }
+}</pre></div>
+</div>
+<p>You can see <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/DecoratorFactory.html">@DecoratorFactory</a></code> annotation at the first line of the example. It specifies
+a factory class which implements <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/DecoratorFactoryFunction.html">DecoratorFactoryFunction</a></code> interface. The factory will create
+an instance of <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/logging/LoggingService.html">LoggingService</a></code> with parameters which you specified on the class or method like below.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+    @LoggingDecorator(requestLogLevel = LogLevel.INFO)
+    @Get(&quot;/hello1&quot;)
+    public HttpResponse hello1() { ... }
+
+    @LoggingDecorator(requestLogLevel = LogLevel.DEBUG, samplingRate = 0.05)
+    @Get(&quot;/hello2&quot;)
+    public HttpResponse hello2() { ... }
+}</pre></div>
+</div>
+</div>
+<div class="section" id="evaluation-order-of-decorators">
+<h3>Evaluation order of decorators<a class="headerlink" href="#evaluation-order-of-decorators" title="Permalink to this headline">¶</a></h3>
+<p>Note that the evaluation order of the decorators is slightly different from that of the converters and exception
+handlers. As you read in <a class="reference internal" href="#configure-using-serverbuilder"><span class="std std-ref">Using ServerBuilder to configure converters and exception handlers</span></a>, both the converters and exception
+handlers are applied in the order of method-level ones, class-level ones and global ones. Unlike them,
+decorators are applied in the opposite order as follows, because it is more understandable for a user
+to apply from the outer decorators to the inner decorators, which means the order of global decorators,
+class-level decorators and method-level decorators.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">@Decorator(MyClassDecorator2.class)                 // order 2
+@Decorator(MyClassDecorator3.class)                 // order 3
+public class MyAnnotatedService {
+
+    @Get(&quot;/hello&quot;)
+    @Decorator(MyMethodDecorator4.class)            // order 4
+    @Decorator(MyMethodDecorator5.class)            // order 5
+    public HttpResponse hello() { ... }
+}
+
+// ...
+
+sb.annotatedService(new MyAnnotatedService(),
+                    new MyGlobalDecorator1());      // order 1</pre></div>
+</div>
+<p>The first rule is as explained before. However, if your own decorator annotations and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Decorator.html">@Decorator</a></code>
+annotations are specified in a mixed order like below, you need to clearly specify their order using <code class="docutils literal notranslate"><span class="pre">order()</span></code>
+attribute of the annotation. In the following example, you cannot make sure in what order they decorate
+the service because Java collects repeatable annotations like <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Decorator.html">@Decorator</a></code> into a single container
+annotation like <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Decorators.html">@Decorators</a></code> so it does not know the specified order between <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Decorator.html">@Decorator</a></code>
+and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/decorator/LoggingDecorator.html">@LoggingDecorator</a></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Get(&quot;/hello&quot;)
+    @Decorator(MyMethodDecorator1.class)
+    @LoggingDecorator
+    @Decorator(MyMethodDecorator2.class)
+    public HttpResponse hello() { ... }
+}</pre></div>
+</div>
+<p>To enforce the evaluation order of decorators, you can use <code class="docutils literal notranslate"><span class="pre">order()</span></code> attribute. Lower the order value is,
+earlier the decorator will be executed. The default value of <code class="docutils literal notranslate"><span class="pre">order()</span></code> attribute is <code class="docutils literal notranslate"><span class="pre">0</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">order()</span></code> attribute is applicable only to class-level and method-level decorators.</p>
+<p>With the following example, the <code class="docutils literal notranslate"><span class="pre">hello()</span></code> will be executed with the following order:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MyGlobalDecorator1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MyMethodDecorator1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LoggingDecorator</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MyMethodDecorator2</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MyAnnotatedService.hello()</span></code></p></li>
+</ol>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Get(&quot;/hello&quot;)
+    @Decorator(value = MyMethodDecorator1.class, order = 1)
+    @LoggingDecorator(order = 2)
+    @Decorator(value = MyMethodDecorator2.class, order = 3)
+    public HttpResponse hello() { ... }
+}
+
+// Global-level decorators will not be affected by &#x27;order&#x27;.
+sb.annotatedService(new MyAnnotatedService(),
+                    new MyGlobalDecorator1());</pre></div>
+</div>
+<p>Note that you can even make a method-level decorator executed before a class-level decorator
+by adjusting the <code class="docutils literal notranslate"><span class="pre">order()</span></code> attribute:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">@LoggingDecorator
+public class MyAnnotatedService {
+
+    // LoggingDecorator -&gt; MyMethodDecorator1 -&gt; hello1()
+    @Get(&quot;/hello1&quot;)
+    @Decorator(MyMethodDecorator1.class)
+    public HttpResponse hello1() { ... }
+
+    // MyMethodDecorator1 -&gt; LoggingDecorator -&gt; hello2()
+    @Get(&quot;/hello2&quot;)
+    @Decorator(value = MyMethodDecorator1.class, order = -1)
+    public HttpResponse hello2() { ... }
+}</pre></div>
+</div>
+<p>If you built a custom decorator annotation like <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/decorator/LoggingDecorator.html">@LoggingDecorator</a></code>, it is recommended to
+add an <code class="docutils literal notranslate"><span class="pre">order()</span></code> attribute so that the user of the custom annotation is able to adjust
+the order value of the decorator:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public @interface MyDecoratorAnnotation {
+
+    // Define your attributes.
+    int myAttr1();
+
+    // A special parameter in order to specify the order of a decorator.
+    int order() default 0;
+}</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="media-type-negotiation">
+<span id="media-type-nego"></span><h2>Media type negotiation<a class="headerlink" href="#media-type-negotiation" title="Permalink to this headline">¶</a></h2>
+<p>Armeria provides <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Produces.html">@Produces</a></code> and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Consumes.html">@Consumes</a></code> annotations to support media type
+negotiation. It is not necessary if you have only one service method for a path and an HTTP method.
+However, assume that you have multiple service methods for the same path and the same HTTP method as follows.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Get(&quot;/hello&quot;)
+    public HttpResponse hello1() {
+        // Return a text document to the client.
+        return HttpResponse.of(HttpStatus.OK, MediaType.PLAIN_TEXT_UTF_8, &quot;Armeria&quot;);
+    }
+
+    @Get(&quot;/hello&quot;)
+    public HttpResponse hello2() {
+        // Return a JSON object to the client.
+        return HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8, &quot;{ \&quot;name\&quot;: \&quot;Armeria\&quot; }&quot;);
+    }
+}</pre></div>
+</div>
+<p>If the media type is not specified on any methods bound to the same path pattern, the first method declared will
+be used and the other methods will be ignored. In this example, <code class="docutils literal notranslate"><span class="pre">hello1()</span></code> will be chosen and the client
+will always receive a text document. What if you want to get a JSON object from the path <code class="docutils literal notranslate"><span class="pre">/hello</span></code>?
+You can just specify the type of the content which your method produces as follows and add an <code class="docutils literal notranslate"><span class="pre">Accept</span></code> header
+to your client request.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Get(&quot;/hello&quot;)
+    @Produces(&quot;text/plain&quot;)
+    public HttpResponse helloText() {
+        // Return a text document to the client.
+        return HttpResponse.of(HttpStatus.OK, MediaType.PLAIN_TEXT_UTF_8, &quot;Armeria&quot;);
+    }
+
+    @Get(&quot;/hello&quot;)
+    @Produces(&quot;application/json&quot;)
+    public HttpResponse helloJson() {
+        // Return a JSON object to the client.
+        return HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8, &quot;{ \&quot;name\&quot;: \&quot;Armeria\&quot; }&quot;);
+    }
+}</pre></div>
+</div>
+<p>A request like the following would get a text document:</p>
+<div class="highlight-http notranslate"><div class="highlight hljs"><pre class="http">GET /hello HTTP/1.1
+Accept: text/plain</pre></div>
+</div>
+<p>A request like the following would get a JSON object:</p>
+<div class="highlight-http notranslate"><div class="highlight hljs"><pre class="http">GET /hello HTTP/1.1
+Accept: application/json</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note that a <code class="docutils literal notranslate"><span class="pre">Content-Type</span></code> header of a response is not automatically set. You may want to get the
+negotiated <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Produces.html">@Produces</a></code> from <code class="docutils literal notranslate"><span class="pre">ServiceRequestContext.negotiatedResponseMediaType()</span></code> method and
+set it as the value of the <code class="docutils literal notranslate"><span class="pre">Content-Type</span></code> header of your response.</p>
+</div>
+<p>If a client sends a request without an <code class="docutils literal notranslate"><span class="pre">Accept</span></code> header (or sending an <code class="docutils literal notranslate"><span class="pre">Accept</span></code> header with an unsupported
+content type), it would be usually mapped to <code class="docutils literal notranslate"><span class="pre">helloJson()</span></code> method because the methods are sorted by the
+name of the type in an alphabetical order.</p>
+<p>In this case, you can adjust the order of the methods with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Order.html">@Order</a></code> annotation. The default value of
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Order.html">@Order</a></code> annotation is <code class="docutils literal notranslate"><span class="pre">0</span></code>. If you set the value less than <code class="docutils literal notranslate"><span class="pre">0</span></code>, the method is used earlier than
+the other methods, which means that it would be used as a default when there is no matched produce type.
+In this example, it would also make the same effect to annotate <code class="docutils literal notranslate"><span class="pre">helloJson()</span></code> with <code class="docutils literal notranslate"><span class="pre">&#64;Order(1)</span></code>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Order(-1)
+    @Get(&quot;/hello&quot;)
+    @Produces(&quot;text/plain&quot;)
+    public HttpResponse helloText() {
+        // Return a text document to the client.
+        return HttpResponse.of(HttpStatus.OK, MediaType.PLAIN_TEXT_UTF_8, &quot;Armeria&quot;);
+    }
+
+    @Get(&quot;/hello&quot;)
+    @Produces(&quot;application/json&quot;)
+    public HttpResponse helloJson() {
+        // Return a JSON object to the client.
+        return HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8, &quot;{ \&quot;name\&quot;: \&quot;Armeria\&quot; }&quot;);
+    }
+}</pre></div>
+</div>
+<p>Next, let’s learn how to handle a <code class="docutils literal notranslate"><span class="pre">Content-Type</span></code> header of a request. Assume that there are two service
+methods that expect a text document and a JSON object as a content of a request, respectively.
+You can annotate them with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Consumes.html">@Consumes</a></code> annotation.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Post(&quot;/hello&quot;)
+    @Consumes(&quot;text/plain&quot;)
+    public HttpResponse helloText(AggregatedHttpRequest request) {
+        // Get a text content by calling request.contentAscii().
+    }
+
+    @Post(&quot;/hello&quot;)
+    @Consumes(&quot;application/json&quot;)
+    public HttpResponse helloJson(AggregatedHttpRequest request) {
+        // Get a JSON object by calling request.contentUtf8().
+    }
+}</pre></div>
+</div>
+<p>A request like the following would be handled by <code class="docutils literal notranslate"><span class="pre">helloText()</span></code> method:</p>
+<div class="highlight-http notranslate"><div class="highlight hljs"><pre class="http">POST /hello HTTP/1.1
+Content-Type: text/plain
+Content-Length: 7
+
+Armeria</pre></div>
+</div>
+<p>A request like the following would be handled by <code class="docutils literal notranslate"><span class="pre">helloJson()</span></code> method:</p>
+<div class="highlight-http notranslate"><div class="highlight hljs"><pre class="http">POST /hello HTTP/1.1
+Content-Type: application/json
+Content-Length: 21
+
+{ &quot;name&quot;: &quot;Armeria&quot; }</pre></div>
+</div>
+<p>However, if a client sends a request with a <code class="docutils literal notranslate"><span class="pre">Content-Type:</span> <span class="pre">application/octet-stream</span></code> header which is not
+specified with <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Consumes.html">@Consumes</a></code>, the client would get an HTTP status code of 415 which means
+<code class="docutils literal notranslate"><span class="pre">Unsupported</span> <span class="pre">Media</span> <span class="pre">Type</span></code>. If you want to make one of the methods catch-all, you can remove the annotation
+as follows. <code class="docutils literal notranslate"><span class="pre">helloCatchAll()</span></code> method would accept every request except for the request with a
+<code class="docutils literal notranslate"><span class="pre">Content-Type:</span> <span class="pre">application/json</span></code> header.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Post(&quot;/hello&quot;)
+    public HttpResponse helloCatchAll(AggregatedHttpRequest request) {
+        // Get a content by calling request.content() and handle it as a text document or something else.
+    }
+
+    @Post(&quot;/hello&quot;)
+    @Consumes(&quot;application/json&quot;)
+    public HttpResponse helloJson(AggregatedHttpRequest request) {
+        // Get a JSON object by calling request.contentUtf8().
+    }
+}</pre></div>
+</div>
+<div class="section" id="creating-user-defined-media-type-annotations">
+<h3>Creating user-defined media type annotations<a class="headerlink" href="#creating-user-defined-media-type-annotations" title="Permalink to this headline">¶</a></h3>
+<p>Armeria provides pre-defined annotations such as <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ConsumesJson.html">@ConsumesJson</a></code>, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ConsumesText.html">@ConsumesText</a></code>,
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ConsumesBinary.html">@ConsumesBinary</a></code> and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ConsumesOctetStream.html">@ConsumesOctetStream</a></code> which are aliases for
+<code class="docutils literal notranslate"><span class="pre">&#64;Consumes(&quot;application/json;</span> <span class="pre">charset=utf-8&quot;)</span></code>, <code class="docutils literal notranslate"><span class="pre">&#64;Consumes(&quot;text/plain;</span> <span class="pre">charset=utf-8&quot;)</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&#64;Consumes(&quot;application/binary&quot;)</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;Consumes(&quot;application/octet-stream&quot;)</span></code> respectively.
+Also, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ProducesJson.html">@ProducesJson</a></code>, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ProducesText.html">@ProducesText</a></code>, <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ProducesBinary.html">@ProducesBinary</a></code> and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/ProducesOctetStream.html">@ProducesOctetStream</a></code>
+are provided in the same manner.</p>
+<p>If there is no annotation that meets your need, you can define your own annotations for <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Consumes.html">@Consumes</a></code>
+and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/Produces.html">@Produces</a></code> as follows. Specifying your own annotations is recommended because writing a media type
+with a string is more error-prone.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE, ElementType.METHOD })
+@Consumes(&quot;application/xml&quot;)
+public @interface MyConsumableType {}
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE, ElementType.METHOD })
+@Produces(&quot;application/xml&quot;)
+public @interface MyProducibleType {}</pre></div>
+</div>
+<p>Then, you can annotate your service method with your annotation as follows.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+    @Post(&quot;/hello&quot;)
+    @MyConsumableType  // the same as @Consumes(&quot;application/xml&quot;)
+    @MyProducibleType  // the same as @Produces(&quot;application/xml&quot;)
+    public MyResponse hello(MyRequest myRequest) { ... }
+}</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="specifying-additional-response-headers-trailers">
+<h2>Specifying additional response headers/trailers<a class="headerlink" href="#specifying-additional-response-headers-trailers" title="Permalink to this headline">¶</a></h2>
+<p>Armeria provides a way to configure additional headers/trailers via annotation,
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/AdditionalHeader.html">@AdditionalHeader</a></code> for HTTP headers and <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/AdditionalTrailer.html">@AdditionalTrailer</a></code> for HTTP trailers.</p>
+<p>You can annotate your service method with the annotations as follows.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.annotation.AdditionalHeader;
+import com.linecorp.armeria.server.annotation.AdditionalTrailer;
+
+@AdditionalHeader(name = &quot;custom-header&quot;, value = &quot;custom-value&quot;)
+@AdditionalTrailer(name = &quot;custom-trailer&quot;, value = &quot;custom-value&quot;)
+public class MyAnnotatedService {
+    @Get(&quot;/hello&quot;)
+    @AdditionalHeader(name = &quot;custom-header-2&quot;, value = &quot;custom-value&quot;)
+    @AdditionalTrailer(name = &quot;custom-trailer-2&quot;, value = &quot;custom-value&quot;)
+    public HttpResponse hello() { ... }
+}</pre></div>
+</div>
+<p>The <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/AdditionalHeader.html">@AdditionalHeader</a></code> or <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/annotation/AdditionalTrailer.html">@AdditionalTrailer</a></code> specified at the method level takes precedence over
+what’s specified at the class level if it has the same name, e.g.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">@AdditionalHeader(name = &quot;custom-header&quot;, value = &quot;custom-value&quot;)
+@AdditionalTrailer(name = &quot;custom-trailer&quot;, value = &quot;custom-value&quot;)
+public class MyAnnotatedService {
+    @Get(&quot;/hello&quot;)
+    @AdditionalHeader(name = &quot;custom-header&quot;, value = &quot;custom-overwritten&quot;)
+    @AdditionalTrailer(name = &quot;custom-trailer&quot;, value = &quot;custom-overwritten&quot;)
+    public HttpResponse hello() { ... }
+}</pre></div>
+</div>
+<p>In this case, the values of the HTTP header named <code class="docutils literal notranslate"><span class="pre">custom-header</span></code> and the HTTP trailer named
+<code class="docutils literal notranslate"><span class="pre">custom-trailer</span></code> will be <code class="docutils literal notranslate"><span class="pre">custom-overwritten</span></code>, not <code class="docutils literal notranslate"><span class="pre">custom-value</span></code>.</p>
+<p>Note that the trailers will not be injected into the responses with the following HTTP status code,
+because they always have an empty content.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 47%" />
+<col style="width: 53%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1xx</p></td>
+<td><p>Informational</p></td>
+</tr>
+<tr class="row-odd"><td><p>204</p></td>
+<td><p>No content</p></td>
+</tr>
+<tr class="row-even"><td><p>205</p></td>
+<td><p>Reset content</p></td>
+</tr>
+<tr class="row-odd"><td><p>304</p></td>
+<td><p>Not modified</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="using-a-composite-annotation">
+<h2>Using a composite annotation<a class="headerlink" href="#using-a-composite-annotation" title="Permalink to this headline">¶</a></h2>
+<p>To avoid specifying a common set of annotations repetitively, you may want to create a composite annotation
+which is annotated by other annotations. For example, let’s assume that there is a service class like the below:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Post(&quot;/create&quot;)
+    @ConsumesJson
+    @ProducesJson
+    @LoggingDecorator
+    @MyAuthenticationDecorator
+    public HttpResponse create() { ... }
+
+    @Post(&quot;/update&quot;)
+    @ConsumesJson
+    @ProducesJson
+    @LoggingDecorator
+    @MyAuthenticationDecorator
+    public HttpResponse update() { ... }
+}</pre></div>
+</div>
+<p>In the above example, you had to add the same 4 annotations to the two different methods. It is obviously
+too verbose and duplicate, so we could simplify them by creating a composite annotation like the following:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">@Retention(RetentionPolicy.RUNTIME)
+@ConsumesJson
+@ProducesJson
+@LoggingDecorator
+@MyAuthenticationDecorator
+public @interface MyCreateOrUpdateApiSpec {}</pre></div>
+</div>
+<p>Now, let’s rewrite the service class with the composite annotation. It is definitely less verbose than before.
+Moreover, you don’t need to update both <code class="docutils literal notranslate"><span class="pre">create()</span></code> and <code class="docutils literal notranslate"><span class="pre">update()</span></code> but only <code class="docutils literal notranslate"><span class="pre">MyCreateOrUpdateApiSpec</span></code>
+when you add more common annotations to them.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">public class MyAnnotatedService {
+
+    @Post(&quot;/create&quot;)
+    @MyCreateOrUpdateApiSpec
+    public HttpResponse create() { ... }
+
+    @Post(&quot;/update&quot;)
+    @MyCreateOrUpdateApiSpec
+    public HttpResponse update() { ... }
+}</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="server-http-file.html" class="btn btn-neutral float-right" title="Serving static files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="server-docservice.html" class="btn btn-neutral float-left" title="Browsing and invoking services with DocService" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

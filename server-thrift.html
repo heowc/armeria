@@ -1,0 +1,466 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Running a Thrift service &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Browsing and invoking services with DocService" href="server-docservice.html" />
+    <link rel="prev" title="Running a gRPC service" href="server-grpc.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="server.html">Writing a server</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="server-basics.html">Server basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-decorator.html">Decorating a service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-grpc.html">Running a gRPC service</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Running a Thrift service</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#thttpservice"><code class="docutils literal notranslate"><span class="pre">THttpService</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#serialization-formats">Serialization formats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#service-multiplexing">Service multiplexing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="server-docservice.html">Browsing and invoking services with <code class="docutils literal notranslate"><span class="pre">DocService</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-annotated-service.html">Annotated services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-http-file.html">Serving static files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-servlet.html">Embedding a servlet container</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-access-log.html">Writing an access log</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-cors.html">Configuring CORS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-sse.html">Serving Server-Sent Events</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="server.html">Writing a server</a> &raquo;</li>
+        
+      <li>Running a Thrift service</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/server-thrift.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="running-a-thrift-service">
+<span id="server-thrift"></span><h1>Running a Thrift service<a class="headerlink" href="#running-a-thrift-service" title="Permalink to this headline">¶</a></h1>
+<p>Let’s assume we have the following Thrift IDL:</p>
+<div class="highlight-thrift notranslate"><div class="highlight hljs"><pre class="thrift">namespace java com.example.thrift.hello
+
+service HelloService {
+    string hello(1:string name)
+}</pre></div>
+</div>
+<p>The Apache Thrift compiler will produce some Java code under the <code class="docutils literal notranslate"><span class="pre">com.example.thrift.hello</span></code> package.
+The most noteworthy one is <code class="docutils literal notranslate"><span class="pre">HelloService.java</span></code> which defines the service interfaces we will implement:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import org.apache.thrift.TException;
+import org.apache.thrift.async.AsyncMethodCallback;
+
+public class HelloService {
+    public interface Iface {
+        public String hello(String name) throws TException;
+    }
+
+    public interface AsyncIface {
+        public void hello(String name, AsyncMethodCallback&lt;String&gt; resultHandler) throws TException;
+    }
+    ...
+}</pre></div>
+</div>
+<p>If you are interested in going fully asynchronous, it is recommended to implement the <code class="docutils literal notranslate"><span class="pre">AsyncIface</span></code> interface,
+although it is easier to implement the synchronous <code class="docutils literal notranslate"><span class="pre">Iface</span></code> interface:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import org.apache.thrift.TException;
+import org.apache.thrift.async.AsyncMethodCallback;
+
+public class MyHelloService implements HelloService.AsyncIface {
+    @Override
+    public void hello(String name, AsyncMethodCallback&lt;String&gt; resultHandler) {
+        resultHandler.onComplete(&quot;Hello, &quot; + name + &#x27;!&#x27;);
+    }
+}
+
+// or synchronously:
+public class MySynchronousHelloService implements HelloService.Iface {
+    @Override
+    public String hello(String name) throws TException {
+        return &quot;Hello, &quot; + name + &#x27;!&#x27;;
+    }
+}</pre></div>
+</div>
+<div class="section" id="thttpservice">
+<h2><code class="docutils literal notranslate"><span class="pre">THttpService</span></code><a class="headerlink" href="#thttpservice" title="Permalink to this headline">¶</a></h2>
+<p>Once you’ve finished the implementation of the interface, you need to wrap it with a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/thrift/THttpService.html">THttpService</a></code>
+and add it to the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServerBuilder.html">ServerBuilder</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">ServerBuilder sb = new ServerBuilder();
+...
+sb.service(&quot;/hello&quot;, THttpService.of(new MyHelloService()));
+...
+Server server = sb.build();
+server.start();</pre></div>
+</div>
+</div>
+<div class="section" id="serialization-formats">
+<h2>Serialization formats<a class="headerlink" href="#serialization-formats" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/thrift/THttpService.html">THttpService</a></code> supports four Thrift serialization formats: TBINARY, TCOMPACT, TJSON and TTEXT.
+It chooses the serialization format based on the value of the <code class="docutils literal notranslate"><span class="pre">content-type</span></code> HTTP header.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 56%" />
+<col style="width: 44%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Header value</p></th>
+<th class="head"><p>Serialization format</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">Unspecified or</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">application/x-thrift</span></code></div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">Use the default serialization format</div>
+<div class="line">(TBINARY unless specified)</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">application/x-thrift;</span> <span class="pre">protocol=TBINARY</span></code> or</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">vnd.apache.thrift.binary</span></code></div>
+</div>
+</td>
+<td><p>TBINARY</p></td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">application/x-thrift;</span> <span class="pre">protocol=TCOMPACT</span></code> or</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">vnd.apache.thrift.compact</span></code></div>
+</div>
+</td>
+<td><p>TCOMPACT</p></td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">application/x-thrift;</span> <span class="pre">protocol=TJSON</span></code> or</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">vnd.apache.thrift.json</span></code></div>
+</div>
+</td>
+<td><p>TJSON</p></td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">application/x-thrift;</span> <span class="pre">protocol=TTEXT</span></code> or</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">vnd.apache.thrift.text</span></code></div>
+</div>
+</td>
+<td><p>TTEXT</p></td>
+</tr>
+</tbody>
+</table>
+<p>To change the default serialization format from TBINARY to something else, specify it when creating a
+<code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/thrift/THttpService.html">THttpService</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.thrift.ThriftSerializationFormats;
+
+ServerBuilder sb = new ServerBuilder();
+// Use TCOMPACT as the default serialization format.
+sb.service(&quot;/hello&quot;, THttpService.of(new MyHelloService(),
+                                     ThriftSerializationFormats.COMPACT));</pre></div>
+</div>
+<p>You can also choose the list of allowed serialization formats:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">ServerBuilder sb = new ServerBuilder();
+// Use TBINARY as the default serialization format.
+// Allow TBINARY and TCOMPACT only.
+sb.service(&quot;/hello&quot;, THttpService.of(new MyHelloService(),
+                                     ThriftSerializationFormats.BINARY,
+                                     ThriftSerializationFormats.COMPACT));</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>TTEXT is not designed for efficiency and is recommended to be only used for debugging.
+It’s best to serve from a separate path only accessible internally.</p>
+</div>
+</div>
+<div class="section" id="service-multiplexing">
+<h2>Service multiplexing<a class="headerlink" href="#service-multiplexing" title="Permalink to this headline">¶</a></h2>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/thrift/THttpService.html">THttpService</a></code> supports service multiplexing fully compatible with Apache Thrift <a class="reference external" href="https://github.com/apache/thrift/blob/400b346db2510fffa06c0ced11105e3618ce5367/lib/java/src/org/apache/thrift/TMultiplexedProcessor.java#L28">TMultiplexedProcessor</a>.</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">Map&lt;String, Object&gt; impls = new HashMap&lt;&gt;();
+impls.put(&quot;foo&quot;, new MyFooService());
+impls.put(&quot;bar&quot;, new MyBarService());
+// Use MyHelloService for non-multiplexed requests.
+impls.put(&quot;&quot;, new MyHelloService());
+
+sb.service(&quot;/thrift&quot;, THttpService.of(impls));</pre></div>
+</div>
+</div>
+<div class="section" id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="client-thrift.html#client-thrift"><span class="std std-ref">Calling a Thrift service</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="server-docservice.html" class="btn btn-neutral float-right" title="Browsing and invoking services with DocService" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="server-grpc.html" class="btn btn-neutral float-left" title="Running a gRPC service" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

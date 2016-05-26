@@ -1,0 +1,471 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Browsing and invoking services with DocService &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Annotated services" href="server-annotated-service.html" />
+    <link rel="prev" title="Running a Thrift service" href="server-thrift.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="server.html">Writing a server</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="server-basics.html">Server basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-decorator.html">Decorating a service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-grpc.html">Running a gRPC service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-thrift.html">Running a Thrift service</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Browsing and invoking services with <code class="docutils literal notranslate"><span class="pre">DocService</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#debug-form">Debug form</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sending-http-headers">Sending HTTP headers</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#including-and-excluding-service-methods">Including and excluding service methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-requests-and-headers">Example requests and headers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-docstrings">Adding docstrings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="server-annotated-service.html">Annotated services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-http-file.html">Serving static files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-servlet.html">Embedding a servlet container</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-access-log.html">Writing an access log</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-cors.html">Configuring CORS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-sse.html">Serving Server-Sent Events</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="server.html">Writing a server</a> &raquo;</li>
+        
+      <li>Browsing and invoking services with <code class="docutils literal notranslate"><span class="pre">DocService</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/server-docservice.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="browsing-and-invoking-services-with-docservice">
+<span id="server-docservice"></span><h1>Browsing and invoking services with <code class="docutils literal notranslate"><span class="pre">DocService</span></code><a class="headerlink" href="#browsing-and-invoking-services-with-docservice" title="Permalink to this headline">¶</a></h1>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/docs/DocService.html">DocService</a></code> is a single-page web application which provides the following useful features:</p>
+<ul class="simple">
+<li><p>Browsing the list of gRPC, Thrift or annotated services and their operations available in the server</p></li>
+<li><p>Invoking a service operation from a web form</p></li>
+<li><p>Creating a permalink for the invocation you’ve made</p></li>
+</ul>
+<p>First, add <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/docs/DocService.html">DocService</a></code> to the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServerBuilder.html">ServerBuilder</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.grpc.GrpcSerializationFormats;
+import com.linecorp.armeria.server.docs.DocService;
+import com.linecorp.armeria.server.grpc.GrpcServiceBuilder;
+import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.server.thrift.THttpService;
+
+ServerBuilder sb = new ServerBuilder();
+sb.http(8080);
+
+// Add a Thrift service which implements &#x27;ThriftHelloService&#x27;.
+sb.service(&quot;/hello&quot;, THttpService.of(new MyThriftHelloService()));
+
+// Add a gRPC service which implements &#x27;GrpcHelloService&#x27;.
+// Unlike Thrift, you must enable gRPC-Web and unframed requests explicitly.
+sb.service(new GrpcServiceBuilder().addService(new MyGrpcHelloService())
+                                   .supportedSerializationFormats(
+                                           GrpcSerializationFormats.values())
+                                   .enableUnframedRequests(true)
+                                   .build());
+
+// Add an annotated HTTP service.
+sb.annotatedService(&quot;/service&quot;, new MyAnnotatedService());
+
+// Add a DocService which scans all Thrift and gRPC services added to the server.
+sb.serviceUnder(&quot;/docs&quot;, new DocService());
+
+Server server = sb.build();
+server.start().join();</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/docs/DocService.html">DocService</a></code> will scan for all supported services automatically when the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/Server.html">Server</a></code> starts up.
+Please see <a class="reference internal" href="#inclusion-rule"><span class="std std-ref">Including and excluding service methods</span></a> to learn how to include or exclude certain services.</p>
+</div>
+<p>Open <a class="reference external" href="http://127.0.0.1:8080/docs/">http://127.0.0.1:8080/docs/</a> in your web browser and you’ll see the following screen:</p>
+<img alt="_images/docservice_1.png" src="_images/docservice_1.png" />
+<p>The left pane of the screen shows the list of the available services and their operations. If you defined
+structs, enums or exceptions, they will appear there as well. If you click the <code class="docutils literal notranslate"><span class="pre">hello()</span></code> operation, the
+right pane will show the details of the operation such as the list of the parameters, the return type and
+the exceptions which may be thrown:</p>
+<img alt="_images/docservice_2.png" src="_images/docservice_2.png" />
+<p>As you may have noticed, the ‘description’ column is empty. <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/docs/DocService.html">DocService</a></code> can even show the docstrings
+you put into your <code class="docutils literal notranslate"><span class="pre">.thrift</span></code> or <code class="docutils literal notranslate"><span class="pre">.proto</span></code> files with a little bit of build configuration. We will visit this
+later in this document.</p>
+<div class="section" id="debug-form">
+<h2>Debug form<a class="headerlink" href="#debug-form" title="Permalink to this headline">¶</a></h2>
+<p>Now, scroll down the right pane. You’ll find a ‘debug form’ which enables you to send an RPC request in
+human-friendly JSON format:</p>
+<img alt="_images/docservice_3.png" src="_images/docservice_3.png" />
+<p>Type the request parameters like the following and click the ‘Submit to: /hello’ button:</p>
+<div class="highlight-json notranslate"><div class="highlight hljs"><pre class="json">{
+  &quot;name&quot;: &quot;Armeria&quot;
+}</pre></div>
+</div>
+<p>The result pane right next to the text area you entered the JSON request will show the reply in JSON:</p>
+<img alt="_images/docservice_4.png" src="_images/docservice_4.png" />
+<p>The current location of your web browser should be updated like the following:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">http://127.0.0.1:8080/docs/#!method/com.example.ThriftHelloService/hello?args=%7B%22name%22%3A%22Armeria%22%7D</span></code></p></li>
+</ul>
+<p>Imagine you build a request that reproduces the problem using the debug form and share the URL of the request
+with your colleagues. It’s way more convenient than traditional workflow for replaying an RPC request.</p>
+<div class="section" id="sending-http-headers">
+<h3>Sending HTTP headers<a class="headerlink" href="#sending-http-headers" title="Permalink to this headline">¶</a></h3>
+<p>You may want to send an additional HTTP header such as <code class="docutils literal notranslate"><span class="pre">authorization</span></code> when sending an RPC request via
+a debug form. Click the ‘Edit additional HTTP headers’ link below the text area, and you’ll see another
+text area which allows you to specify the HTTP headers you want to add:</p>
+<a class="reference internal image-reference" href="_images/docservice_5.png"><img alt="_images/docservice_5.png" src="_images/docservice_5.png" style="width: 417.3px; height: 185.4px;" /></a>
+</div>
+</div>
+<div class="section" id="including-and-excluding-service-methods">
+<span id="inclusion-rule"></span><h2>Including and excluding service methods<a class="headerlink" href="#including-and-excluding-service-methods" title="Permalink to this headline">¶</a></h2>
+<p>You can include or exclude service methods using <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/docs/DocServiceFilter.html">DocServiceFilter</a></code> when building a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/docs/DocService.html">DocService</a></code>
+with a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/docs/DocServiceBuilder.html">DocServiceBuilder</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.docs.DocServiceBuilder;
+import com.linecorp.armeria.server.docs.DocServiceFilter;
+
+ServerBuilder sb = new ServerBuilder();
+...
+sb.serviceUnder(&quot;/docs&quot;, new DocServiceBuilder()
+        // Include Thrift services and Annotated services.
+        .include(DocServiceFilter.ofThrift().or(DocServiceFilter.ofAnnotated()))
+        // Exclude the method whose name is &quot;foo&quot; in Thrift services.
+        .exclude(DocServiceFilter.ofThrift().and(DocServiceFilter.ofMethodName(&quot;foo&quot;)))
+        .build());
+...</pre></div>
+</div>
+<p>The inclusion rule is as follows:</p>
+<ul class="simple">
+<li><p>No <code class="docutils literal notranslate"><span class="pre">include(DocServiceFilter)</span></code> and <code class="docutils literal notranslate"><span class="pre">exclude(DocServiceFilter)</span></code> is called: include all methods.</p></li>
+<li><p>Only <code class="docutils literal notranslate"><span class="pre">exclude(DocServiceFilter)</span></code> is called: include all methods except the methods which the exclusion filter returns <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p></li>
+<li><p>Only <code class="docutils literal notranslate"><span class="pre">include(DocServiceFilter)</span></code> is called: include the methods which the inclusion filter returns <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">include(DocServiceFilter)</span></code> and <code class="docutils literal notranslate"><span class="pre">exclude(DocServiceFilter)</span></code> is called: include the methods which the inclusion filter returns <code class="docutils literal notranslate"><span class="pre">true</span></code> and the exclusion filter returns <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="example-requests-and-headers">
+<h2>Example requests and headers<a class="headerlink" href="#example-requests-and-headers" title="Permalink to this headline">¶</a></h2>
+<p>You can specify the example requests and HTTP headers which will be used as the default value of the debug form
+with a <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/docs/DocServiceBuilder.html">DocServiceBuilder</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpHeaders;
+import static com.linecorp.armeria.common.HttpHeaderNames.AUTHORIZATION;
+
+ServerBuilder sb = new ServerBuilder();
+...
+sb.serviceUnder(&quot;/docs&quot;, new DocServiceBuilder()
+        // HTTP headers for all services
+        .exampleHttpHeaders(HttpHeaders.of(AUTHORIZATION, &quot;bearer b03c4fed1a&quot;))
+        // Thrift example request for &#x27;ThriftHelloService.hello()&#x27;
+        .exampleRequest(new ThriftHelloService.hello_args(&quot;Armeria&quot;))
+        // gRPC example request for &#x27;GrpcHelloService.Hello()&#x27;
+        .exampleRequestForMethod(GrpcHelloServiceGrpc.SERVICE_NAME,
+                                 &quot;Hello&quot;, // Method name
+                                 HelloRequest.newBuilder().setName(&quot;Armeria&quot;).build())
+        .build());
+...</pre></div>
+</div>
+<p>By adding examples to <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/docs/DocService.html">DocService</a></code>, your users will be able to play with the services you wrote
+without a hassle and thus will understand them sooner and better.</p>
+</div>
+<div class="section" id="adding-docstrings">
+<h2>Adding docstrings<a class="headerlink" href="#adding-docstrings" title="Permalink to this headline">¶</a></h2>
+<p>Configure your build script so that it generates the required metadata file for your <code class="docutils literal notranslate"><span class="pre">.thrift</span></code> or <code class="docutils literal notranslate"><span class="pre">.proto</span></code>
+files into the specific location in the class path.</p>
+<p>For Thrift:</p>
+<ul class="simple">
+<li><p>Use the <code class="docutils literal notranslate"><span class="pre">--gen</span> <span class="pre">json</span></code> option to generate the <code class="docutils literal notranslate"><span class="pre">.json</span></code> file that contains the docstrings.</p></li>
+<li><p>Put the generated <code class="docutils literal notranslate"><span class="pre">.json</span></code> file into the <code class="docutils literal notranslate"><span class="pre">META-INF/armeria/thrift</span></code> directory.</p></li>
+</ul>
+<p>For gRPC:</p>
+<ul>
+<li><p>Configure the protobuf plugin to generate the <code class="docutils literal notranslate"><span class="pre">.dsc</span></code> file that contains the docstrings and
+put it into the <code class="docutils literal notranslate"><span class="pre">META-INF/armeria/grpc</span></code> directory:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">protobuf {
+    generateProtoTasks {
+        all().each { task -&gt;
+            task.generateDescriptorSet = true
+            task.descriptorSetOptions.includeSourceInfo = true
+            task.descriptorSetOptions.includeImports = true
+            task.descriptorSetOptions.path =
+                    &quot;${buildDir}/resources/main/META-INF/armeria/grpc/service-name.dsc&quot;
+        }
+    }
+}</pre></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="server-annotated-service.html" class="btn btn-neutral float-right" title="Annotated services" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="server-thrift.html" class="btn btn-neutral float-left" title="Running a Thrift service" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

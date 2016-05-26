@@ -1,0 +1,548 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Setting up a project &mdash; Armeria 0.90.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Writing a server" href="server.html" />
+    <link rel="prev" title="Welcome to Armeria" href="index.html" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.90
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Setting up a project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#choosing-the-artifacts">Choosing the artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-up-with-gradle">Setting up with Gradle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-up-with-maven">Setting up with Maven</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configure-parameters-javac-option">Configure <code class="docutils literal notranslate"><span class="pre">-parameters</span></code> javac option</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#intellij-idea">IntelliJ IDEA</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#using-maven-bom-for-simpler-dependency-management">Using Maven BOM for simpler dependency management</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Writing a server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/issues?q=label%3Aquestion">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Setting up a project</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/setup.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="setting-up-a-project">
+<span id="setup"></span><h1>Setting up a project<a class="headerlink" href="#setting-up-a-project" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://adoptopenjdk.net/">Java 8 (or later)</a> is required to build and run an application based on Armeria.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Use Java 11 (or later) if you are a contributor who tries to build Armeria itself.
+See <a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">CONTRIBUTING.md</a> for more information.</p>
+</div>
+</div>
+<div class="section" id="choosing-the-artifacts">
+<h2>Choosing the artifacts<a class="headerlink" href="#choosing-the-artifacts" title="Permalink to this headline">¶</a></h2>
+<p>All Armeria JARs are available in <a class="reference external" href="https://search.maven.org/search?q=g:com.linecorp.armeria%20-shaded">Maven Central Repository</a>
+under group ID <code class="docutils literal notranslate"><span class="pre">com.linecorp.armeria</span></code> so that you can fetch them easily using your favorite build tool.
+Add the Armeria artifacts that provide the desired functionality to your project dependencies. The following is
+the list of major Armeria artifacts which might interest you:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 59%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Artifact ID</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">armeria</span></code></p></td>
+<td><p>The core library.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-grpc</span></code></p></td>
+<td><p>gRPC client and server support.
+See <a class="reference internal" href="server-grpc.html#server-grpc"><span class="std std-ref">Running a gRPC service</span></a> and <a class="reference internal" href="client-grpc.html#client-grpc"><span class="std std-ref">Calling a gRPC service</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-jetty</span></code></p></td>
+<td><p>Embedded Jetty Servlet container. See <a class="reference internal" href="server-servlet.html#server-servlet"><span class="std std-ref">Embedding a servlet container</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-kafka</span></code></p></td>
+<td><p>Enables sending access logs to Kafka</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-logback</span></code></p></td>
+<td><p>Provides Logback <code class="docutils literal notranslate"><span class="pre">Appender</span></code> implementation that adds
+request information. See <a class="reference internal" href="advanced-logging.html#advanced-logging"><span class="std std-ref">Logging contextual information</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-retrofit2</span></code></p></td>
+<td><p>Allows using Armeria instead of OkHttp as transport layer
+when using Retrofit. See <a class="reference internal" href="client-retrofit.html#client-retrofit"><span class="std std-ref">Retrofit integration</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-rxjava</span></code></p></td>
+<td><p>RxJava plugin</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-saml</span></code></p></td>
+<td><p>SAML support</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-spring-boot-autoconfigure</span></code></p></td>
+<td><p>Spring Boot integration</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-spring-boot-webflux-autoconfigure</span></code></p></td>
+<td><p>Spring Boot WebFlux integration.
+See <a class="reference internal" href="advanced-spring-webflux-integration.html#advanced-spring-webflux-integration"><span class="std std-ref">Using Armeria with Spring WebFlux</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-thrift</span></code></p></td>
+<td><p>Thrift client and server support.
+See <a class="reference internal" href="server-thrift.html#server-thrift"><span class="std std-ref">Running a Thrift service</span></a> and <a class="reference internal" href="client-thrift.html#client-thrift"><span class="std std-ref">Calling a Thrift service</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-tomcat</span></code></p></td>
+<td><p>Embedded Tomcat Servlet container. See <a class="reference internal" href="server-servlet.html#server-servlet"><span class="std std-ref">Embedding a servlet container</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-zipkin</span></code></p></td>
+<td><p>Zipkin distributed tracing support. See <a class="reference internal" href="advanced-zipkin.html#advanced-zipkin"><span class="std std-ref">Zipkin integration</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">armeria-zookeeper</span></code></p></td>
+<td><p>ZooKeeper-based service discovery. See <a class="reference internal" href="advanced-zookeeper.html#advanced-zookeeper"><span class="std std-ref">Service discovery with ZooKeeper</span></a>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="setting-up-with-gradle">
+<h2>Setting up with Gradle<a class="headerlink" href="#setting-up-with-gradle" title="Permalink to this headline">¶</a></h2>
+<p>You might want to use the following <code class="docutils literal notranslate"><span class="pre">build.gradle</span></code> as a starting point when you set up a new project:</p>
+<pre class="highlight-gradle literal-block">apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Adjust the list as you need.
+    ['armeria',
+     'armeria-grpc',
+     'armeria-jetty',
+     'armeria-kafka',
+     'armeria-logback',
+     'armeria-retrofit2',
+     'armeria-rxjava',
+     'armeria-saml',
+     'armeria-thrift',
+     'armeria-tomcat',
+     'armeria-zipkin',
+     'armeria-zookeeper'].each {
+        compile &quot;com.linecorp.armeria:${it}:0.90.2&quot;
+    }
+
+    // Logging
+    runtime 'ch.qos.logback:logback-classic:1.2.3'
+    runtime 'org.slf4j:log4j-over-slf4j:1.7.28'
+}</pre>
+</div>
+<div class="section" id="setting-up-with-maven">
+<h2>Setting up with Maven<a class="headerlink" href="#setting-up-with-maven" title="Permalink to this headline">¶</a></h2>
+<p>You might want to use the following <code class="docutils literal notranslate"><span class="pre">pom.xml</span></code> as a starting point when you set up a new project:</p>
+<pre class="highlight-xml literal-block">&lt;project xmlns=&quot;<a class="reference external" href="http://maven.apache.org/POM/4.0.0">http://maven.apache.org/POM/4.0.0</a>&quot;
+         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+         xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+
+  &lt;groupId&gt;com.example&lt;/groupId&gt;
+  &lt;artifactId&gt;myproject&lt;/artifactId&gt;
+  &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+  &lt;packaging&gt;jar&lt;/packaging&gt;
+
+  &lt;name&gt;myproject&lt;/name&gt;
+  &lt;url&gt;https://example.com/&lt;/url&gt;
+
+  &lt;properties&gt;
+    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+  &lt;/properties&gt;
+
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria-grpc&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria-jetty&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria-kafka&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria-logback&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria-retrofit2&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria-rxjava&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria-saml&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria-thrift&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria-tomcat&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria-zipkin&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.linecorp.armeria&lt;/groupId&gt;
+      &lt;artifactId&gt;armeria-zookeeper&lt;/artifactId&gt;
+      &lt;version&gt;0.90.2&lt;/version&gt;
+    &lt;/dependency&gt;
+
+    &lt;!-- Logging --&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;ch.qos.logback&lt;/groupId&gt;
+      &lt;artifactId&gt;logback-classic&lt;/artifactId&gt;
+      &lt;version&gt;1.2.3&lt;/version&gt;
+      &lt;scope&gt;runtime&lt;/scope&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+      &lt;artifactId&gt;log4j-over-slf4j&lt;/artifactId&gt;
+      &lt;version&gt;1.7.28&lt;/version&gt;
+      &lt;scope&gt;runtime&lt;/scope&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+&lt;/project&gt;</pre>
+</div>
+<div class="section" id="configure-parameters-javac-option">
+<span id="configure-parameters"></span><h2>Configure <code class="docutils literal notranslate"><span class="pre">-parameters</span></code> javac option<a class="headerlink" href="#configure-parameters-javac-option" title="Permalink to this headline">¶</a></h2>
+<p>You can configure your build tool to add <code class="docutils literal notranslate"><span class="pre">-parameters</span></code> javac option as follows.</p>
+<div class="highlight-gradle notranslate"><div class="highlight hljs"><pre class="gradle">// Gradle:
+tasks.withType(JavaCompile) {
+    options.compilerArgs += &#x27;-parameters&#x27;
+}</pre></div>
+</div>
+<div class="highlight-xml notranslate"><div class="highlight hljs"><pre class="xml">&lt;!-- Maven --&gt;
+&lt;project&gt;
+  &lt;build&gt;
+    &lt;plugins&gt;
+      &lt;plugin&gt;
+        &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+        &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+        &lt;configuration&gt;
+          &lt;compilerArgs&gt;
+            &lt;arg&gt;-parameters&lt;/arg&gt;
+          &lt;/compilerArgs&gt;
+        &lt;/configuration&gt;
+      &lt;/plugin&gt;
+    &lt;/plugins&gt;
+  &lt;/build&gt;
+&lt;/project&gt;</pre></div>
+</div>
+<div class="section" id="intellij-idea">
+<h3>IntelliJ IDEA<a class="headerlink" href="#intellij-idea" title="Permalink to this headline">¶</a></h3>
+<p>Go to <code class="docutils literal notranslate"><span class="pre">Preferences</span></code> &gt; <code class="docutils literal notranslate"><span class="pre">Build,</span> <span class="pre">Execution,</span> <span class="pre">Deployment</span></code> &gt; <code class="docutils literal notranslate"><span class="pre">Compiler</span></code> &gt; <code class="docutils literal notranslate"><span class="pre">Java</span> <span class="pre">Compiler</span></code> and add <code class="docutils literal notranslate"><span class="pre">-parameters</span></code> to <code class="docutils literal notranslate"><span class="pre">Additional</span> <span class="pre">command</span> <span class="pre">line</span> <span class="pre">paramters</span></code>.</p>
+<img alt="_images/intellij_javac_parameters.png" src="_images/intellij_javac_parameters.png" />
+</div>
+</div>
+<div class="section" id="using-maven-bom-for-simpler-dependency-management">
+<h2>Using Maven BOM for simpler dependency management<a class="headerlink" href="#using-maven-bom-for-simpler-dependency-management" title="Permalink to this headline">¶</a></h2>
+<p>You can import <code class="docutils literal notranslate"><span class="pre">com.linecorp.armeria:armeria-bom</span></code> into your build rather than specifying Armeria versions in
+more than one place. See <a class="reference external" href="https://www.baeldung.com/spring-maven-bom">this article</a> to learn more about what
+Maven BOM is and how to use it.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="server.html" class="btn btn-neutral float-right" title="Writing a server" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Armeria" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2019, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a class="github-fork-ribbon" href="https://github.com/line/armeria"
+     data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>

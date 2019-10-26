@@ -65,6 +65,7 @@ import com.linecorp.armeria.server.docs.FieldRequirement;
 import com.linecorp.armeria.server.docs.MethodInfo;
 import com.linecorp.armeria.server.docs.NamedTypeInfo;
 import com.linecorp.armeria.server.docs.ServiceInfo;
+import com.linecorp.armeria.server.docs.ServiceInfo.ServiceType;
 import com.linecorp.armeria.server.docs.ServiceSpecification;
 import com.linecorp.armeria.server.docs.StructInfo;
 import com.linecorp.armeria.server.docs.TypeSignature;
@@ -114,7 +115,7 @@ public class GrpcDocServicePlugin implements DocServicePlugin {
 
     @Override
     public String name() {
-        return "grpc";
+        return ServiceType.GRPC.name().toLowerCase();
     }
 
     @Override
@@ -248,7 +249,7 @@ public class GrpcDocServicePlugin implements DocServicePlugin {
         if (methodInfos.isEmpty()) {
             return null;
         }
-        return new ServiceInfo(entry.name(), methodInfos);
+        return new ServiceInfo(entry.name(), methodInfos, ServiceType.GRPC);
     }
 
     @VisibleForTesting

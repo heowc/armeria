@@ -73,6 +73,7 @@ import com.linecorp.armeria.server.docs.FieldRequirement;
 import com.linecorp.armeria.server.docs.MethodInfo;
 import com.linecorp.armeria.server.docs.NamedTypeInfo;
 import com.linecorp.armeria.server.docs.ServiceInfo;
+import com.linecorp.armeria.server.docs.ServiceInfo.ServiceType;
 import com.linecorp.armeria.server.docs.ServiceSpecification;
 import com.linecorp.armeria.server.docs.StructInfo;
 import com.linecorp.armeria.server.docs.TypeSignature;
@@ -100,7 +101,7 @@ public class ThriftDocServicePlugin implements DocServicePlugin {
 
     @Override
     public String name() {
-        return "thrift";
+        return ServiceType.THRIFT.name().toLowerCase();
     }
 
     @Override
@@ -181,7 +182,7 @@ public class ThriftDocServicePlugin implements DocServicePlugin {
         if (methodInfos.isEmpty()) {
             return null;
         }
-        return new ServiceInfo(name, methodInfos);
+        return new ServiceInfo(name, methodInfos, ServiceType.THRIFT);
     }
 
     @Nullable
@@ -408,8 +409,8 @@ public class ThriftDocServicePlugin implements DocServicePlugin {
     @VisibleForTesting
     static EnumInfo newEnumInfo(Class<? extends Enum<? extends TEnum>> enumType) {
         final List<EnumValueInfo> values = Arrays.stream(enumType.getEnumConstants())
-            .map(e -> new EnumValueInfo(e.name(), ((TEnum)e).getValue()))
-            .collect(toImmutableList());
+                                                 .map(e -> new EnumValueInfo(e.name(), ((TEnum) e).getValue()))
+                                                 .collect(toImmutableList());
 
         return new EnumInfo(enumType.getTypeName(), values);
     }

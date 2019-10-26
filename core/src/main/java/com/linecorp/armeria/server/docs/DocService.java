@@ -213,6 +213,7 @@ public class DocService extends AbstractCompositeService<HttpRequest, HttpRespon
                        .map(method -> addMethodDocStrings(service, method, docStrings))
                        .collect(toImmutableList()),
                 service.exampleHttpHeaders(),
+                service.serviceType(),
                 docString(service.name(), service.docString(), docStrings));
     }
 
@@ -316,6 +317,7 @@ public class DocService extends AbstractCompositeService<HttpRequest, HttpRespon
                         m.httpMethod(), m.docString()))::iterator,
                 Iterables.concat(service.exampleHttpHeaders(),
                                  exampleHttpHeaders.get("")),
+                service.serviceType(),
                 service.docString());
     }
 

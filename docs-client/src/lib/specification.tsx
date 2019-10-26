@@ -23,6 +23,12 @@ interface HasDocString {
   docString?: DocString;
 }
 
+export enum ServiceType {
+  ANNOTATED = 'ANNOTATED',
+  GRPC = 'GRPC',
+  THRIFT = 'THRIFT',
+}
+
 export interface Parameter {
   name: string;
   location?: string;
@@ -57,6 +63,7 @@ export interface Service {
   name: string;
   methods: Method[];
   exampleHttpHeaders: { [name: string]: string }[];
+  serviceType: ServiceType;
   docString?: DocString;
 }
 

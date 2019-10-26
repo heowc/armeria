@@ -52,13 +52,14 @@ public final class ServiceInfo {
     private final List<HttpHeaders> exampleHttpHeaders;
     @Nullable
     private final String docString;
+    private final ServiceType serviceType;
 
     /**
      * Creates a new instance.
      */
     public ServiceInfo(String name,
-                       Iterable<MethodInfo> methods) {
-        this(name, methods, null);
+                       Iterable<MethodInfo> methods, ServiceType serviceType) {
+        this(name, methods, serviceType, null);
     }
 
     /**
@@ -66,8 +67,9 @@ public final class ServiceInfo {
      */
     public ServiceInfo(String name,
                        Iterable<MethodInfo> methods,
+                       ServiceType serviceType,
                        @Nullable String docString) {
-        this(name, methods, ImmutableList.of(), docString);
+        this(name, methods, ImmutableList.of(), serviceType, docString);
     }
 
     /**
@@ -76,12 +78,14 @@ public final class ServiceInfo {
     public ServiceInfo(String name,
                        Iterable<MethodInfo> methods,
                        Iterable<HttpHeaders> exampleHttpHeaders,
+                       ServiceType serviceType,
                        @Nullable String docString) {
 
         this.name = requireNonNull(name, "name");
         this.methods = mergeEndpoints(requireNonNull(methods));
         this.exampleHttpHeaders = ImmutableList.copyOf(requireNonNull(exampleHttpHeaders,
                                                                       "exampleHttpHeaders"));
+        this.serviceType = requireNonNull(serviceType, "serviceType");
         this.docString = Strings.emptyToNull(docString);
     }
 
@@ -174,6 +178,14 @@ public final class ServiceInfo {
         return exampleHttpHeaders;
     }
 
+    /**
+     * Returns the type of the service in this service.
+     */
+    @JsonProperty
+    public ServiceType serviceType() {
+        return serviceType;
+    }
+
     @Override
     public boolean equals(@Nullable Object o) {
         if (this == o) {
@@ -199,7 +211,12 @@ public final class ServiceInfo {
                 .add("name", name)
                 .add("methods", methods)
                 .add("exampleHttpHeaders", exampleHttpHeaders)
-                .add("docstring", docString)
+                .add("serviceType", serviceType)
+                .add("docString", docString)
                 .toString();
+    }
+
+    public enum ServiceType {
+        ANNOTATED, GRPC, THRIFT, HTTP;
     }
 }

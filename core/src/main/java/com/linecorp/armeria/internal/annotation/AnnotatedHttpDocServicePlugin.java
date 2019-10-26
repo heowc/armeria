@@ -74,6 +74,7 @@ import com.linecorp.armeria.server.docs.FieldRequirement;
 import com.linecorp.armeria.server.docs.MethodInfo;
 import com.linecorp.armeria.server.docs.NamedTypeInfo;
 import com.linecorp.armeria.server.docs.ServiceInfo;
+import com.linecorp.armeria.server.docs.ServiceInfo.ServiceType;
 import com.linecorp.armeria.server.docs.ServiceSpecification;
 import com.linecorp.armeria.server.docs.StructInfo;
 import com.linecorp.armeria.server.docs.TypeSignature;
@@ -110,7 +111,7 @@ public final class AnnotatedHttpDocServicePlugin implements DocServicePlugin {
 
     @Override
     public String name() {
-        return "annotated";
+        return ServiceType.ANNOTATED.name().toLowerCase();
     }
 
     @Override
@@ -390,6 +391,7 @@ public final class AnnotatedHttpDocServicePlugin implements DocServicePlugin {
                 .map(entry -> {
                     final Class<?> service = entry.getKey();
                     return new ServiceInfo(service.getName(), entry.getValue(),
+                                           ServiceType.ANNOTATED,
                                            serviceDescription.get(service));
                 })
                 .collect(toImmutableSet());

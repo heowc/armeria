@@ -14,13 +14,23 @@
  * under the License.
  */
 
-import { Method } from '../specification';
+import { Method, ServiceType } from '../specification';
 
 import Transport from './transport';
 
 export const ANNOTATED_HTTP_MIME_TYPE = 'application/json; charset=utf-8';
 
 export default class AnnotatedHttpTransport extends Transport {
+  public serviceType(): ServiceType {
+    return ServiceType.ANNOTATED;
+  }
+
+  public supports(serviceType: ServiceType, mimeType: string): boolean {
+    return (
+      serviceType === this.serviceType() && this.supportsMimeType(mimeType)
+    );
+  }
+
   public supportsMimeType(mimeType: string): boolean {
     return mimeType === ANNOTATED_HTTP_MIME_TYPE;
   }

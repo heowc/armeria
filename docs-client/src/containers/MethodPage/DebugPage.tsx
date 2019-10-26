@@ -41,7 +41,7 @@ import { RouteComponentProps } from 'react-router';
 import Section from '../../components/Section';
 import { docServiceDebug } from '../../lib/header-provider';
 import jsonPrettify from '../../lib/json-prettify';
-import { Method } from '../../lib/specification';
+import { Method, ServiceType } from '../../lib/specification';
 import { TRANSPORTS } from '../../lib/transports';
 import EndpointPath from './EndpointPath';
 import HttpHeaders from './HttpHeaders';
@@ -49,6 +49,7 @@ import HttpQueryString from './HttpQueryString';
 import RequestBody from './RequestBody';
 
 interface OwnProps {
+  serviceType: ServiceType;
   method: Method;
   isAnnotatedHttpService: boolean;
   exampleHeaders: Option[];
@@ -109,6 +110,7 @@ const DebugPage: React.FunctionComponent<Props> = ({
   match,
   method,
   useRequestBody,
+  serviceType,
 }) => {
   const [requestBodyOpen, toggleRequestBodyOpen] = useReducer(toggle, true);
   const [requestBody, setRequestBody] = useState('');
@@ -281,7 +283,7 @@ const DebugPage: React.FunctionComponent<Props> = ({
         `${window.location.protocol}//${window.location.hostname}` +
         `${window.location.port ? `:${window.location.port}` : ''}`;
 
-      const transport = TRANSPORTS.getDebugTransport(method);
+      const transport = TRANSPORTS.getDebugTransport(serviceType, method);
       if (!transport) {
         throw new Error("This method doesn't have a debug transport.");
       }
@@ -378,7 +380,7 @@ const DebugPage: React.FunctionComponent<Props> = ({
       const headersText = params.get('http_headers');
       const headers = headersText ? JSON.parse(headersText) : {};
 
-      const transport = TRANSPORTS.getDebugTransport(method)!;
+      const transport = TRANSPORTS.getDebugTransport(serviceType, method)!;
       let executedDebugResponse;
       try {
         executedDebugResponse = await transport.send(

@@ -14,7 +14,7 @@
  * under the License.
  */
 
-import { Endpoint, Method } from '../specification';
+import { Endpoint, Method, ServiceType } from '../specification';
 
 import Transport from './transport';
 
@@ -25,6 +25,16 @@ export default class ThriftTransport extends Transport {
     return endpoint.fragment
       ? `${endpoint.fragment}:${method.name}`
       : method.name;
+  }
+
+  public serviceType(): ServiceType {
+    return ServiceType.THRIFT;
+  }
+
+  public supports(serviceType: ServiceType, mimeType: string): boolean {
+    return (
+      serviceType === this.serviceType() && this.supportsMimeType(mimeType)
+    );
   }
 
   public supportsMimeType(mimeType: string): boolean {

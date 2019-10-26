@@ -16,9 +16,13 @@
 
 import { docServiceDebug, providers } from '../header-provider';
 
-import { Endpoint, Method } from '../specification';
+import { Endpoint, Method, ServiceType } from '../specification';
 
 export default abstract class Transport {
+  public abstract serviceType(): ServiceType;
+
+  public abstract supports(serviceType: ServiceType, mimeType: string): boolean;
+
   public abstract supportsMimeType(mimeType: string): boolean;
 
   public abstract getDebugMimeType(): string;

@@ -29,11 +29,11 @@ import { RouteComponentProps } from 'react-router-dom';
 import {
   Method,
   Service,
+  ServiceType,
   simpleName,
   Specification,
 } from '../../lib/specification';
 import { TRANSPORTS } from '../../lib/transports';
-import { ANNOTATED_HTTP_MIME_TYPE } from '../../lib/transports/annotated-http';
 
 import Section from '../../components/Section';
 import VariableList from '../../components/VariableList';
@@ -113,10 +113,13 @@ const MethodPage: React.FunctionComponent<Props> = (props) => {
     return <>Not found.</>;
   }
 
-  const debugTransport = TRANSPORTS.getDebugTransport(method);
+  const debugTransport = TRANSPORTS.getDebugTransport(
+    service.serviceType,
+    method,
+  );
   const isAnnotatedHttpService =
     debugTransport !== undefined &&
-    debugTransport.supportsMimeType(ANNOTATED_HTTP_MIME_TYPE);
+    debugTransport.serviceType() === ServiceType.ANNOTATED;
 
   return (
     <>
@@ -168,6 +171,7 @@ const MethodPage: React.FunctionComponent<Props> = (props) => {
             isAnnotatedHttpService ? isSingleExactPathMapping(method) : false
           }
           useRequestBody={useRequestBody(props.match.params.httpMethod)}
+          serviceType={service.serviceType}
         />
       )}
     </>

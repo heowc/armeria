@@ -15,7 +15,7 @@
  */
 
 import jsonPrettify from '../json-prettify';
-import { Method } from '../specification';
+import { Method, ServiceType } from '../specification';
 
 import Transport from './transport';
 
@@ -23,6 +23,16 @@ const GRPC_UNFRAMED_MIME_TYPE =
   'application/json; charset=utf-8; protocol=gRPC';
 
 export default class GrpcUnframedTransport extends Transport {
+  public serviceType(): ServiceType {
+    return ServiceType.GRPC;
+  }
+
+  public supports(serviceType: ServiceType, mimeType: string): boolean {
+    return (
+      serviceType === this.serviceType() && this.supportsMimeType(mimeType)
+    );
+  }
+
   public supportsMimeType(mimeType: string): boolean {
     return mimeType === GRPC_UNFRAMED_MIME_TYPE;
   }

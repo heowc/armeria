@@ -49,9 +49,12 @@ export default class AnnotatedHttpTransport extends Transport {
     const endpoint = this.findDebugMimeTypeEndpoint(method);
 
     const hdrs = new Headers();
-    hdrs.set('content-type', ANNOTATED_HTTP_MIME_TYPE);
     for (const [name, value] of Object.entries(headers)) {
       hdrs.set(name, value);
+    }
+    const hasContentType = hdrs.has('content-type');
+    if (!hasContentType) {
+      hdrs.set('content-type', ANNOTATED_HTTP_MIME_TYPE);
     }
 
     let newPath;

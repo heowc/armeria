@@ -31,10 +31,8 @@ export default class ThriftTransport extends Transport {
     return ServiceType.THRIFT;
   }
 
-  public supports(serviceType: ServiceType, mimeType: string): boolean {
-    return (
-      serviceType === this.serviceType() && this.supportsMimeType(mimeType)
-    );
+  public supports(serviceType: ServiceType): boolean {
+    return serviceType === this.serviceType();
   }
 
   public supportsMimeType(mimeType: string): boolean {

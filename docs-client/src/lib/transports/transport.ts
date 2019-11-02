@@ -21,7 +21,7 @@ import { Endpoint, Method, ServiceType } from '../specification';
 export default abstract class Transport {
   public abstract serviceType(): ServiceType;
 
-  public abstract supports(serviceType: ServiceType, mimeType: string): boolean;
+  public abstract supports(serviceType: ServiceType): boolean;
 
   public abstract supportsMimeType(mimeType: string): boolean;
 

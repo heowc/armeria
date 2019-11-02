@@ -283,7 +283,7 @@ const DebugPage: React.FunctionComponent<Props> = ({
         `${window.location.protocol}//${window.location.hostname}` +
         `${window.location.port ? `:${window.location.port}` : ''}`;
 
-      const transport = TRANSPORTS.getDebugTransport(serviceType, method);
+      const transport = TRANSPORTS.getDebugTransport(serviceType);
       if (!transport) {
         throw new Error("This method doesn't have a debug transport.");
       }
@@ -380,7 +380,7 @@ const DebugPage: React.FunctionComponent<Props> = ({
       const headersText = params.get('http_headers');
       const headers = headersText ? JSON.parse(headersText) : {};
 
-      const transport = TRANSPORTS.getDebugTransport(serviceType, method)!;
+      const transport = TRANSPORTS.getDebugTransport(serviceType)!;
       let executedDebugResponse;
       try {
         executedDebugResponse = await transport.send(

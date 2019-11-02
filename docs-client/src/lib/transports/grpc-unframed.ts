@@ -27,10 +27,8 @@ export default class GrpcUnframedTransport extends Transport {
     return ServiceType.GRPC;
   }
 
-  public supports(serviceType: ServiceType, mimeType: string): boolean {
-    return (
-      serviceType === this.serviceType() && this.supportsMimeType(mimeType)
-    );
+  public supports(serviceType: ServiceType): boolean {
+    return serviceType === this.serviceType();
   }
 
   public supportsMimeType(mimeType: string): boolean {

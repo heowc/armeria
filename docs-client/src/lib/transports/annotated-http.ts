@@ -18,25 +18,26 @@ import { Method, ServiceType } from '../specification';
 
 import Transport from './transport';
 
-export const ANNOTATED_HTTP_MIME_TYPE = 'application/json; charset=utf-8';
+export const ANNOTATED_HTTP_MIME_TYPES = [
+  'application/json; charset=utf-8',
+  'application/x-www-form-urlencoded',
+];
 
 export default class AnnotatedHttpTransport extends Transport {
   public serviceType(): ServiceType {
     return ServiceType.ANNOTATED;
   }
 
-  public supports(serviceType: ServiceType, mimeType: string): boolean {
-    return (
-      serviceType === this.serviceType() && this.supportsMimeType(mimeType)
-    );
+  public supports(serviceType: ServiceType): boolean {
+    return serviceType === this.serviceType();
   }
 
   public supportsMimeType(mimeType: string): boolean {
-    return mimeType === ANNOTATED_HTTP_MIME_TYPE;
+    return ANNOTATED_HTTP_MIME_TYPES.indexOf(mimeType) > -1;
   }
 
   public getDebugMimeType(): string {
-    return ANNOTATED_HTTP_MIME_TYPE;
+    return ANNOTATED_HTTP_MIME_TYPES[0];
   }
 
   protected async doSend(
@@ -54,7 +55,7 @@ export default class AnnotatedHttpTransport extends Transport {
     }
     const hasContentType = hdrs.has('content-type');
     if (!hasContentType) {
-      hdrs.set('content-type', ANNOTATED_HTTP_MIME_TYPE);
+      hdrs.set('content-type', endpoint.availableMimeTypes[0]);
     }
 
     let newPath;

@@ -19,9 +19,6 @@ import { Method, ServiceType } from '../specification';
 
 import Transport from './transport';
 
-const GRPC_UNFRAMED_MIME_TYPE =
-  'application/json; charset=utf-8; protocol=gRPC';
-
 export default class GrpcUnframedTransport extends Transport {
   public serviceType(): ServiceType {
     return ServiceType.GRPC;
@@ -31,12 +28,12 @@ export default class GrpcUnframedTransport extends Transport {
     return serviceType === this.serviceType();
   }
 
-  public supportsMimeType(mimeType: string): boolean {
-    return mimeType === GRPC_UNFRAMED_MIME_TYPE;
+  public setDebugMimeTypes(mimeTypes: Set<string>): void {
+    this.mimeTypes = mimeTypes;
   }
 
-  public getDebugMimeType(): string {
-    return GRPC_UNFRAMED_MIME_TYPE;
+  public getDebugMimeTypes(): Set<string> {
+    return this.mimeTypes;
   }
 
   protected async doSend(
@@ -47,13 +44,16 @@ export default class GrpcUnframedTransport extends Transport {
     if (!bodyJson) {
       throw new Error('A gRPC request must have body.');
     }
-    const endpoint = this.findDebugMimeTypeEndpoint(method);
 
     const hdrs = new Headers();
-    hdrs.set('content-type', GRPC_UNFRAMED_MIME_TYPE);
     for (const [name, value] of Object.entries(headers)) {
       hdrs.set(name, value);
     }
+
+    const endpoint = this.findDebugMimeTypeEndpoint(
+      method,
+      hdrs.get('content-type'),
+    );
 
     const httpResponse = await fetch(endpoint.pathMapping, {
       headers: hdrs,

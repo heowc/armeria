@@ -18,11 +18,6 @@ import { Method, ServiceType } from '../specification';
 
 import Transport from './transport';
 
-export const ANNOTATED_HTTP_MIME_TYPES = [
-  'application/json; charset=utf-8',
-  'application/x-www-form-urlencoded',
-];
-
 export default class AnnotatedHttpTransport extends Transport {
   public serviceType(): ServiceType {
     return ServiceType.ANNOTATED;
@@ -32,31 +27,37 @@ export default class AnnotatedHttpTransport extends Transport {
     return serviceType === this.serviceType();
   }
 
-  public supportsMimeType(mimeType: string): boolean {
-    return ANNOTATED_HTTP_MIME_TYPES.indexOf(mimeType) > -1;
+  public setDebugMimeTypes(mimeTypes: Set<string>): void {
+    this.mimeTypes = mimeTypes;
   }
 
-  public getDebugMimeType(): string {
-    return ANNOTATED_HTTP_MIME_TYPES[0];
+  public getDebugMimeTypes(): Set<string> {
+    if (this.mimeTypes.size <= 0) {
+      throw new Error(`Mime type is empty.`);
+    }
+    return this.mimeTypes;
   }
 
   protected async doSend(
     method: Method,
     headers: { [name: string]: string },
-    bodyJson?: string,
+    bodyString?: string,
     endpointPath?: string,
     queries?: string,
   ): Promise<string> {
-    const endpoint = this.findDebugMimeTypeEndpoint(method);
-
     const hdrs = new Headers();
     for (const [name, value] of Object.entries(headers)) {
       hdrs.set(name, value);
     }
-    const hasContentType = hdrs.has('content-type');
-    if (!hasContentType) {
-      hdrs.set('content-type', endpoint.availableMimeTypes[0]);
+
+    if (!hdrs.has('content-type')) {
+      throw new Error(`not setting for content-type`);
     }
+
+    const endpoint = this.findDebugMimeTypeEndpoint(
+      method,
+      hdrs.get('content-type'),
+    );
 
     let newPath;
     if (endpointPath) {
@@ -74,7 +75,7 @@ export default class AnnotatedHttpTransport extends Transport {
     const httpResponse = await fetch(encodeURI(newPath), {
       headers: hdrs,
       method: method.httpMethod,
-      body: bodyJson,
+      body: bodyString,
     });
     const response = await httpResponse.text();
     return response.length > 0 ? response : '&lt;zero-length response&gt;';

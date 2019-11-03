@@ -113,7 +113,10 @@ const MethodPage: React.FunctionComponent<Props> = (props) => {
     return <>Not found.</>;
   }
 
-  const debugTransport = TRANSPORTS.getDebugTransport(service.serviceType);
+  const debugTransport = TRANSPORTS.getDebugTransport(
+    service.serviceType,
+    method,
+  );
   const isAnnotatedHttpService =
     debugTransport !== undefined &&
     debugTransport.serviceType() === ServiceType.ANNOTATED;

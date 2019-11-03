@@ -18,15 +18,12 @@ import { Endpoint, Method, ServiceType } from '../specification';
 
 import Transport from './transport';
 
-const TTEXT_MIME_TYPE = 'application/x-thrift; protocol=TTEXT';
-
 export default class ThriftTransport extends Transport {
   private static thriftMethod(endpoint: Endpoint, method: Method) {
     return endpoint.fragment
       ? `${endpoint.fragment}:${method.name}`
       : method.name;
   }
-
   public serviceType(): ServiceType {
     return ServiceType.THRIFT;
   }
@@ -35,12 +32,12 @@ export default class ThriftTransport extends Transport {
     return serviceType === this.serviceType();
   }
 
-  public supportsMimeType(mimeType: string): boolean {
-    return mimeType === TTEXT_MIME_TYPE;
+  public setDebugMimeTypes(mimeTypes: Set<string>): void {
+    this.mimeTypes = mimeTypes;
   }
 
-  public getDebugMimeType(): string {
-    return TTEXT_MIME_TYPE;
+  public getDebugMimeTypes(): Set<string> {
+    return this.mimeTypes;
   }
 
   public getCurlBody(endpoint: Endpoint, method: Method, body: string): string {
@@ -56,15 +53,18 @@ export default class ThriftTransport extends Transport {
     if (!bodyJson) {
       throw new Error('A Thrift request must have body.');
     }
-    const endpoint = this.findDebugMimeTypeEndpoint(method);
-
-    const thriftMethod = ThriftTransport.thriftMethod(endpoint, method);
 
     const hdrs = new Headers();
-    hdrs.set('content-type', TTEXT_MIME_TYPE);
     for (const [name, value] of Object.entries(headers)) {
       hdrs.set(name, value);
     }
+
+    const endpoint = this.findDebugMimeTypeEndpoint(
+      method,
+      hdrs.get('content-type'),
+    );
+
+    const thriftMethod = ThriftTransport.thriftMethod(endpoint, method);
 
     const httpResponse = await fetch(endpoint.pathMapping, {
       headers: hdrs,

@@ -19,13 +19,15 @@ import { docServiceDebug, providers } from '../header-provider';
 import { Endpoint, Method, ServiceType } from '../specification';
 
 export default abstract class Transport {
+  protected mimeTypes = new Set<string>();
+
   public abstract serviceType(): ServiceType;
 
   public abstract supports(serviceType: ServiceType): boolean;
 
-  public abstract supportsMimeType(mimeType: string): boolean;
+  public abstract setDebugMimeTypes(mimeTypes: Set<string>): void;
 
-  public abstract getDebugMimeType(): string;
+  public abstract getDebugMimeTypes(): Set<string>;
 
   public async send(
     method: Method,
@@ -55,13 +57,19 @@ export default abstract class Transport {
     return this.doSend(method, filledHeaders, bodyJson, endpointPath, queries);
   }
 
-  public findDebugMimeTypeEndpoint(method: Method): Endpoint {
+  public findDebugMimeTypeEndpoint(
+    method: Method,
+    contentType: string | null,
+  ): Endpoint {
+    if (!contentType) {
+      throw new Error(`contentType is empty.`);
+    }
     const endpoint = method.endpoints.find((ep) =>
-      ep.availableMimeTypes.includes(this.getDebugMimeType()),
+      ep.availableMimeTypes.includes(contentType),
     );
     if (!endpoint) {
       throw new Error(
-        `Endpoint does not support debug transport. MimeType: ${this.getDebugMimeType()}`,
+        `Endpoint does not support debug transport. MimeType: ${contentType}`,
       );
     }
     return endpoint;

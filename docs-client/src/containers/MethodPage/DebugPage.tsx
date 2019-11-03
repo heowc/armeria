@@ -266,8 +266,15 @@ const DebugPage: React.FunctionComponent<Props> = ({
 
   const onExport = useCallback(() => {
     try {
-      if (useRequestBody) {
-        validateJsonObject(requestBody, 'request body');
+      // window.location.origin may have compatibility issue
+      // https://developer.mozilla.org/en-US/docs/Web/API/Window/location#Browser_compatibility
+      const host =
+        `${window.location.protocol}//${window.location.hostname}` +
+        `${window.location.port ? `:${window.location.port}` : ''}`;
+
+      const transport = TRANSPORTS.getDebugTransport(serviceType, method);
+      if (!transport) {
+        throw new Error("This method doesn't have a debug transport.");
       }
 
       if (additionalHeaders) {
@@ -277,19 +284,16 @@ const DebugPage: React.FunctionComponent<Props> = ({
       const headers =
         (additionalHeaders && JSON.parse(additionalHeaders)) || {};
 
-      // window.location.origin may have compatibility issue
-      // https://developer.mozilla.org/en-US/docs/Web/API/Window/location#Browser_compatibility
-      const host =
-        `${window.location.protocol}//${window.location.hostname}` +
-        `${window.location.port ? `:${window.location.port}` : ''}`;
-
-      const transport = TRANSPORTS.getDebugTransport(serviceType);
-      if (!transport) {
-        throw new Error("This method doesn't have a debug transport.");
+      let contentType = headers['content-type'];
+      if (!contentType) {
+        const debugMimeTypes = transport.getDebugMimeTypes();
+        if (debugMimeTypes.size > 0) {
+          contentType = debugMimeTypes.values().next().value;
+        }
       }
 
       const httpMethod = method.httpMethod;
-      const endpoint = transport.findDebugMimeTypeEndpoint(method);
+      const endpoint = transport.findDebugMimeTypeEndpoint(method, contentType);
       const path = endpoint.pathMapping;
       const body = transport.getCurlBody(
         endpoint,
@@ -312,7 +316,6 @@ const DebugPage: React.FunctionComponent<Props> = ({
         uri = `'${host}${escapeSingleQuote(path)}'`;
       }
 
-      headers['content-type'] = transport.getDebugMimeType();
       if (process.env.WEBPACK_DEV === 'true') {
         headers[docServiceDebug] = 'true';
       }
@@ -380,7 +383,7 @@ const DebugPage: React.FunctionComponent<Props> = ({
       const headersText = params.get('http_headers');
       const headers = headersText ? JSON.parse(headersText) : {};
 
-      const transport = TRANSPORTS.getDebugTransport(serviceType)!;
+      const transport = TRANSPORTS.getDebugTransport(serviceType, method)!;
       let executedDebugResponse;
       try {
         executedDebugResponse = await transport.send(
@@ -407,14 +410,7 @@ const DebugPage: React.FunctionComponent<Props> = ({
 
     try {
       if (useRequestBody) {
-        validateJsonObject(requestBody, 'request body');
-
-        // Do not round-trip through JSON.parse to minify the text so as to not lose numeric precision.
-        // See: https://github.com/line/armeria/issues/273
-
-        // For some reason jsonMinify minifies {} as empty string, so work around it.
-        const minifiedRequestBody = jsonMinify(requestBody) || '{}';
-        params.set('request_body', minifiedRequestBody);
+        params.set('request_body', requestBody);
       }
 
       if (isAnnotatedHttpService) {

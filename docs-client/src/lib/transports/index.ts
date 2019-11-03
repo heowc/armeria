@@ -14,7 +14,7 @@
  * under the License.
  */
 
-import { ServiceType } from '../specification';
+import { Method, ServiceType } from '../specification';
 
 import AnnotatedHttpTransport from './annotated-http';
 import GrpcUnframedTransport from './grpc-unframed';
@@ -26,14 +26,26 @@ const thriftTransport = new ThriftTransport();
 const annotatedHttpTransport = new AnnotatedHttpTransport();
 
 export class Transports {
-  public getDebugTransport(serviceType: ServiceType): Transport | undefined {
+  public getDebugTransport(
+    serviceType: ServiceType,
+    method: Method,
+  ): Transport | undefined {
+    const mimeTypes = new Set<string>();
+    for (const endpoint of method.endpoints) {
+      endpoint.availableMimeTypes.forEach((mimeType) =>
+        mimeTypes.add(mimeType),
+      );
+    }
     if (grpcUnframedTransport.supports(serviceType)) {
+      grpcUnframedTransport.setDebugMimeTypes(mimeTypes);
       return grpcUnframedTransport;
     }
     if (thriftTransport.supports(serviceType)) {
+      thriftTransport.setDebugMimeTypes(mimeTypes);
       return thriftTransport;
     }
     if (annotatedHttpTransport.supports(serviceType)) {
+      annotatedHttpTransport.setDebugMimeTypes(mimeTypes);
       return annotatedHttpTransport;
     }
     return undefined;

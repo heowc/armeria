@@ -19,9 +19,7 @@ import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import React, { ChangeEvent } from 'react';
 
-import jsonPrettify from '../../lib/json-prettify';
-
-const jsonPlaceHolder = jsonPrettify('{"foo":"bar"}');
+const requestPlaceHolder = 'Please input request body';
 
 interface Props {
   requestBodyOpen: boolean;
@@ -44,7 +42,7 @@ const RequestBody: React.FunctionComponent<Props> = (props) => (
           fullWidth
           rows={15}
           value={props.requestBody}
-          placeholder={jsonPlaceHolder}
+          placeholder={requestPlaceHolder}
           onChange={props.onDebugFormChange}
           inputProps={{
             className: 'code',
